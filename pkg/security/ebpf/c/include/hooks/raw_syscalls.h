@@ -1,65 +1,47 @@
 #ifndef _HOOKS_RAW_SYSCALLS_H
 #define _HOOKS_RAW_SYSCALLS_H
 
-#include "structs/security_profile.h"
-#include "helpers/activity_dump.h"
-#include "helpers/raw_syscalls.h"
 #include "helpers/syscalls.h"
+#include "helpers/buffer_selector.h"
 
 SEC("tracepoint/raw_syscalls/sys_enter")
 int sys_enter(struct _tracepoint_raw_syscalls_sys_enter *args) {
-    struct syscall_monitor_entry_t zero = {};
     u64 pid_tgid = bpf_get_current_pid_tgid();
     u32 pid = pid_tgid >> 32;
-    u64 now = bpf_ktime_get_ns();
 
+    // handle kill actions
     send_signal(pid);
 
-    struct syscall_monitor_event_t event = {};
-    struct proc_cache_t *proc_cache_entry = fill_process_context(&event.process);
-    fill_cgroup_context(proc_cache_entry, &event.cgroup);
+    u64 enabled;
+    LOAD_CONSTANT("syscall_monitor_enabled", enabled);
 
-    // check if this event should trigger a syscall drift event
-    if (is_anomaly_syscalls_enabled()) {
-        // fetch the profile for the current cgroup
-        struct security_profile_t *profile = bpf_map_lookup_elem(&security_profiles, &event.cgroup.path_key.ino);
-        if (profile) {
-            u64 cookie = profile->cookie;
-            struct security_profile_syscalls_t *syscalls = bpf_map_lookup_elem(&secprofs_syscalls, &cookie);
-            if (syscalls) {
-                // fetch the current syscall monitor entry
-                struct syscall_monitor_entry_t *entry = fetch_sycall_monitor_entry(&zero, pid, now, SYSCALL_MONITOR_TYPE_DRIFT);
-                if (entry == NULL) {
-                    // should never happen
-                    return 0;
-                }
-                // is the current syscall in the profile ?
-                if (!syscall_mask_contains(syscalls->syscalls, args->id)) {
-                    syscall_monitor_entry_insert(entry, args->id);
-                }
-                // send an event if need be
-                event.event.flags = EVENT_FLAGS_ANOMALY_DETECTION_EVENT;
-                send_or_skip_syscall_monitor_event(args, &event, entry, &zero, SYSCALL_MONITOR_TYPE_DRIFT);
-            }
-        }
+    if (!enabled) {
+        return 0;
     }
 
-    // are we dumping the syscalls of this process ?
-    struct activity_dump_config *config = lookup_or_delete_traced_pid(pid, now, NULL);
-    if (config) {
-        if (mask_has_event(config->event_mask, EVENT_SYSCALLS)) {
-            // fetch the current syscall monitor entry
-            struct syscall_monitor_entry_t *entry = fetch_sycall_monitor_entry(&zero, pid, now, SYSCALL_MONITOR_TYPE_DUMP);
-            if (entry == NULL) {
-                // should never happen
-                return 0;
-            }
-            // insert the current syscall in the map
-            syscall_monitor_entry_insert(entry, args->id);
-            // send an event if need be
-            event.event.flags = EVENT_FLAGS_ACTIVITY_DUMP_SAMPLE;
-            send_or_skip_syscall_monitor_event(args, &event, entry, &zero, SYSCALL_MONITOR_TYPE_DUMP);
-        }
+    // The children of kthreadd will be ignored userspace side
+    if (IS_KTHREADD(pid)) {
+        return 0;
+    }
+
+    u16 idx = ((unsigned long)args->id) / 64;
+    u64 bit = 1 << (((unsigned long)args->id) % 64);
+
+    struct syscall_monitor_key_t key = {
+        .idx = idx,
+        .pid = pid,
+    };
+
+    struct bpf_map_def *syscall_monitor = select_buffer(&fb_syscall_monitor, &bb_syscall_monitor, SYSCALL_MONITOR_KEY);
+    if (syscall_monitor == NULL) {
+        return 0;
+    }
+
+    u64 *value = bpf_map_lookup_elem(syscall_monitor, &key);
+    if (!value) {
+        bpf_map_update_elem(syscall_monitor, &key, &bit, BPF_ANY);
+    } else {
+        *value |= bit;
     }
 
     return 0;

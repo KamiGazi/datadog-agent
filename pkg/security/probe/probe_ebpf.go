@@ -486,9 +486,7 @@ func (p *EBPFProbe) initEBPFManager() error {
 
 	p.applyDefaultFilterPolicies()
 
-	needRawSyscalls := p.isNeededForActivityDump(model.SyscallsEventType.String())
-
-	if err := p.updateProbes(defaultEventTypes, needRawSyscalls); err != nil {
+	if err := p.updateProbes(defaultEventTypes); err != nil {
 		return err
 	}
 
@@ -1678,10 +1676,7 @@ func (p *EBPFProbe) handleRegularEvent(event *model.Event, offset int, dataLen u
 		if !p.regularUnmarshalEvent(&event.Connect, eventType, offset, dataLen, data) {
 			return false
 		}
-	case model.SyscallsEventType:
-		if !p.regularUnmarshalEvent(&event.Syscalls, eventType, offset, dataLen, data) {
-			return false
-		}
+
 	case model.OnDemandEventType:
 		if p.onDemandManager.isDisabled() {
 			seclog.Debugf("on-demand event received but on-demand probes are disabled")
@@ -2160,7 +2155,7 @@ func (p *EBPFProbe) validEventTypeForConfig(eventType string) bool {
 
 // updateProbes applies the loaded set of rules and returns a report
 // of the applied approvers for it.
-func (p *EBPFProbe) updateProbes(ruleSetEventTypes []eval.EventType, needRawSyscalls bool) error {
+func (p *EBPFProbe) updateProbes(ruleSetEventTypes []eval.EventType) error {
 	// event types enabled either by event handlers or by rules
 	requestedEventTypes := append([]eval.EventType{}, defaultEventTypes...)
 	requestedEventTypes = append(requestedEventTypes, ruleSetEventTypes...)
@@ -2177,6 +2172,10 @@ func (p *EBPFProbe) updateProbes(ruleSetEventTypes []eval.EventType, needRawSysc
 	}
 
 	activatedProbes := probes.SnapshotSelectors(p.useFentry)
+
+	if p.config.RuntimeSecurity.SyscallEventsEnabled {
+		activatedProbes = append(p.managerOptions.ActivatedProbes, probes.SyscallMonitorSelectors()...)
+	}
 
 	if p.config.Probe.CapabilitiesMonitoringEnabled {
 		activatedProbes = append(activatedProbes, probes.GetCapabilitiesMonitoringSelectors()...)
@@ -2211,23 +2210,6 @@ func (p *EBPFProbe) updateProbes(ruleSetEventTypes []eval.EventType, needRawSysc
 	if p.config.RuntimeSecurity.OnDemandEnabled {
 		p.onDemandManager.updateProbes()
 		activatedProbes = append(activatedProbes, p.onDemandManager.selectProbes())
-	}
-
-	if needRawSyscalls {
-		activatedProbes = append(activatedProbes, probes.SyscallMonitorSelectors()...)
-	} else {
-		// ActivityDumps
-		if p.config.RuntimeSecurity.ActivityDumpEnabled {
-			if slices.Contains(p.config.RuntimeSecurity.ActivityDumpTracedEventTypes, model.SyscallsEventType) {
-				activatedProbes = append(activatedProbes, probes.SyscallMonitorSelectors()...)
-			}
-		}
-		// SecurityProfiles
-		if p.config.RuntimeSecurity.AnomalyDetectionEnabled {
-			if slices.Contains(p.config.RuntimeSecurity.AnomalyDetectionEventTypes, model.SyscallsEventType) {
-				activatedProbes = append(activatedProbes, probes.SyscallMonitorSelectors()...)
-			}
-		}
 	}
 
 	// Print the list of unique probe identification IDs that are registered
@@ -2553,9 +2535,6 @@ func (p *EBPFProbe) ApplyRuleSet(rs *rules.RuleSet) (*kfilters.FilterReport, boo
 
 	eventTypes := rs.GetEventTypes()
 
-	// activity dump & security profiles
-	needRawSyscalls := p.isNeededForActivityDump(model.SyscallsEventType.String())
-
 	// kill action
 	if p.config.RuntimeSecurity.EnforcementEnabled && isKillActionPresent(rs) {
 		if !p.config.RuntimeSecurity.EnforcementRawSyscallEnabled {
@@ -2568,8 +2547,6 @@ func (p *EBPFProbe) ApplyRuleSet(rs *rules.RuleSet) (*kfilters.FilterReport, boo
 					}
 				}
 			}
-		} else {
-			needRawSyscalls = true
 		}
 	}
 
@@ -2588,7 +2565,7 @@ func (p *EBPFProbe) ApplyRuleSet(rs *rules.RuleSet) (*kfilters.FilterReport, boo
 		}
 	}
 
-	if err := p.updateProbes(eventTypes, needRawSyscalls); err != nil {
+	if err := p.updateProbes(eventTypes); err != nil {
 		return nil, false, fmt.Errorf("failed to select probes: %w", err)
 	}
 
@@ -2745,10 +2722,6 @@ func (p *EBPFProbe) initManagerOptionsConstants() {
 			Value: getNetStructType(p.kernelVersion),
 		},
 		manager.ConstantEditor{
-			Name:  "syscall_monitor_event_period",
-			Value: uint64(p.config.RuntimeSecurity.ActivityDumpSyscallMonitorPeriod.Nanoseconds()),
-		},
-		manager.ConstantEditor{
 			Name:  "network_monitor_period",
 			Value: uint64(p.config.Probe.NetworkFlowMonitorPeriod.Nanoseconds()),
 		},
@@ -2765,13 +2738,14 @@ func (p *EBPFProbe) initManagerOptionsConstants() {
 			Value: utils.BoolTouint64(p.kernelVersion.SupportBPFSendSignal()),
 		},
 		manager.ConstantEditor{
-			Name:  "anomaly_syscalls",
-			Value: utils.BoolTouint64(slices.Contains(p.config.RuntimeSecurity.AnomalyDetectionEventTypes, model.SyscallsEventType)),
-		},
-		manager.ConstantEditor{
 			Name:  "monitor_syscalls_map_enabled",
 			Value: utils.BoolTouint64(p.probe.Opts.SyscallsMonitorEnabled),
 		},
+		manager.ConstantEditor{
+			Name:  "syscall_cgroup_monitor_enabled",
+			Value: utils.BoolTouint64(p.config.RuntimeSecurity.SyscallEventsEnabled),
+		},
+
 		manager.ConstantEditor{
 			Name:  "imds_ip",
 			Value: uint64(p.config.RuntimeSecurity.IMDSIPv4),
@@ -2823,6 +2797,14 @@ func (p *EBPFProbe) initManagerOptionsConstants() {
 		manager.ConstantEditor{
 			Name:  "is_pure_cgroupv2_available",
 			Value: utils.BoolTouint64(utils.IsPureCGroupV2Available()),
+		},
+		manager.ConstantEditor{
+			Name:  "has_current_cgroup_id_helper_for_tracepoint",
+			Value: utils.BoolTouint64(p.kernelVersion.HasBpfGetCurrentCgroupIDForTracepoint()),
+		},
+		manager.ConstantEditor{
+			Name:  "syscall_monitor_enabled",
+			Value: utils.BoolTouint64(p.config.RuntimeSecurity.SyscallEventsEnabled),
 		},
 		manager.ConstantEditor{
 			Name:  "event_sampling_open_enabled",
@@ -2925,7 +2907,7 @@ func (p *EBPFProbe) initManagerOptionsMapSpecEditors() {
 		EventSamplingConnectEnabled:   p.config.RuntimeSecurity.EventSamplingConnectEnabled,
 		EventSamplingBindEnabled:      p.config.RuntimeSecurity.EventSamplingBindEnabled,
 		EventSamplingDNSEnabled:       p.config.RuntimeSecurity.EventSamplingDNSEnabled,
-		BasenameApproversSize:         p.config.Probe.BasenameApproversSize,
+		SyscallProcessMonitorEnabled:  p.config.RuntimeSecurity.SyscallEventsEnabled,
 	}
 
 	if p.config.Probe.SpanTrackingEnabled {
@@ -3003,19 +2985,11 @@ func (p *EBPFProbe) initManagerOptionsExcludedFunctions() error {
 
 // initManagerOptionsActivatedProbes initializes the eBPF manager activated probes options
 func (p *EBPFProbe) initManagerOptionsActivatedProbes() {
-	if p.config.RuntimeSecurity.ActivityDumpEnabled {
-		if slices.Contains(p.config.RuntimeSecurity.ActivityDumpTracedEventTypes, model.SyscallsEventType) {
-			// Add syscall monitor probes
-			p.managerOptions.ActivatedProbes = append(p.managerOptions.ActivatedProbes, probes.SyscallMonitorSelectors()...)
-		}
-	}
-	if p.config.RuntimeSecurity.AnomalyDetectionEnabled {
-		if slices.Contains(p.config.RuntimeSecurity.AnomalyDetectionEventTypes, model.SyscallsEventType) {
-			// Add syscall monitor probes
-			p.managerOptions.ActivatedProbes = append(p.managerOptions.ActivatedProbes, probes.SyscallMonitorSelectors()...)
-		}
-	}
 	p.managerOptions.ActivatedProbes = append(p.managerOptions.ActivatedProbes, probes.SnapshotSelectors(p.useFentry)...)
+
+	if p.config.RuntimeSecurity.SyscallEventsEnabled {
+		p.managerOptions.ActivatedProbes = append(p.managerOptions.ActivatedProbes, probes.SyscallMonitorSelectors()...)
+	}
 
 	if p.config.Probe.CapabilitiesMonitoringEnabled {
 		p.managerOptions.ActivatedProbes = append(p.managerOptions.ActivatedProbes, probes.GetCapabilitiesMonitoringSelectors()...)

@@ -926,8 +926,7 @@ type VethPairEvent struct {
 
 // SyscallsEvent represents a syscalls event
 type SyscallsEvent struct {
-	EventReason SyscallDriftEventReason
-	Syscalls    []Syscall // 64 * 8 = 512 > 450, bytes should be enough to hold all 450 syscalls
+	Syscalls []Syscall
 }
 
 // PathKey identifies an entry in the dentry cache

@@ -109,8 +109,6 @@ const (
 	BindEventType
 	// UnshareMountNsEventType is sent when a new mount is created from a mount namespace copy
 	UnshareMountNsEventType
-	// SyscallsEventType Syscalls event
-	SyscallsEventType
 	// IMDSEventType is sent when an IMDS request or answer is captured
 	IMDSEventType
 	// OnDemandEventType is sent for on-demand events
@@ -156,7 +154,7 @@ const (
 	FirstEventType = FileOpenEventType
 
 	// LastEventType is the last valid event type
-	LastEventType = PivotRootEventType
+	LastEventType = NopEventType
 
 	// FirstDiscarderEventType first event that accepts discarders
 	FirstDiscarderEventType = FileOpenEventType
@@ -169,6 +167,9 @@ const (
 
 	// CustomEventType represents a custom event type
 	CustomEventType EventType = iota
+
+	// SyscallsEventType Syscalls event
+	SyscallsEventType
 
 	// CreateNewFileEventType event
 	CreateNewFileEventType EventType = iota
@@ -282,8 +283,6 @@ func (t EventType) String() string {
 		return "connect"
 	case UnshareMountNsEventType:
 		return "unshare_mntns"
-	case SyscallsEventType:
-		return "syscalls"
 	case IMDSEventType:
 		return "imds"
 	case OnDemandEventType:

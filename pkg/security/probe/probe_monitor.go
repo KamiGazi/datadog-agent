@@ -29,13 +29,14 @@ import (
 type EBPFMonitors struct {
 	ebpfProbe *EBPFProbe
 
-	eventStreamMonitor *eventstream.Monitor
-	discarderMonitor   *discarder.Monitor
-	cgroupsMonitor     *cgroups.Monitor
-	approverMonitor    *approver.Monitor
-	syscallsMonitor    *syscalls.Monitor
-	dnsMonitor         *dns.Monitor
-	eventSampleMonitor *eventsample.Monitor
+	eventStreamMonitor    *eventstream.Monitor
+	discarderMonitor      *discarder.Monitor
+	cgroupsMonitor        *cgroups.Monitor
+	approverMonitor       *approver.Monitor
+	syscallsMonitor       *syscalls.Monitor
+	syscallProcessMonitor *syscalls.ProcessMonitor
+	dnsMonitor            *dns.Monitor
+	eventSampleMonitor    *eventsample.Monitor
 }
 
 // NewEBPFMonitors returns a new instance of a ProbeMonitor
@@ -68,7 +69,14 @@ func (m *EBPFMonitors) Init() error {
 	if p.opts.SyscallsMonitorEnabled {
 		m.syscallsMonitor, err = syscalls.NewSyscallsMonitor(p.Manager, p.statsdClient)
 		if err != nil {
-			return fmt.Errorf("couldn't create the approver monitor: %w", err)
+			return fmt.Errorf("couldn't create the syscalls monitor: %w", err)
+		}
+	}
+
+	if p.config.RuntimeSecurity.SyscallEventsEnabled {
+		m.syscallProcessMonitor, err = syscalls.NewEBPFProcessMonitor(p.Manager, p.Resolvers.ProcessResolver, p.NewEvent, p.config.RuntimeSecurity.SyscallEventsPeriod)
+		if err != nil {
+			return fmt.Errorf("couldn't create the syscall cgroup monitor: %w", err)
 		}
 	}
 
@@ -164,7 +172,27 @@ func (m *EBPFMonitors) SendStats() error {
 
 	if m.ebpfProbe.opts.SyscallsMonitorEnabled {
 		if err := m.syscallsMonitor.SendStats(); err != nil {
-			return fmt.Errorf("failed to send evaluation set stats: %w", err)
+			return fmt.Errorf("failed to send syscalls monitor stats: %w", err)
+		}
+	}
+
+	if m.ebpfProbe.config.RuntimeSecurity.SyscallEventsEnabled {
+		p := m.ebpfProbe
+
+		dispatchFnc := func(event *model.Event) {
+			tags := p.probe.GetEventTags(event.ProcessContext.Process.ContainerContext.ContainerID)
+			if service := p.probe.GetService(event); service != "" {
+				tags = append(tags, "service:"+service)
+			}
+			rule := events.NewCustomRule(events.SyscallEventRuleID, events.SyscallEventRuleDesc, p.evalOpts())
+			p.probe.DispatchCustomEvent(
+				rule,
+				events.NewCustomEventLazy(event.GetEventType(), p.EventMarshallerCtorWithRule(event, rule), tags...),
+			)
+		}
+
+		if err := m.syscallProcessMonitor.SendEvents(dispatchFnc); err != nil {
+			return fmt.Errorf("failed to send syscall cgroup events: %w", err)
 		}
 	}
 

@@ -588,13 +588,6 @@ type SyscallSerializer struct {
 // SyscallsEventSerializer serializes the syscalls from a syscalls event
 type SyscallsEventSerializer []SyscallSerializer
 
-// AnomalyDetectionSyscallEventSerializer serializes an anomaly detection for a syscall event
-// easyjson:json
-type AnomalyDetectionSyscallEventSerializer struct {
-	// Name of the syscall that triggered the anomaly detection event
-	Syscall string `json:"syscall"`
-}
-
 // SyscallArgsSerializer args serializer
 // easyjson:json
 type SyscallArgsSerializer struct {
@@ -614,6 +607,17 @@ type SyscallArgsSerializer struct {
 	DestinationPath *string `json:"destination_path,omitempty"`
 	// File system type argument
 	FSType *string `json:"fs_type,omitempty"`
+}
+
+func newSyscallsEventSerializer(e *model.SyscallsEvent) *SyscallsEventSerializer {
+	ses := SyscallsEventSerializer{}
+	for _, s := range e.Syscalls {
+		ses = append(ses, SyscallSerializer{
+			ID:   int(s),
+			Name: s.String(),
+		})
+	}
+	return &ses
 }
 
 // SetSockOptEventSerializer defines a setsockopt event serializer
@@ -822,17 +826,6 @@ type EventSerializer struct {
 	*SetrlimitEventSerializer     `json:"setrlimit,omitempty"`
 }
 
-func newSyscallsEventSerializer(e *model.SyscallsEvent) *SyscallsEventSerializer {
-	ses := SyscallsEventSerializer{}
-	for _, s := range e.Syscalls {
-		ses = append(ses, SyscallSerializer{
-			ID:   int(s),
-			Name: s.String(),
-		})
-	}
-	return &ses
-}
-
 // CapabilitiesEventSerializer serializes a capabilities usage event
 // easyjson:json
 type CapabilitiesEventSerializer struct {
@@ -1014,7 +1007,7 @@ func newProcessSerializer(ps *model.Process, e *model.Event) *ProcessSerializer 
 			psSerializer.Tracer = &tmetaCopy
 		}
 
-		if len(ps.ContainerContext.ContainerID) != 0 {
+		if !ps.ContainerContext.IsNull() {
 			psSerializer.Container = &ContainerContextSerializer{
 				ID:        string(ps.ContainerContext.ContainerID),
 				Source:    ps.ContainerContext.ContainerSource.String(),
@@ -1022,7 +1015,7 @@ func newProcessSerializer(ps *model.Process, e *model.Event) *ProcessSerializer 
 			}
 		}
 
-		if len(ps.CGroup.CGroupID) > 0 {
+		if !ps.CGroup.IsNull() {
 			psSerializer.CGroup = &CGroupContextSerializer{
 				ID:        string(ps.CGroup.CGroupID),
 				Source:    ps.CGroup.CGroupSource.String(),
@@ -1384,11 +1377,6 @@ func newProcessContextSerializer(pc *model.ProcessContext, e *model.Event, rule 
 	}
 
 	ps.Variables = newVariablesContext(e, rule, "process.")
-
-	// add the syscalls from the event only for the top level parent
-	if e.GetEventType() == model.SyscallsEventType {
-		ps.Syscalls = newSyscallsEventSerializer(&e.Syscalls)
-	}
 
 	ctx := eval.NewContext(e)
 
