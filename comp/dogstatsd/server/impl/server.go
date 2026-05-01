@@ -202,7 +202,6 @@ func initTelemetry() {
 	dogstatsdExpvars.Set("UnterminatedMetricErrors", &dogstatsdUnterminatedMetricErrors)
 }
 
-// TODO: (components) - merge with newServerCompat once NewServerlessServer is removed
 // NewComponent creates a new dogstatsd server component.
 func NewComponent(deps dependencies) Provides {
 	s := newServerCompat(deps.Config, deps.Log, deps.Hostname, deps.Replay, deps.Debug, deps.Params.Serverless, deps.Demultiplexer, deps.WMeta, deps.PidMap, deps.Telemetry, deps.FilterList)
