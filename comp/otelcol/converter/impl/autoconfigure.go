@@ -91,8 +91,13 @@ func (c *ddConverter) enhanceConfig(ctx context.Context, conf *confmap.Conf) {
 			// second dogtel/dd-autoconfigured with empty config.
 			wireExtensionIDToPipeline(conf, existingID)
 		} else {
-			addComponentToConfig(conf, dogtelComponent)
-			addExtensionToPipeline(conf, dogtelComponent)
+			// We only reach this branch when otel_standalone is true, so the
+			// autoconfigured dogtel must reflect that — its factory defaults
+			// to standalone_mode: false.
+			ext := dogtelComponent
+			ext.Config = map[string]any{"standalone_mode": true}
+			addComponentToConfig(conf, ext)
+			addExtensionToPipeline(conf, ext)
 		}
 	}
 

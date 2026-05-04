@@ -10,6 +10,7 @@ extensions:
   zpages/dd-autoconfigured:
     endpoint: "localhost:55679"
   dogtel/dd-autoconfigured:
+    standalone_mode: true
 
 service:
   extensions:
