@@ -88,6 +88,12 @@ type PodAutoscalerInternal struct {
 	// It is the lowest-priority fallback: spec.options.burstable > preview annotation > this.
 	clusterBurstableDefault bool
 
+	// podsGuaranteedQOS is true when all observed pods are in Guaranteed QOS class.
+	// Set by the vertical controller each sync via SetPodsGuaranteedQOS.
+	// When true and burstable is not explicitly configured, IsBurstable returns false to avoid
+	// silently changing the pod's QOS class by removing CPU limits.
+	podsGuaranteedQOS bool
+
 	// scalingValues represents the active scaling values that should be used
 	scalingValues ScalingValues
 
@@ -696,8 +702,19 @@ func (p *PodAutoscalerInternal) IsHorizontalScalingEnabled() bool {
 	return !(scaleUpDisabled && scaleDownDisabled)
 }
 
+// SetPodsGuaranteedQOS records whether all currently observed pods are in Guaranteed QOS class.
+// Must be called by the vertical controller before IsBurstable() is consulted in each sync cycle.
+func (p *PodAutoscalerInternal) SetPodsGuaranteedQOS(guaranteed bool) {
+	p.podsGuaranteedQOS = guaranteed
+}
+
 // IsBurstable returns true if burstable mode is enabled for this autoscaler.
-// Priority: spec.options.burstable > preview annotation > cluster-level default (from builder).
+//
+// Priority:
+//  1. spec.options.burstable (explicit, highest)
+//  2. preview annotation (explicit via profile)
+//  3. podsGuaranteedQOS=true → false (avoid silently changing pod QOS class by removing CPU limits)
+//  4. cluster-level default (from builder)
 func (p *PodAutoscalerInternal) IsBurstable() bool {
 	spec := p.Spec()
 	if spec != nil && spec.Options != nil && spec.Options.Burstable != nil {
@@ -705,6 +722,9 @@ func (p *PodAutoscalerInternal) IsBurstable() bool {
 	}
 	if p.previewOptions.Burstable {
 		return true
+	}
+	if p.podsGuaranteedQOS {
+		return false
 	}
 	return p.clusterBurstableDefault
 }
