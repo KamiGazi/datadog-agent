@@ -1,0 +1,244 @@
+---
+name: "Codex code review"
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  codex:
+    # Skip PRs from forks. The Codex action receives an OPENAI_API_KEY secret;
+    # running it on untrusted fork code (even via pull_request, which checks
+    # out the head ref without exposing secrets to the workflow file itself)
+    # would still execute fork-controlled file content under our prompt
+    # aggregation step. Until we have a vetted opt-in path for community PRs,
+    # restrict to PRs opened from the upstream repository.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout PR merge ref
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Pre-fetch base and head refs for the PR
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          git fetch --no-tags origin \
+            "$PR_BASE_REF" \
+            "+refs/pull/$PR_NUMBER/head"
+
+      - name: Aggregate code review guidelines into prompt
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GUIDELINE_FILENAME: codereview_guideline.md
+          OUTPUT_FILE: aggregated_prompt.md
+        run: |
+          set -euo pipefail
+
+          # 1. Start from the root guideline. It is the canonical source of
+          #    truth; sub-directory guidelines layer extra context on top.
+          if [[ ! -f "$GUIDELINE_FILENAME" ]]; then
+            echo "Root $GUIDELINE_FILENAME not found at the repository root; aborting." >&2
+            exit 1
+          fi
+
+          cp "$GUIDELINE_FILENAME" "$OUTPUT_FILE"
+
+          # 2. Collect changed files for the PR via the GitHub API. We pass
+          #    PR_NUMBER through env to avoid shell-injection via template
+          #    expansion (security.md guidance).
+          mapfile -t changed_files < <(
+            gh pr view "$PR_NUMBER" --json files --jq '.files[].path'
+          )
+
+          # 3. For every changed file, walk every ancestor directory and
+          #    record any guideline file found. Deduplicate so the same
+          #    guideline isn't appended twice when multiple changed files
+          #    share an ancestor.
+          declare -A seen=()
+          guideline_paths=()
+          for file in "${changed_files[@]}"; do
+            dir="$(dirname "$file")"
+            while [[ "$dir" != "." && "$dir" != "/" ]]; do
+              candidate="$dir/$GUIDELINE_FILENAME"
+              if [[ -z "${seen[$candidate]:-}" && -f "$candidate" ]]; then
+                seen[$candidate]=1
+                guideline_paths+=("$candidate")
+              fi
+              dir="$(dirname "$dir")"
+            done
+          done
+
+          # 4. Append each matched guideline with a header so the model can
+          #    attribute advice to its directory of origin.
+          for path in "${guideline_paths[@]}"; do
+            {
+              printf '\n\n## Additional guidelines from `%s`\n\n' "$path"
+              cat "$path"
+            } >> "$OUTPUT_FILE"
+          done
+
+          # 5. Append the output-format footer. The JSON shape itself is
+          #    enforced by openai/codex-action via output-schema-file, but
+          #    the schema cannot convey the *semantics* of each field — in
+          #    particular our priority convention. Document it here.
+          cat <<'PROMPT_FOOTER' >> "$OUTPUT_FILE"
+
+
+          ## Output format
+
+          Return a single JSON object matching the provided output schema.
+
+          For each finding:
+          - `priority` is an integer 0–3, where 0 is the most severe
+            (blocker) and 3 is the least severe (nit). Reserve 0 and 1 for
+            issues that change correctness, security, or production
+            behaviour.
+          - `confidence_score` is your subjective confidence (0–1) that
+            the finding is real and actionable, not a false positive.
+          - `code_location.absolute_file_path` must be a path relative to
+            the repository root (e.g. `pkg/aggregator/foo.go`), exactly as
+            it appears in the PR diff.
+          - `code_location.line_range` must reference lines that exist in
+            the PR's head revision; cite the smallest range that frames
+            the issue.
+
+          For the verdict, set `overall_correctness` to `patch is correct`
+          or `patch is incorrect` and provide a concise justification in
+          `overall_explanation`.
+          PROMPT_FOOTER
+
+          echo "Aggregated guideline written to $OUTPUT_FILE"
+          echo "Included sub-directory guidelines:"
+          printf '  %s\n' "${guideline_paths[@]:-<none>}"
+
+      - name: Record head SHA
+        env:
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          printf '%s' "$PR_HEAD_SHA" > head-sha.txt
+
+      # security.md guidance: Codex should be the last *active* step in a
+      # job — i.e. nothing that runs arbitrary scripts or has access to
+      # secrets should follow it. We pair it with a trailing
+      # actions/upload-artifact step (vetted, no shell execution, no
+      # access to OPENAI_API_KEY) so the JSON output can be consumed by
+      # the separate post_feedback job, which has pull-requests:write but
+      # no API-key exposure.
+      - name: Run Codex
+        id: run_codex
+        uses: openai/codex-action@e0fdf01220eb9a88167c4898839d273e3f2609d1 # v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: aggregated_prompt.md
+          output-schema-file: .github/workflows/codex-output-schema.json
+          output-file: codex-output.json
+          # drop-sudo (default) prevents passwordless sudo from being used
+          # to read the API key out of /proc; explicit for documentation.
+          safety-strategy: drop-sudo
+          sandbox: read-only
+
+      - name: Upload review artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: codex-review
+          path: |
+            codex-output.json
+            head-sha.txt
+          if-no-files-found: error
+
+  post_feedback:
+    needs: codex
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download codex output
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: codex-review
+
+      - name: Post Codex review with inline comments
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REVIEW_FILE: codex-output.json
+          HEAD_SHA_FILE: head-sha.txt
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+
+            const pull_number = Number(process.env.PR_NUMBER);
+            const reviewPath = process.env.REVIEW_FILE;
+            const headShaPath = process.env.HEAD_SHA_FILE;
+
+            if (!fs.existsSync(reviewPath)) {
+              core.setFailed(`Codex output not found at ${reviewPath}`);
+              return;
+            }
+
+            const review = JSON.parse(fs.readFileSync(reviewPath, 'utf8'));
+            const commit_id = fs.readFileSync(headShaPath, 'utf8').trim();
+
+            const findings = Array.isArray(review.findings) ? review.findings : [];
+
+            // Map each finding to the GitHub review-comment shape. Multi-line
+            // findings use start_line/start_side; single-line findings use
+            // line/side only. We always anchor to the RIGHT side (the PR
+            // head) since that's where the new code lives.
+            const comments = findings.map((f) => {
+              const range = f.code_location.line_range;
+              const body = [
+                `**${f.title}** — P${f.priority} · confidence ${f.confidence_score}`,
+                '',
+                f.body,
+              ].join('\n');
+              const c = {
+                path: f.code_location.absolute_file_path,
+                body,
+                side: 'RIGHT',
+                line: range.end,
+              };
+              if (range.start !== range.end) {
+                c.start_line = range.start;
+                c.start_side = 'RIGHT';
+              }
+              return c;
+            });
+
+            const verdict = review.overall_correctness ?? 'unknown';
+            const explanation = review.overall_explanation ?? '';
+            const verdictConfidence = review.overall_confidence_score ?? 0;
+            const event = verdict === 'patch is incorrect'
+              ? 'REQUEST_CHANGES'
+              : 'COMMENT';
+
+            const summary = [
+              `**Codex review:** ${verdict} (confidence ${verdictConfidence})`,
+              '',
+              explanation,
+            ].join('\n');
+
+            await github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number,
+              commit_id,
+              body: summary,
+              event,
+              comments,
+            });
