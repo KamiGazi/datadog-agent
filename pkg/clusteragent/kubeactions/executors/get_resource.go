@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	maxResourceOutputSize = 4 * 1024 // 4KB
+	maxResourceOutputSize = 40 * 1024 // 40KB
 )
 
 type GetResourceExecutor struct {
@@ -125,7 +125,7 @@ func (e *GetResourceExecutor) Execute(ctx context.Context, action *kubeactions.K
 		Status:  StatusSuccess,
 		Message: fmt.Sprintf("get resource %s/%s success", kind, name),
 		Payloads: map[string][]byte{
-			"resource": []byte(output),
+			"resource": output,
 		},
 	}
 }

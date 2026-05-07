@@ -9,6 +9,7 @@ package kubeactions
 
 import (
 	"encoding/json"
+	"maps"
 	"time"
 
 	kubeactions "github.com/DataDog/agent-payload/v5/kubeactions"
@@ -104,7 +105,7 @@ func (r *ResultReporter) report(actionKey ActionKey, action *kubeactions.KubeAct
 		RequestedBy:       action.GetRequestedBy(),
 		Timestamp:         ts.Format(time.RFC3339),
 		Message:           msg,
-		Payloads:          payloads,
+		Payloads:          maps.Clone(payloads),
 		ClusterName:       r.clusterName,
 		ResourceKind:      resourceKind,
 		ResourceName:      resourceName,
