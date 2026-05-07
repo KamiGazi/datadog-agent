@@ -1,5 +1,8 @@
-You are reviewing a SKILL.md against Anthropic's official skill-creator guidelines.
-Read the skill at SKILL_PATH.
+You are reviewing the SKILL.md files added or modified by this pull request,
+against Anthropic's official skill-creator guidelines. Identify each changed
+file under `.claude/skills/**/SKILL.md` from the PR diff, score it on the
+dimensions below, and emit one finding per changed SKILL.md anchored to that
+file's path and to the lines you are scoring.
 
 ## Dimension 1 — Description (triggering) / 25 pts
 - Does it cover BOTH what the skill does AND when to trigger?
@@ -34,8 +37,11 @@ Read the skill at SKILL_PATH.
 - Are dependencies or prerequisites stated?
 
 ## Output
-Post a PR comment with:
-- Scores per dimension
+For each changed SKILL.md, emit one finding whose body contains:
+- Scores per dimension (out of 25 each, for a total out of 100)
 - Top 3 actionable improvements grounded in the guidelines above
 - A suggested description rewrite if dimension 1 scored < 18
 - Overall recommendation: Request Changes (<60) / Approve with suggestions (60–79) / Approve (≥80)
+
+Set `priority` from the overall recommendation: 1 for Request Changes, 2 for
+Approve with suggestions, 3 for Approve.
