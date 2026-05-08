@@ -63,5 +63,6 @@ if [ -d /Users/ec2-user ]; then
   find /Users/ec2-user/cache/DataDog/datadog-agent -mindepth 1 -name 'bazel*' -exec rm -rv {} + || true
   find /Users/ec2-user/cache/DataDog/datadog-agent || true
 fi
+rm -fv {/opt/datadog-agent/run,/private/tmp,/run,/tmp}/reverse_dns_enrichment_persistent_cache-1
 
 exec "$BAZEL_REAL" "$@"
