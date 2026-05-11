@@ -26,8 +26,8 @@ import (
 	"github.com/DataDog/datadog-agent/cmd/agent/common"
 	collector "github.com/DataDog/datadog-agent/comp/collector/collector/def"
 	"github.com/DataDog/datadog-agent/comp/core"
-	"github.com/DataDog/datadog-agent/comp/core/autodiscovery"
-	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/autodiscoveryimpl"
+	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/def"
+	adfx "github.com/DataDog/datadog-agent/comp/core/autodiscovery/fx"
 	"github.com/DataDog/datadog-agent/comp/core/config"
 	diagnose "github.com/DataDog/datadog-agent/comp/core/diagnose/def"
 	"github.com/DataDog/datadog-agent/comp/core/diagnose/format"
@@ -120,10 +120,10 @@ func Commands(globalParams *command.GlobalParams) []*cobra.Command {
 				fx.Supply(option.None[collector.Component]()),
 				dualTaggerfx.Module(common.DualTaggerParams()),
 				workloadfilterfx.Module(),
-				fx.Invoke(func(wmeta workloadmeta.Component, tagger tagger.Component, filterStore workloadfilter.Component) {
+			fx.Invoke(func(wmeta workloadmeta.Component, tagger tagger.Component, filterStore workloadfilter.Component) {
 					proccontainers.InitSharedContainerProvider(wmeta, tagger, filterStore)
 				}),
-				autodiscoveryimpl.Module(),
+				adfx.Module(),
 				haagentfx.Module(),
 				healthplatform.Bundle(),
 				hostnameimpl.Module(),
