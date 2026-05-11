@@ -113,6 +113,18 @@ func aggregateMetric(mt dto.MetricType, aggm *dto.Metric, srcm *dto.Metric) {
 	}
 }
 
+// allPreserveTagsCoveredByDefaults returns true if every preserve_tag has a
+// default value configured, meaning a metric missing all preserve_tags can still
+// be aggregated under the default values.
+func allPreserveTagsCoveredByDefaults(preserveTags map[string]any, defaultTags map[string]string) bool {
+	for tagName := range preserveTags {
+		if _, ok := defaultTags[tagName]; !ok {
+			return false
+		}
+	}
+	return true
+}
+
 // Make cloned lables sorted by label name and value label pairs
 func cloneLabelsSorted(labels []*dto.LabelPair) []*dto.LabelPair {
 	sorted := make([]*dto.LabelPair, len(labels))

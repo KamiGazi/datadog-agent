@@ -2362,6 +2362,126 @@ func TestAgentTelemetrySendRegisteredEvent(t *testing.T) {
 	assert.Equal(t, "ddnpm+0x1a3", v)
 }
 
+// TestDefaultTagsInjectMissingPreserveTag verifies that a metric missing a preserve_tag
+// gets the configured default value and is not filtered out.
+func TestDefaultTagsInjectMissingPreserveTag(t *testing.T) {
+	var c = `
+    agent_telemetry:
+      enabled: true
+      profiles:
+        - name: foo
+          metric:
+            metrics:
+              - name: bar.zoo
+                preserve_tags:
+                  - emitter
+                default_tags:
+                  emitter: agent
+    `
+	tel := makeTelMock(t)
+	counter := tel.NewCounter("bar", "zoo", []string{}, "")
+	counter.Add(42) // no tags at all
+
+	s := &senderMock{}
+	r := newRunnerMock()
+	a := getTestAtel(t, tel, c, s, nil, r)
+	require.True(t, a.enabled)
+
+	a.start()
+	r.(*runnerMock).run()
+
+	// metric must NOT be dropped
+	require.Equal(t, 1, len(s.sentMetrics))
+	require.Equal(t, 1, len(s.sentMetrics[0].metrics))
+	m := s.sentMetrics[0].metrics[0]
+	assert.Equal(t, float64(42), m.Counter.GetValue())
+
+	// injected default tag must appear
+	require.Equal(t, 1, len(m.GetLabel()))
+	assert.Equal(t, "emitter", m.GetLabel()[0].GetName())
+	assert.Equal(t, "agent", m.GetLabel()[0].GetValue())
+}
+
+// TestDefaultTagsTaggedAndUntaggedGrouped verifies that tagged metrics (emitter=adp)
+// and tagless metrics (default: emitter=agent) aggregate into separate buckets.
+// This test exercises aggregateMetricTags directly with crafted dto.Metric values
+// to simulate the case where two separate components produce the same metric, one
+// with the emitter label and one without.
+func TestDefaultTagsTaggedAndUntaggedGrouped(t *testing.T) {
+	// Build a compiled MetricConfig directly (mirrors what compileMetric would produce)
+	emitterKey := "emitter"
+	mCfg := &MetricConfig{
+		Name:               "bar.zoo",
+		PreserveTags:       []string{"emitter"},
+		DefaultTags:        map[string]string{"emitter": "agent"},
+		preserveTagsExists: true,
+		preserveTagsMap:    map[string]any{"emitter": struct{}{}},
+		defaultTagsMap:     map[string]string{"emitter": "agent"},
+	}
+
+	// Build dto.Metric slices that simulate two separate timeseries:
+	// 1. emitter=adp (10 + 20 = 30 total)
+	// 2. no labels at all (30, should become emitter=agent)
+	adpVal := "adp"
+	counterVal30 := float64(30)
+	counterVal30b := float64(30)
+
+	mWithTag := &dto.Metric{
+		Label:   []*dto.LabelPair{{Name: &emitterKey, Value: &adpVal}},
+		Counter: &dto.Counter{Value: &counterVal30},
+	}
+	mWithoutTag := &dto.Metric{
+		Label:   nil,
+		Counter: &dto.Counter{Value: &counterVal30b},
+	}
+
+	// Create a minimal atel just for calling aggregateMetricTags
+	a := &atel{}
+
+	results := a.aggregateMetricTags(mCfg, dto.MetricType_COUNTER, []*dto.Metric{mWithTag, mWithoutTag})
+
+	require.Len(t, results, 2)
+	metrics := makeStableMetricMap(results)
+
+	// emitter=adp bucket
+	require.Contains(t, metrics, "emitter:adp:")
+	assert.Equal(t, float64(30), metrics["emitter:adp:"].Counter.GetValue())
+
+	// emitter=agent bucket (from default injection)
+	require.Contains(t, metrics, "emitter:agent:")
+	assert.Equal(t, float64(30), metrics["emitter:agent:"].Counter.GetValue())
+}
+
+// TestDefaultTagsNoDefaultForMissingTagFiltersOut verifies that a metric missing a
+// preserve_tag with no default is still filtered out.
+func TestDefaultTagsNoDefaultForMissingTagFiltersOut(t *testing.T) {
+	var c = `
+    agent_telemetry:
+      enabled: true
+      profiles:
+        - name: foo
+          metric:
+            metrics:
+              - name: bar.zoo
+                preserve_tags:
+                  - emitter
+    `
+	tel := makeTelMock(t)
+	counter := tel.NewCounter("bar", "zoo", []string{}, "")
+	counter.Add(99)
+
+	s := &senderMock{}
+	r := newRunnerMock()
+	a := getTestAtel(t, tel, c, s, nil, r)
+	require.True(t, a.enabled)
+
+	a.start()
+	r.(*runnerMock).run()
+
+	// metric must be dropped (no emitter tag and no default)
+	assert.Equal(t, 0, len(s.sentMetrics))
+}
+
 func TestAgentTelemetrySendNonRegisteredEvent(t *testing.T) {
 	// Use nearly full
 	var cfg = `

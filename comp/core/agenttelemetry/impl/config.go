@@ -60,14 +60,16 @@ type ExcludeMetricConfig struct {
 
 // MetricConfig is a list of metric selecting subset of telemetry.Gather() metrics to be included in agent
 type MetricConfig struct {
-	Name           string   `yaml:"name"` // required
-	PreserveTags   []string `yaml:"preserve_tags,omitempty"`
-	AggregateTags  []string `yaml:"aggregate_tags,omitempty"` // deprecated: use preserve_tags
-	AggregateTotal bool     `yaml:"aggregate_total"`
+	Name           string            `yaml:"name"` // required
+	PreserveTags   []string          `yaml:"preserve_tags,omitempty"`
+	AggregateTags  []string          `yaml:"aggregate_tags,omitempty"` // deprecated: use preserve_tags
+	DefaultTags    map[string]string `yaml:"default_tags,omitempty"`
+	AggregateTotal bool              `yaml:"aggregate_total"`
 
 	// compiled
 	preserveTagsExists bool
 	preserveTagsMap    map[string]any
+	defaultTagsMap     map[string]string
 }
 
 // Schedule is a schedule for agent telemetry payloads to be generated and emitted
@@ -126,6 +128,13 @@ type Event struct {
 // Accepted for backward compatibility with existing custom configurations. If both
 // preserve_tags and aggregate_tags are present, preserve_tags takes precedence.
 // New configurations should use preserve_tags instead.
+//
+// profiles[].metric.metrics[].default_tags (optional)
+// -----------------------------------------------------
+// Map of tag name → default value. When a preserve_tag is absent from a metric's labels,
+// the default value is injected before aggregation. This allows metrics from agents that do
+// not set a particular tag (e.g., the Core Agent never sets emitter=agent explicitly) to still
+// be preserved and grouped correctly. Only tags listed in preserve_tags are consulted.
 //
 // profiles[].metric.metrics[].aggregate_total (optional)
 // -----------------------------------------------------
@@ -635,6 +644,14 @@ func compileMetric(p *Profile, m *MetricConfig) error {
 		m.preserveTagsMap = make(map[string]any)
 		for _, t := range tags {
 			m.preserveTagsMap[t] = struct{}{}
+		}
+	}
+
+	// Compile default tags (optional)
+	if len(m.DefaultTags) > 0 {
+		m.defaultTagsMap = make(map[string]string, len(m.DefaultTags))
+		for k, v := range m.DefaultTags {
+			m.defaultTagsMap[k] = v
 		}
 	}
 

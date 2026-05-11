@@ -218,44 +218,53 @@ func (a *atel) aggregateMetricTags(mCfg *MetricConfig, mt dto.MetricType, ms []*
 	for _, m := range ms {
 		tagsKey := ""
 
-		// if tags are defined, we need to create a key from them by dropping not specified
-		// in configuration tags. The key is constructed by concatenating specified tag names
-		// and values if a timeseries has tags is not specified
 		origTags := m.GetLabel()
-		if len(origTags) > 0 {
-			// sort tags (to have a consistent key for the same tag set)
-			tags := cloneLabelsSorted(origTags)
+		tags := cloneLabelsSorted(origTags) // may be empty for tagless metrics
 
-			// create a key from the tags (and drop not specified in the configuration tags)
-			var specTags = make([]*dto.LabelPair, 0, len(origTags))
-			var sb strings.Builder
-			for _, t := range tags {
-				if _, ok := mCfg.preserveTagsMap[t.GetName()]; ok {
-					specTags = append(specTags, t)
-					sb.WriteString(makeLabelPairKey(t))
-				}
+		// Build specTags: preserve_tags found in metric labels, plus injected defaults for missing ones
+		specTags := make([]*dto.LabelPair, 0, len(mCfg.preserveTagsMap))
+		existingNames := make(map[string]struct{}, len(tags))
+		for _, t := range tags {
+			existingNames[t.GetName()] = struct{}{}
+			if _, ok := mCfg.preserveTagsMap[t.GetName()]; ok {
+				specTags = append(specTags, t)
 			}
-			tagsKey = sb.String()
+		}
 
-			if mCfg.AggregateTotal {
-				aggregateMetric(mt, totalm, m)
+		// Inject defaults for preserve_tags absent from the metric
+		for tagName, defaultVal := range mCfg.defaultTagsMap {
+			if _, inPreserve := mCfg.preserveTagsMap[tagName]; !inPreserve {
+				continue // only inject defaults for preserve_tags
 			}
+			if _, exists := existingNames[tagName]; !exists {
+				name := tagName
+				val := defaultVal
+				specTags = append(specTags, &dto.LabelPair{Name: &name, Value: &val})
+			}
+		}
 
-			// finally aggregate the metric on the created key
-			if aggm, ok := amMap[tagsKey]; ok {
-				aggregateMetric(mt, aggm, m)
-			} else {
-				// ... or create a new one with specifi value and specified tags
-				aggm := &dto.Metric{}
-				aggregateMetric(mt, aggm, m)
-				aggm.Label = specTags
-				amMap[tagsKey] = aggm
-			}
+		// Sort specTags for a stable aggregation key (injection may break prior sort order)
+		slices.SortFunc(specTags, func(a, b *dto.LabelPair) int {
+			return strings.Compare(a.GetName(), b.GetName())
+		})
+
+		var sb strings.Builder
+		for _, t := range specTags {
+			sb.WriteString(makeLabelPairKey(t))
+		}
+		tagsKey = sb.String()
+
+		if mCfg.AggregateTotal {
+			aggregateMetric(mt, totalm, m)
+		}
+
+		if aggm, ok := amMap[tagsKey]; ok {
+			aggregateMetric(mt, aggm, m)
 		} else {
-			// if no tags are specified, we aggregate all metrics into a single one
-			if mCfg.AggregateTotal {
-				aggregateMetric(mt, totalm, m)
-			}
+			aggm := &dto.Metric{}
+			aggregateMetric(mt, aggm, m)
+			aggm.Label = specTags
+			amMap[tagsKey] = aggm
 		}
 	}
 
@@ -393,9 +402,11 @@ func isMetricFiltered(p *Profile, mCfg *MetricConfig, mt dto.MetricType, m *dto.
 		return false
 	}
 
-	// filter out if tag does not contain in existing preserveTags
+	// filter out if metric has none of the preserve_tags and not all missing ones have defaults
 	if mCfg.preserveTagsExists && !areTagsMatching(m.GetLabel(), mCfg.preserveTagsMap) {
-		return false
+		if !allPreserveTagsCoveredByDefaults(mCfg.preserveTagsMap, mCfg.defaultTagsMap) {
+			return false
+		}
 	}
 
 	return true
