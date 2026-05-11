@@ -194,6 +194,25 @@ jobs:
             const review = JSON.parse(fs.readFileSync(reviewPath, 'utf8'));
             const commit_id = fs.readFileSync(headShaPath, 'utf8').trim();
 
+            // Dismiss any previous Codex bot review so stale REQUEST_CHANGES
+            // from an earlier run don't block the PR after issues are fixed.
+            const existingReviews = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number,
+            });
+            for (const r of existingReviews.data) {
+              if (r.user.login === 'github-actions[bot]' && r.state === 'CHANGES_REQUESTED') {
+                await github.rest.pulls.dismissReview({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number,
+                  review_id: r.id,
+                  message: 'Superseded by a new Codex review run.',
+                });
+              }
+            }
+
             const findings = Array.isArray(review.findings) ? review.findings : [];
 
             // Map each finding to the GitHub review-comment shape. Multi-line
@@ -223,9 +242,19 @@ jobs:
             const verdict = review.overall_correctness ?? 'unknown';
             const explanation = review.overall_explanation ?? '';
             const verdictConfidence = review.overall_confidence_score ?? 0;
-            const event = verdict === 'patch is incorrect'
-              ? 'REQUEST_CHANGES'
-              : 'COMMENT';
+
+            // APPROVE when the patch is correct with no blocking findings,
+            // REQUEST_CHANGES when incorrect, COMMENT otherwise (correct but
+            // with non-blocking findings worth noting).
+            const hasBlockingFindings = findings.some((f) => f.priority <= 1);
+            let event;
+            if (verdict === 'patch is correct' && !hasBlockingFindings) {
+              event = 'APPROVE';
+            } else if (verdict === 'patch is incorrect' || hasBlockingFindings) {
+              event = 'REQUEST_CHANGES';
+            } else {
+              event = 'COMMENT';
+            }
 
             const summary = [
               `**Codex review:** ${verdict} (confidence ${verdictConfidence})`,
