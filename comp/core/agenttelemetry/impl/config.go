@@ -648,12 +648,7 @@ func compileMetric(p *Profile, m *MetricConfig) error {
 	}
 
 	// Compile default tags (optional)
-	if len(m.DefaultTags) > 0 {
-		m.defaultTagsMap = make(map[string]string, len(m.DefaultTags))
-		for k, v := range m.DefaultTags {
-			m.defaultTagsMap[k] = v
-		}
-	}
+	m.defaultTagsMap = m.DefaultTags
 
 	return nil
 }

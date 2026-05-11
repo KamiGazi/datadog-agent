@@ -404,7 +404,7 @@ func isMetricFiltered(p *Profile, mCfg *MetricConfig, mt dto.MetricType, m *dto.
 
 	// filter out if metric has none of the preserve_tags and not all missing ones have defaults
 	if mCfg.preserveTagsExists && !areTagsMatching(m.GetLabel(), mCfg.preserveTagsMap) {
-		if !allPreserveTagsCoveredByDefaults(mCfg.preserveTagsMap, mCfg.defaultTagsMap) {
+		if !allPreserveTagsHaveDefaults(mCfg.preserveTagsMap, mCfg.defaultTagsMap) {
 			return false
 		}
 	}

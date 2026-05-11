@@ -2420,8 +2420,8 @@ func TestDefaultTagsTaggedAndUntaggedGrouped(t *testing.T) {
 	}
 
 	// Build dto.Metric slices that simulate two separate timeseries:
-	// 1. emitter=adp (10 + 20 = 30 total)
-	// 2. no labels at all (30, should become emitter=agent)
+	// 1. emitter=adp (value: 30)
+	// 2. no labels at all (value: 30, should become emitter=agent)
 	adpVal := "adp"
 	counterVal30 := float64(30)
 	counterVal30b := float64(30)
@@ -2479,6 +2479,39 @@ func TestDefaultTagsNoDefaultForMissingTagFiltersOut(t *testing.T) {
 	r.(*runnerMock).run()
 
 	// metric must be dropped (no emitter tag and no default)
+	assert.Equal(t, 0, len(s.sentMetrics))
+}
+
+// TestDefaultTagsPartialDefaultsFiltersOut verifies that when only some preserve_tags
+// have defaults, a tagless metric is still filtered out.
+func TestDefaultTagsPartialDefaultsFiltersOut(t *testing.T) {
+	var c = `
+    agent_telemetry:
+      enabled: true
+      profiles:
+        - name: foo
+          metric:
+            metrics:
+              - name: bar.zoo
+                preserve_tags:
+                  - emitter
+                  - compression_kind
+                default_tags:
+                  emitter: agent
+    `
+	// compression_kind has no default, so a tagless metric must be filtered
+	tel := makeTelMock(t)
+	counter := tel.NewCounter("bar", "zoo", []string{}, "")
+	counter.Add(55)
+
+	s := &senderMock{}
+	r := newRunnerMock()
+	a := getTestAtel(t, tel, c, s, nil, r)
+	require.True(t, a.enabled)
+
+	a.start()
+	r.(*runnerMock).run()
+
 	assert.Equal(t, 0, len(s.sentMetrics))
 }
 

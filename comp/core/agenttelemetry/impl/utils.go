@@ -113,10 +113,10 @@ func aggregateMetric(mt dto.MetricType, aggm *dto.Metric, srcm *dto.Metric) {
 	}
 }
 
-// allPreserveTagsCoveredByDefaults returns true if every preserve_tag has a
-// default value configured, meaning a metric missing all preserve_tags can still
-// be aggregated under the default values.
-func allPreserveTagsCoveredByDefaults(preserveTags map[string]any, defaultTags map[string]string) bool {
+// allPreserveTagsHaveDefaults returns true if every preserve_tag has a
+// default value configured. Used to determine whether a metric with no
+// matching preserve_tags can still be kept and aggregated under default values.
+func allPreserveTagsHaveDefaults(preserveTags map[string]any, defaultTags map[string]string) bool {
 	for tagName := range preserveTags {
 		if _, ok := defaultTags[tagName]; !ok {
 			return false
