@@ -194,25 +194,6 @@ jobs:
             const review = JSON.parse(fs.readFileSync(reviewPath, 'utf8'));
             const commit_id = fs.readFileSync(headShaPath, 'utf8').trim();
 
-            // Dismiss any previous Codex bot review so stale REQUEST_CHANGES
-            // from an earlier run don't block the PR after issues are fixed.
-            const existingReviews = await github.rest.pulls.listReviews({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number,
-            });
-            for (const r of existingReviews.data) {
-              if (r.user.login === 'github-actions[bot]' && r.state === 'CHANGES_REQUESTED') {
-                await github.rest.pulls.dismissReview({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number,
-                  review_id: r.id,
-                  message: 'Superseded by a new Codex review run.',
-                });
-              }
-            }
-
             const findings = Array.isArray(review.findings) ? review.findings : [];
 
             // Map each finding to the GitHub review-comment shape. Multi-line
