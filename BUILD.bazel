@@ -438,8 +438,6 @@ exports_files(glob(
 # gazelle:exclude pkg/discovery/testdata
 # gazelle:exclude pkg/discovery/usm
 # gazelle:exclude pkg/dyninst/ebpfbench
-# gazelle:exclude pkg/dyninst/gosym/cli
-# gazelle:exclude pkg/dyninst/gotype/gotypecli
 # gazelle:exclude pkg/dyninst/irgen/cli
 # gazelle:exclude pkg/dyninst/module
 # gazelle:exclude pkg/dyninst/symdb/cli
