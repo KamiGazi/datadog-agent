@@ -1,1 +1,14 @@
 # gazelle:ignore
+
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "tracermetadata",
+    srcs = ["tracer_memfd.go"],
+    importpath = "github.com/DataDog/datadog-agent/pkg/discovery/tracermetadata",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/discovery/tracermetadata/model",
+        "//pkg/util/kernel",
+    ],
+)
