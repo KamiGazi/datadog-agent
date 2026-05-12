@@ -42,20 +42,24 @@ jobs:
       - name: Aggregate code review guidelines into prompt
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GUIDELINE_FILENAME: codereview_guideline.md
           OUTPUT_FILE: aggregated_prompt.md
         run: |
           set -euo pipefail
 
-          # 1. Start from the root guideline. It is the canonical source of
-          #    truth; sub-directory guidelines layer extra context on top.
-          if [[ ! -f "$GUIDELINE_FILENAME" ]]; then
-            echo "Root $GUIDELINE_FILENAME not found at the repository root; aborting." >&2
+          # All guideline files are read from the base branch (origin/$PR_BASE_REF)
+          # via `git show`, never from the PR checkout. This prevents a contributor
+          # from modifying a codereview_guideline.md in their PR to influence how
+          # that same PR gets reviewed.
+          BASE_REF="origin/$PR_BASE_REF"
+
+          # 1. Start from the root guideline on the base branch.
+          if ! git show "$BASE_REF:$GUIDELINE_FILENAME" > "$OUTPUT_FILE" 2>/dev/null; then
+            echo "Root $GUIDELINE_FILENAME not found on $BASE_REF; aborting." >&2
             exit 1
           fi
-
-          cp "$GUIDELINE_FILENAME" "$OUTPUT_FILE"
 
           # 2. Collect changed files via the paginated REST API. We pass
           #    PR_NUMBER through env to avoid shell-injection via template
@@ -67,16 +71,17 @@ jobs:
           )
 
           # 3. For every changed file, walk every ancestor directory and
-          #    record any guideline file found. Deduplicate so the same
-          #    guideline isn't appended twice when multiple changed files
-          #    share an ancestor.
+          #    record any guideline file found on the base branch. Deduplicate
+          #    so the same guideline isn't appended twice when multiple changed
+          #    files share an ancestor.
           declare -A seen=()
           guideline_paths=()
           for file in "${changed_files[@]}"; do
             dir="$(dirname "$file")"
             while [[ "$dir" != "." && "$dir" != "/" ]]; do
               candidate="$dir/$GUIDELINE_FILENAME"
-              if [[ -z "${seen[$candidate]:-}" && -f "$candidate" ]]; then
+              if [[ -z "${seen[$candidate]:-}" ]] && \
+                 git show "$BASE_REF:$candidate" &>/dev/null; then
                 seen[$candidate]=1
                 guideline_paths+=("$candidate")
               fi
@@ -84,12 +89,12 @@ jobs:
             done
           done
 
-          # 4. Append each matched guideline with a header so the model can
-          #    attribute advice to its directory of origin.
+          # 4. Append each matched guideline (from base branch) with a header
+          #    so the model can attribute advice to its directory of origin.
           for path in "${guideline_paths[@]}"; do
             {
               printf '\n\n## Additional guidelines from `%s`\n\n' "$path"
-              cat "$path"
+              git show "$BASE_REF:$path"
             } >> "$OUTPUT_FILE"
           done
 
@@ -242,12 +247,35 @@ jobs:
               explanation,
             ].join('\n');
 
-            await github.rest.pulls.createReview({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number,
-              commit_id,
-              body: summary,
-              event,
-              comments,
-            });
+            // Attempt a structured review with inline comments. If GitHub
+            // rejects it (e.g. a model-generated line is not commentable in
+            // the diff), fall back to a plain issue comment that includes all
+            // findings in the body so the review is never silently lost.
+            try {
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number,
+                commit_id,
+                body: summary,
+                event,
+                comments,
+              });
+            } catch (reviewErr) {
+              core.warning(`createReview failed (${reviewErr.message}); falling back to issue comment`);
+              const fallbackLines = [summary];
+              for (const f of findings) {
+                fallbackLines.push(
+                  `\n---\n**${f.title}** — P${f.priority} · confidence ${f.confidence_score}\n` +
+                  `\`${f.code_location.absolute_file_path}\` ` +
+                  `L${f.code_location.line_range.start}–${f.code_location.line_range.end}\n\n` +
+                  f.body
+                );
+              }
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pull_number,
+                body: fallbackLines.join('\n'),
+              });
+            }
