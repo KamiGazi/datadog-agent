@@ -57,11 +57,13 @@ jobs:
 
           cp "$GUIDELINE_FILENAME" "$OUTPUT_FILE"
 
-          # 2. Collect changed files for the PR via the GitHub API. We pass
+          # 2. Collect changed files via the paginated REST API. We pass
           #    PR_NUMBER through env to avoid shell-injection via template
-          #    expansion (security.md guidance).
+          #    expansion (security.md guidance). gh pr view --json files is
+          #    capped at 100 records; --paginate has no such limit.
           mapfile -t changed_files < <(
-            gh pr view "$PR_NUMBER" --json files --jq '.files[].path'
+            gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" \
+              --paginate --jq '.[].filename'
           )
 
           # 3. For every changed file, walk every ancestor directory and
@@ -224,18 +226,15 @@ jobs:
             const explanation = review.overall_explanation ?? '';
             const verdictConfidence = review.overall_confidence_score ?? 0;
 
-            // APPROVE when the patch is correct with no blocking findings,
-            // REQUEST_CHANGES when incorrect, COMMENT otherwise (correct but
-            // with non-blocking findings worth noting).
+            // REQUEST_CHANGES when the patch is incorrect or has P0/P1
+            // findings; COMMENT in all other cases. We intentionally never
+            // use APPROVE: posting a bot approval via GITHUB_TOKEN counts as
+            // a real review approval, which can satisfy branch-protection
+            // rules or fail if the org blocks Actions from approving PRs.
             const hasBlockingFindings = findings.some((f) => f.priority <= 1);
-            let event;
-            if (verdict === 'patch is correct' && !hasBlockingFindings) {
-              event = 'APPROVE';
-            } else if (verdict === 'patch is incorrect' || hasBlockingFindings) {
-              event = 'REQUEST_CHANGES';
-            } else {
-              event = 'COMMENT';
-            }
+            const event = (verdict === 'patch is incorrect' || hasBlockingFindings)
+              ? 'REQUEST_CHANGES'
+              : 'COMMENT';
 
             const summary = [
               `**Codex review:** ${verdict} (confidence ${verdictConfidence})`,
