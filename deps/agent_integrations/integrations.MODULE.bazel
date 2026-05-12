@@ -1,0 +1,14 @@
+
+agent_integrations = use_repo_rule("//deps/agent_integrations:agent_integrations.bzl")
+
+agent_integrations(
+    name = "integrations_core",
+    git_ref = "50c9a3f07ce1b2555bc091afdef0ef4b789a2ffb",
+    deps_lockfile_name = select({
+        "//bazel/platforms:linux_x86_64": "linux-x86_64_{python_version}",
+        "//bazel/platforms:linux_arm64": "linux-x86_64_{python_version}",
+        "//bazel/platforms:macos_x86_64": "linux-x86_64_{python_version}",
+        "//bazel/platforms:macos_arm64": "linux-x86_64_{python_version}",
+        "//bazel/platforms:windows_x86_64": "linux-x86_64_{python_version}",
+    }).format(python_version="3.13")
+)
