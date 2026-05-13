@@ -10,8 +10,11 @@ package ddhostnameprocessor
 import (
 	"context"
 	"expvar"
+	"os"
 	"sync"
 
+	pkgconfigmodel "github.com/DataDog/datadog-agent/pkg/config/model"
+	pkgconfigsetup "github.com/DataDog/datadog-agent/pkg/config/setup"
 	pkghostname "github.com/DataDog/datadog-agent/pkg/util/hostname"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/consumer"
@@ -49,6 +52,12 @@ type factory struct {
 
 func (f *factory) resolveHost(ctx context.Context, set processor.Settings) string {
 	f.once.Do(func() {
+		if nodeIP := os.Getenv("K8S_NODE_IP"); nodeIP != "" {
+			if pkgconfigsetup.Datadog().GetString("kubernetes_kubelet_host") == "" {
+				pkgconfigsetup.Datadog().Set("kubernetes_kubelet_host", nodeIP, pkgconfigmodel.SourceAgentRuntime)
+				set.Logger.Info("Using K8S_NODE_IP as kubelet host for hostname resolution", zap.String("node_ip", nodeIP))
+			}
+		}
 		source, err := pkghostname.Get(ctx)
 		if err != nil {
 			if hostnameMap := expvar.Get("hostname"); hostnameMap != nil {
