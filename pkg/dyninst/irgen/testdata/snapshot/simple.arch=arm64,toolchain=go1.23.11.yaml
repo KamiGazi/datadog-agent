@@ -12,7 +12,7 @@ Probes:
         - subprogram: {subprogram: 96}
           events:
             - Kind: Entry
-              Type: 811 EventRootType Probe[main.PointerChainArg]
+              Type: 845 EventRootType Probe[main.PointerChainArg]
               InjectionPoints: [{PC: "0xb6064", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -35,7 +35,7 @@ Probes:
         - subprogram: {subprogram: 97}
           events:
             - Kind: Entry
-              Type: 812 EventRootType Probe[main.PointerSmallChainArg]
+              Type: 846 EventRootType Probe[main.PointerSmallChainArg]
               InjectionPoints: [{PC: "0xb60ac", Frameless: false}]
               Condition: null
     - id: allIntArray_positive
@@ -53,7 +53,7 @@ Probes:
         - subprogram: {subprogram: 79}
           events:
             - Kind: Entry
-              Type: 787 EventRootType Probe[main.anyAllIntArray]
+              Type: 813 EventRootType Probe[main.anyAllIntArray]
               InjectionPoints: [{PC: "0xbdd68", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -89,7 +89,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 788 EventRootType Probe[main.anyAllIntArray]Return
+              Type: 814 EventRootType Probe[main.anyAllIntArray]Return
               InjectionPoints: [{PC: "0xbddf0", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -115,7 +115,7 @@ Probes:
         - subprogram: {subprogram: 76}
           events:
             - Kind: Entry
-              Type: 761 EventRootType Probe[main.anyAllIntSlice]
+              Type: 763 EventRootType Probe[main.anyAllIntSlice]
               InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -150,7 +150,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 762 EventRootType Probe[main.anyAllIntSlice]Return
+              Type: 764 EventRootType Probe[main.anyAllIntSlice]Return
               InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -179,7 +179,7 @@ Probes:
         - subprogram: {subprogram: 83}
           events:
             - Kind: Entry
-              Type: 795 EventRootType Probe[main.anyAllPtrIntSlice]
+              Type: 823 EventRootType Probe[main.anyAllPtrIntSlice]
               InjectionPoints: [{PC: "0xbe0d8", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -214,7 +214,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 796 EventRootType Probe[main.anyAllPtrIntSlice]Return
+              Type: 824 EventRootType Probe[main.anyAllPtrIntSlice]Return
               InjectionPoints: [{PC: "0xbe15c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -245,7 +245,7 @@ Probes:
         - subprogram: {subprogram: 78}
           events:
             - Kind: Entry
-              Type: 781 EventRootType Probe[main.anyAllPtrSlice]
+              Type: 807 EventRootType Probe[main.anyAllPtrSlice]
               InjectionPoints: [{PC: "0xbdc88", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -301,7 +301,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 782 EventRootType Probe[main.anyAllPtrSlice]Return
+              Type: 808 EventRootType Probe[main.anyAllPtrSlice]Return
               InjectionPoints: [{PC: "0xbdd0c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -330,7 +330,7 @@ Probes:
         - subprogram: {subprogram: 77}
           events:
             - Kind: Entry
-              Type: 773 EventRootType Probe[main.anyAllStructSlice]
+              Type: 795 EventRootType Probe[main.anyAllStructSlice]
               InjectionPoints: [{PC: "0xbdba8", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -365,7 +365,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 774 EventRootType Probe[main.anyAllStructSlice]Return
+              Type: 796 EventRootType Probe[main.anyAllStructSlice]Return
               InjectionPoints: [{PC: "0xbdc2c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -396,7 +396,7 @@ Probes:
         - subprogram: {subprogram: 77}
           events:
             - Kind: Entry
-              Type: 775 EventRootType Probe[main.anyAllStructSlice]
+              Type: 797 EventRootType Probe[main.anyAllStructSlice]
               InjectionPoints: [{PC: "0xbdba8", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -448,7 +448,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 776 EventRootType Probe[main.anyAllStructSlice]Return
+              Type: 798 EventRootType Probe[main.anyAllStructSlice]Return
               InjectionPoints: [{PC: "0xbdc2c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -474,7 +474,7 @@ Probes:
         - subprogram: {subprogram: 79}
           events:
             - Kind: Entry
-              Type: 789 EventRootType Probe[main.anyAllIntArray]
+              Type: 815 EventRootType Probe[main.anyAllIntArray]
               InjectionPoints: [{PC: "0xbdd68", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -510,7 +510,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 790 EventRootType Probe[main.anyAllIntArray]Return
+              Type: 816 EventRootType Probe[main.anyAllIntArray]Return
               InjectionPoints: [{PC: "0xbddf0", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -542,7 +542,7 @@ Probes:
         - subprogram: {subprogram: 76}
           events:
             - Kind: Entry
-              Type: 763 EventRootType Probe[main.anyAllIntSlice]
+              Type: 765 EventRootType Probe[main.anyAllIntSlice]
               InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -592,7 +592,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 764 EventRootType Probe[main.anyAllIntSlice]Return
+              Type: 766 EventRootType Probe[main.anyAllIntSlice]Return
               InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -613,67 +613,6 @@ Probes:
       sampling: {snapshotsPerSecond: 10}
       template: any42 tag={tag}
       segments: [any42 tag=, {json: {ref: tag}, dsl: tag}]
-      captureSnapshot: false
-      instances:
-        - subprogram: {subprogram: 76}
-          events:
-            - Kind: Entry
-              Type: 765 EventRootType Probe[main.anyAllIntSlice]
-              InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
-              Condition:
-                Type: 6 BaseType bool
-                Operations:
-                    - __kind: LocationOp
-                      Variable: {subprogram: 76, index: 0, name: xs}
-                      Offset: 0
-                      ByteSize: 24
-                    - __kind: SliceLoopBeginOp
-                      Quantifier: 1
-                      ElemByteSize: 8
-                      EndLabel: 1
-                    - __kind: CondLabelOp
-                      ID: 2
-                    - __kind: LocationOp
-                      Variable: {name: '@it', role: LoopIt}
-                      Offset: 0
-                      ByteSize: 8
-                    - __kind: ExprPushOffsetOp
-                      ByteSize: 8
-                    - __kind: ExprLoadLiteralOp
-                      Data: KgAAAAAAAAA=
-                    - __kind: ExprCmpBaseOp
-                      Op: Eq
-                      Kind: Int
-                      ByteSize: 8
-                    - __kind: SliceLoopEndOp
-                      BodyLabel: 2
-                    - __kind: CondLabelOp
-                      ID: 1
-                    - __kind: ConditionCheckOp
-                LeafBodies: []
-                IsSplit: false
-            - Kind: Return
-              Type: 766 EventRootType Probe[main.anyAllIntSlice]Return
-              InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
-              Condition: null
-          probeTemplate:
-            TemplateString: any42 tag={tag}
-            Segments:
-                - any42 tag=
-                - JSON: {Ref: tag}
-                  DSL: tag
-                  EventKind: Entry
-                  EventExpressionIndex: 0
-    - id: anyIntSlice_notAny
-      version: 0
-      type: LOG_PROBE
-      where: {methodName: main.anyAllIntSlice}
-      when:
-        dsl: not(any(xs, {@it == 42}))
-        json: {not: {any: [{ref: xs}, {eq: [{ref: '@it'}, 42]}]}}
-      sampling: {snapshotsPerSecond: 10}
-      template: not_any42 tag={tag}
-      segments: [not_any42 tag=, {json: {ref: tag}, dsl: tag}]
       captureSnapshot: false
       instances:
         - subprogram: {subprogram: 76}
@@ -710,12 +649,73 @@ Probes:
                       BodyLabel: 2
                     - __kind: CondLabelOp
                       ID: 1
-                    - __kind: CondNotOp
                     - __kind: ConditionCheckOp
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
               Type: 768 EventRootType Probe[main.anyAllIntSlice]Return
+              InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
+              Condition: null
+          probeTemplate:
+            TemplateString: any42 tag={tag}
+            Segments:
+                - any42 tag=
+                - JSON: {Ref: tag}
+                  DSL: tag
+                  EventKind: Entry
+                  EventExpressionIndex: 0
+    - id: anyIntSlice_notAny
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllIntSlice}
+      when:
+        dsl: not(any(xs, {@it == 42}))
+        json: {not: {any: [{ref: xs}, {eq: [{ref: '@it'}, 42]}]}}
+      sampling: {snapshotsPerSecond: 10}
+      template: not_any42 tag={tag}
+      segments: [not_any42 tag=, {json: {ref: tag}, dsl: tag}]
+      captureSnapshot: false
+      instances:
+        - subprogram: {subprogram: 76}
+          events:
+            - Kind: Entry
+              Type: 769 EventRootType Probe[main.anyAllIntSlice]
+              InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
+              Condition:
+                Type: 6 BaseType bool
+                Operations:
+                    - __kind: LocationOp
+                      Variable: {subprogram: 76, index: 0, name: xs}
+                      Offset: 0
+                      ByteSize: 24
+                    - __kind: SliceLoopBeginOp
+                      Quantifier: 1
+                      ElemByteSize: 8
+                      EndLabel: 1
+                    - __kind: CondLabelOp
+                      ID: 2
+                    - __kind: LocationOp
+                      Variable: {name: '@it', role: LoopIt}
+                      Offset: 0
+                      ByteSize: 8
+                    - __kind: ExprPushOffsetOp
+                      ByteSize: 8
+                    - __kind: ExprLoadLiteralOp
+                      Data: KgAAAAAAAAA=
+                    - __kind: ExprCmpBaseOp
+                      Op: Eq
+                      Kind: Int
+                      ByteSize: 8
+                    - __kind: SliceLoopEndOp
+                      BodyLabel: 2
+                    - __kind: CondLabelOp
+                      ID: 1
+                    - __kind: CondNotOp
+                    - __kind: ConditionCheckOp
+                LeafBodies: []
+                IsSplit: false
+            - Kind: Return
+              Type: 770 EventRootType Probe[main.anyAllIntSlice]Return
               InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -747,7 +747,7 @@ Probes:
         - subprogram: {subprogram: 76}
           events:
             - Kind: Entry
-              Type: 769 EventRootType Probe[main.anyAllIntSlice]
+              Type: 771 EventRootType Probe[main.anyAllIntSlice]
               InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -813,7 +813,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 770 EventRootType Probe[main.anyAllIntSlice]Return
+              Type: 772 EventRootType Probe[main.anyAllIntSlice]Return
               InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -844,7 +844,7 @@ Probes:
         - subprogram: {subprogram: 78}
           events:
             - Kind: Entry
-              Type: 783 EventRootType Probe[main.anyAllPtrSlice]
+              Type: 809 EventRootType Probe[main.anyAllPtrSlice]
               InjectionPoints: [{PC: "0xbdc88", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -898,7 +898,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 784 EventRootType Probe[main.anyAllPtrSlice]Return
+              Type: 810 EventRootType Probe[main.anyAllPtrSlice]Return
               InjectionPoints: [{PC: "0xbdd0c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -930,7 +930,7 @@ Probes:
         - subprogram: {subprogram: 78}
           events:
             - Kind: Entry
-              Type: 785 EventRootType Probe[main.anyAllPtrSlice]
+              Type: 811 EventRootType Probe[main.anyAllPtrSlice]
               InjectionPoints: [{PC: "0xbdc88", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -967,7 +967,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 786 EventRootType Probe[main.anyAllPtrSlice]Return
+              Type: 812 EventRootType Probe[main.anyAllPtrSlice]Return
               InjectionPoints: [{PC: "0xbdd0c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -996,7 +996,7 @@ Probes:
         - subprogram: {subprogram: 82}
           events:
             - Kind: Entry
-              Type: 793 EventRootType Probe[main.anyAllPtrStrSlice]
+              Type: 821 EventRootType Probe[main.anyAllPtrStrSlice]
               InjectionPoints: [{PC: "0xbdff8", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -1031,7 +1031,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 794 EventRootType Probe[main.anyAllPtrStrSlice]Return
+              Type: 822 EventRootType Probe[main.anyAllPtrStrSlice]Return
               InjectionPoints: [{PC: "0xbe07c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -1057,7 +1057,7 @@ Probes:
         - subprogram: {subprogram: 90}
           events:
             - Kind: Entry
-              Type: 801 EventRootType Probe[main.anyAllStringArray]
+              Type: 835 EventRootType Probe[main.anyAllStringArray]
               InjectionPoints: [{PC: "0xbe6f8", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -1091,7 +1091,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 802 EventRootType Probe[main.anyAllStringArray]Return
+              Type: 836 EventRootType Probe[main.anyAllStringArray]Return
               InjectionPoints: [{PC: "0xbe780", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -1117,7 +1117,7 @@ Probes:
         - subprogram: {subprogram: 89}
           events:
             - Kind: Entry
-              Type: 797 EventRootType Probe[main.anyAllStringSlice]
+              Type: 827 EventRootType Probe[main.anyAllStringSlice]
               InjectionPoints: [{PC: "0xbe618", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -1150,7 +1150,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 798 EventRootType Probe[main.anyAllStringSlice]Return
+              Type: 828 EventRootType Probe[main.anyAllStringSlice]Return
               InjectionPoints: [{PC: "0xbe69c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -1179,7 +1179,7 @@ Probes:
         - subprogram: {subprogram: 77}
           events:
             - Kind: Entry
-              Type: 777 EventRootType Probe[main.anyAllStructSlice]
+              Type: 799 EventRootType Probe[main.anyAllStructSlice]
               InjectionPoints: [{PC: "0xbdba8", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -1214,7 +1214,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 778 EventRootType Probe[main.anyAllStructSlice]Return
+              Type: 800 EventRootType Probe[main.anyAllStructSlice]Return
               InjectionPoints: [{PC: "0xbdc2c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -1245,7 +1245,7 @@ Probes:
         - subprogram: {subprogram: 77}
           events:
             - Kind: Entry
-              Type: 779 EventRootType Probe[main.anyAllStructSlice]
+              Type: 801 EventRootType Probe[main.anyAllStructSlice]
               InjectionPoints: [{PC: "0xbdba8", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -1297,7 +1297,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 780 EventRootType Probe[main.anyAllStructSlice]Return
+              Type: 802 EventRootType Probe[main.anyAllStructSlice]Return
               InjectionPoints: [{PC: "0xbdc2c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -1334,6 +1334,204 @@ Probes:
                   DSL: m
                   EventKind: Entry
                   EventExpressionIndex: 0
+    - id: captureAllIntSlice_positive
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllIntSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: ""
+      segments: []
+      captureSnapshot: false
+      captureExpressions:
+        - name: allpos
+          expr:
+            dsl: all(xs, {@it > 0})
+            json: {all: [{ref: xs}, {gt: [{ref: '@it'}, 0]}]}
+      instances:
+        - subprogram: {subprogram: 76}
+          events:
+            - Kind: Entry
+              Type: 773 EventRootType Probe[main.anyAllIntSlice]
+              InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 774 EventRootType Probe[main.anyAllIntSlice]Return
+              InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
+              Condition: null
+    - id: captureAnyIntSlice_eq42
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllIntSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: ""
+      segments: []
+      captureSnapshot: false
+      captureExpressions:
+        - name: any42
+          expr:
+            dsl: any(xs, {@it == 42})
+            json: {any: [{ref: xs}, {eq: [{ref: '@it'}, 42]}]}
+      instances:
+        - subprogram: {subprogram: 76}
+          events:
+            - Kind: Entry
+              Type: 775 EventRootType Probe[main.anyAllIntSlice]
+              InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 776 EventRootType Probe[main.anyAllIntSlice]Return
+              InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
+              Condition: null
+    - id: captureAnyPtrIntSlice_unguarded
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllPtrIntSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: ""
+      segments: []
+      captureSnapshot: false
+      captureExpressions:
+        - name: anyDeref
+          expr:
+            dsl: any(xs, {@it == 1})
+            json: {any: [{ref: xs}, {eq: [{ref: '@it'}, 1]}]}
+      instances:
+        - subprogram: {subprogram: 83}
+          events:
+            - Kind: Entry
+              Type: 825 EventRootType Probe[main.anyAllPtrIntSlice]
+              InjectionPoints: [{PC: "0xbe0d8", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 826 EventRootType Probe[main.anyAllPtrIntSlice]Return
+              InjectionPoints: [{PC: "0xbe15c", Frameless: false}]
+              Condition: null
+    - id: captureAnyStructSlice_I32eq300
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllStructSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: ""
+      segments: []
+      captureSnapshot: false
+      captureExpressions:
+        - name: anyI32_300
+          expr:
+            dsl: any(xs, {@it.I32 == 300})
+            json:
+                any:
+                    - ref: xs
+                    - eq: [{getmember: [{ref: '@it'}, I32]}, 300]
+      instances:
+        - subprogram: {subprogram: 77}
+          events:
+            - Kind: Entry
+              Type: 803 EventRootType Probe[main.anyAllStructSlice]
+              InjectionPoints: [{PC: "0xbdba8", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 804 EventRootType Probe[main.anyAllStructSlice]Return
+              InjectionPoints: [{PC: "0xbdc2c", Frameless: false}]
+              Condition: null
+    - id: captureAny_nested_err
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllIntSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: ""
+      segments: []
+      captureSnapshot: false
+      captureExpressions:
+        - name: any_nested
+          expr:
+            dsl: any(xs, {any(@it, {@it == 1})})
+            json:
+                any:
+                    - ref: xs
+                    - any: [{ref: '@it'}, {eq: [{ref: '@it'}, 1]}]
+      instances:
+        - subprogram: {subprogram: 76}
+          events:
+            - Kind: Entry
+              Type: 777 EventRootType Probe[main.anyAllIntSlice]
+              InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 778 EventRootType Probe[main.anyAllIntSlice]Return
+              InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
+              Condition: null
+    - id: captureAny_outerScope_err
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllIntSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: ""
+      segments: []
+      captureSnapshot: false
+      captureExpressions:
+        - name: any_outer
+          expr:
+            dsl: any(xs, {tag == "match"})
+            json: {any: [{ref: xs}, {eq: [{ref: tag}, match]}]}
+      instances:
+        - subprogram: {subprogram: 76}
+          events:
+            - Kind: Entry
+              Type: 779 EventRootType Probe[main.anyAllIntSlice]
+              InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 780 EventRootType Probe[main.anyAllIntSlice]Return
+              InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
+              Condition: null
+    - id: captureContainsIntSlice_42
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllIntSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: ""
+      segments: []
+      captureSnapshot: false
+      captureExpressions:
+        - name: containsInt42
+          expr:
+            dsl: contains(xs, 42)
+            json: {contains: [{ref: xs}, 42]}
+      instances:
+        - subprogram: {subprogram: 76}
+          events:
+            - Kind: Entry
+              Type: 781 EventRootType Probe[main.anyAllIntSlice]
+              InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 782 EventRootType Probe[main.anyAllIntSlice]Return
+              InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
+              Condition: null
+    - id: captureContainsStringSlice_match
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllStringSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: ""
+      segments: []
+      captureSnapshot: false
+      captureExpressions:
+        - name: containsStrMatch
+          expr:
+            dsl: contains(xs, "match")
+            json: {contains: [{ref: xs}, match]}
+      instances:
+        - subprogram: {subprogram: 89}
+          events:
+            - Kind: Entry
+              Type: 829 EventRootType Probe[main.anyAllStringSlice]
+              InjectionPoints: [{PC: "0xbe618", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 830 EventRootType Probe[main.anyAllStringSlice]Return
+              InjectionPoints: [{PC: "0xbe69c", Frameless: false}]
+              Condition: null
     - id: captureDuration_return
       version: 0
       type: LOG_PROBE
@@ -1349,11 +1547,11 @@ Probes:
         - subprogram: {subprogram: 74}
           events:
             - Kind: Entry
-              Type: 751 EventRootType Probe[main.condMultiReturn]
+              Type: 753 EventRootType Probe[main.condMultiReturn]
               InjectionPoints: [{PC: "0xbd6a8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 752 EventRootType Probe[main.condMultiReturn]Return
+              Type: 754 EventRootType Probe[main.condMultiReturn]Return
               InjectionPoints: [{PC: "0xbd734", Frameless: false}]
               Condition: null
     - id: condBool_cond_false
@@ -2074,7 +2272,7 @@ Probes:
         - subprogram: {subprogram: 39}
           events:
             - Kind: Entry
-              Type: 579 EventRootType Probe[main.lenString]
+              Type: 581 EventRootType Probe[main.lenString]
               InjectionPoints: [{PC: "0xbbafc", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -2111,7 +2309,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 580 EventRootType Probe[main.lenString]Return
+              Type: 582 EventRootType Probe[main.lenString]Return
               InjectionPoints: [{PC: "0xbbbb0", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -2217,11 +2415,11 @@ Probes:
         - subprogram: {subprogram: 74}
           events:
             - Kind: Entry
-              Type: 753 EventRootType Probe[main.condMultiReturn]
+              Type: 755 EventRootType Probe[main.condMultiReturn]
               InjectionPoints: [{PC: "0xbd6a8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 754 EventRootType Probe[main.condMultiReturn]Return
+              Type: 756 EventRootType Probe[main.condMultiReturn]Return
               InjectionPoints: [{PC: "0xbd734", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -4366,7 +4564,7 @@ Probes:
         - subprogram: {subprogram: 75}
           events:
             - Kind: Entry
-              Type: 759 EventRootType Probe[main.condReturnPtr]
+              Type: 761 EventRootType Probe[main.condReturnPtr]
               InjectionPoints: [{PC: "0xbd778", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -4405,7 +4603,7 @@ Probes:
                       IsSplit: false
                 IsSplit: true
             - Kind: Return
-              Type: 760 EventRootType Probe[main.condReturnPtr]Return
+              Type: 762 EventRootType Probe[main.condReturnPtr]Return
               InjectionPoints:
                 - PC: "0xbd80c"
                   Frameless: false
@@ -4573,11 +4771,11 @@ Probes:
         - subprogram: {subprogram: 74}
           events:
             - Kind: Entry
-              Type: 755 EventRootType Probe[main.condMultiReturn]
+              Type: 757 EventRootType Probe[main.condMultiReturn]
               InjectionPoints: [{PC: "0xbd6a8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 756 EventRootType Probe[main.condMultiReturn]Return
+              Type: 758 EventRootType Probe[main.condMultiReturn]Return
               InjectionPoints: [{PC: "0xbd734", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -4620,11 +4818,11 @@ Probes:
         - subprogram: {subprogram: 74}
           events:
             - Kind: Entry
-              Type: 757 EventRootType Probe[main.condMultiReturn]
+              Type: 759 EventRootType Probe[main.condMultiReturn]
               InjectionPoints: [{PC: "0xbd6a8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 758 EventRootType Probe[main.condMultiReturn]Return
+              Type: 760 EventRootType Probe[main.condMultiReturn]Return
               InjectionPoints: [{PC: "0xbd734", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -7351,7 +7549,7 @@ Probes:
         - subprogram: {subprogram: 79}
           events:
             - Kind: Entry
-              Type: 791 EventRootType Probe[main.anyAllIntArray]
+              Type: 817 EventRootType Probe[main.anyAllIntArray]
               InjectionPoints: [{PC: "0xbdd68", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -7387,7 +7585,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 792 EventRootType Probe[main.anyAllIntArray]Return
+              Type: 818 EventRootType Probe[main.anyAllIntArray]Return
               InjectionPoints: [{PC: "0xbddf0", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -7413,7 +7611,7 @@ Probes:
         - subprogram: {subprogram: 76}
           events:
             - Kind: Entry
-              Type: 771 EventRootType Probe[main.anyAllIntSlice]
+              Type: 783 EventRootType Probe[main.anyAllIntSlice]
               InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -7448,7 +7646,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 772 EventRootType Probe[main.anyAllIntSlice]Return
+              Type: 784 EventRootType Probe[main.anyAllIntSlice]Return
               InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -7477,7 +7675,7 @@ Probes:
         - subprogram: {subprogram: 90}
           events:
             - Kind: Entry
-              Type: 803 EventRootType Probe[main.anyAllStringArray]
+              Type: 837 EventRootType Probe[main.anyAllStringArray]
               InjectionPoints: [{PC: "0xbe6f8", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -7511,7 +7709,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 804 EventRootType Probe[main.anyAllStringArray]Return
+              Type: 838 EventRootType Probe[main.anyAllStringArray]Return
               InjectionPoints: [{PC: "0xbe780", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -7540,7 +7738,7 @@ Probes:
         - subprogram: {subprogram: 89}
           events:
             - Kind: Entry
-              Type: 799 EventRootType Probe[main.anyAllStringSlice]
+              Type: 831 EventRootType Probe[main.anyAllStringSlice]
               InjectionPoints: [{PC: "0xbe618", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -7573,7 +7771,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 800 EventRootType Probe[main.anyAllStringSlice]Return
+              Type: 832 EventRootType Probe[main.anyAllStringSlice]Return
               InjectionPoints: [{PC: "0xbe69c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -7595,21 +7793,21 @@ Probes:
         - subprogram: {subprogram: 93}
           events:
             - Kind: Entry
-              Type: 805 EventRootType Probe[main.genericIdentity[go.shape.string]]
+              Type: 839 EventRootType Probe[main.genericIdentity[go.shape.string]]
               InjectionPoints: [{PC: "0xbe988", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 806 EventRootType Probe[main.genericIdentity[go.shape.string]]Return
+              Type: 840 EventRootType Probe[main.genericIdentity[go.shape.string]]Return
               InjectionPoints: [{PC: "0xbe9dc", Frameless: false}]
               Condition: null
         - subprogram: {subprogram: 94}
           events:
             - Kind: Entry
-              Type: 807 EventRootType Probe[main.genericIdentity[go.shape.int]]
+              Type: 841 EventRootType Probe[main.genericIdentity[go.shape.int]]
               InjectionPoints: [{PC: "0xbea28", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 808 EventRootType Probe[main.genericIdentity[go.shape.int]]Return
+              Type: 842 EventRootType Probe[main.genericIdentity[go.shape.int]]Return
               InjectionPoints: [{PC: "0xbea70", Frameless: false}]
               Condition: null
     - id: indexBigArrayStruct_last
@@ -7629,11 +7827,11 @@ Probes:
         - subprogram: {subprogram: 50}
           events:
             - Kind: Entry
-              Type: 677 EventRootType Probe[main.bigArrayStructArg]
+              Type: 679 EventRootType Probe[main.bigArrayStructArg]
               InjectionPoints: [{PC: "0xbc708", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 678 EventRootType Probe[main.bigArrayStructArg]Return
+              Type: 680 EventRootType Probe[main.bigArrayStructArg]Return
               InjectionPoints: [{PC: "0xbc76c", Frameless: false}]
               Condition: null
     - id: indexBigArray_first
@@ -7651,11 +7849,11 @@ Probes:
         - subprogram: {subprogram: 49}
           events:
             - Kind: Entry
-              Type: 673 EventRootType Probe[main.bigArrayArg]
+              Type: 675 EventRootType Probe[main.bigArrayArg]
               InjectionPoints: [{PC: "0xbc678", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 674 EventRootType Probe[main.bigArrayArg]Return
+              Type: 676 EventRootType Probe[main.bigArrayArg]Return
               InjectionPoints: [{PC: "0xbc6d4", Frameless: false}]
               Condition: null
     - id: indexBigArray_last
@@ -7673,11 +7871,11 @@ Probes:
         - subprogram: {subprogram: 49}
           events:
             - Kind: Entry
-              Type: 675 EventRootType Probe[main.bigArrayArg]
+              Type: 677 EventRootType Probe[main.bigArrayArg]
               InjectionPoints: [{PC: "0xbc678", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 676 EventRootType Probe[main.bigArrayArg]Return
+              Type: 678 EventRootType Probe[main.bigArrayArg]Return
               InjectionPoints: [{PC: "0xbc6d4", Frameless: false}]
               Condition: null
     - id: indexErr_array_oob_capture
@@ -7996,11 +8194,11 @@ Probes:
         - subprogram: {subprogram: 52}
           events:
             - Kind: Entry
-              Type: 687 EventRootType Probe[main.structArrayArg]
+              Type: 689 EventRootType Probe[main.structArrayArg]
               InjectionPoints: [{PC: "0xbc888", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 688 EventRootType Probe[main.structArrayArg]Return
+              Type: 690 EventRootType Probe[main.structArrayArg]Return
               InjectionPoints: [{PC: "0xbc8f0", Frameless: false}]
               Condition: null
     - id: indexMember_arrayStruct_capture_string
@@ -8020,11 +8218,11 @@ Probes:
         - subprogram: {subprogram: 52}
           events:
             - Kind: Entry
-              Type: 689 EventRootType Probe[main.structArrayArg]
+              Type: 691 EventRootType Probe[main.structArrayArg]
               InjectionPoints: [{PC: "0xbc888", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 690 EventRootType Probe[main.structArrayArg]Return
+              Type: 692 EventRootType Probe[main.structArrayArg]Return
               InjectionPoints: [{PC: "0xbc8f0", Frameless: false}]
               Condition: null
     - id: indexMember_ptrArrayStruct_capture_int
@@ -8044,11 +8242,11 @@ Probes:
         - subprogram: {subprogram: 54}
           events:
             - Kind: Entry
-              Type: 695 EventRootType Probe[main.ptrStructArrayArg]
+              Type: 697 EventRootType Probe[main.ptrStructArrayArg]
               InjectionPoints: [{PC: "0xbca18", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 696 EventRootType Probe[main.ptrStructArrayArg]Return
+              Type: 698 EventRootType Probe[main.ptrStructArrayArg]Return
               InjectionPoints: [{PC: "0xbca84", Frameless: false}]
               Condition: null
     - id: indexMember_ptrArrayStruct_capture_string
@@ -8068,11 +8266,11 @@ Probes:
         - subprogram: {subprogram: 54}
           events:
             - Kind: Entry
-              Type: 697 EventRootType Probe[main.ptrStructArrayArg]
+              Type: 699 EventRootType Probe[main.ptrStructArrayArg]
               InjectionPoints: [{PC: "0xbca18", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 698 EventRootType Probe[main.ptrStructArrayArg]Return
+              Type: 700 EventRootType Probe[main.ptrStructArrayArg]Return
               InjectionPoints: [{PC: "0xbca84", Frameless: false}]
               Condition: null
     - id: indexMember_ptrSliceStruct_capture_int
@@ -8092,11 +8290,11 @@ Probes:
         - subprogram: {subprogram: 53}
           events:
             - Kind: Entry
-              Type: 691 EventRootType Probe[main.ptrStructSliceArg]
+              Type: 693 EventRootType Probe[main.ptrStructSliceArg]
               InjectionPoints: [{PC: "0xbc938", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 692 EventRootType Probe[main.ptrStructSliceArg]Return
+              Type: 694 EventRootType Probe[main.ptrStructSliceArg]Return
               InjectionPoints: [{PC: "0xbc9b0", Frameless: false}]
               Condition: null
     - id: indexMember_ptrSliceStruct_capture_string
@@ -8116,11 +8314,11 @@ Probes:
         - subprogram: {subprogram: 53}
           events:
             - Kind: Entry
-              Type: 693 EventRootType Probe[main.ptrStructSliceArg]
+              Type: 695 EventRootType Probe[main.ptrStructSliceArg]
               InjectionPoints: [{PC: "0xbc938", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 694 EventRootType Probe[main.ptrStructSliceArg]Return
+              Type: 696 EventRootType Probe[main.ptrStructSliceArg]Return
               InjectionPoints: [{PC: "0xbc9b0", Frameless: false}]
               Condition: null
     - id: indexMember_sliceStruct_capture_int
@@ -8140,11 +8338,11 @@ Probes:
         - subprogram: {subprogram: 51}
           events:
             - Kind: Entry
-              Type: 679 EventRootType Probe[main.structSliceArg]
+              Type: 681 EventRootType Probe[main.structSliceArg]
               InjectionPoints: [{PC: "0xbc7a8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 680 EventRootType Probe[main.structSliceArg]Return
+              Type: 682 EventRootType Probe[main.structSliceArg]Return
               InjectionPoints: [{PC: "0xbc81c", Frameless: false}]
               Condition: null
     - id: indexMember_sliceStruct_capture_string
@@ -8164,11 +8362,11 @@ Probes:
         - subprogram: {subprogram: 51}
           events:
             - Kind: Entry
-              Type: 681 EventRootType Probe[main.structSliceArg]
+              Type: 683 EventRootType Probe[main.structSliceArg]
               InjectionPoints: [{PC: "0xbc7a8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 682 EventRootType Probe[main.structSliceArg]Return
+              Type: 684 EventRootType Probe[main.structSliceArg]Return
               InjectionPoints: [{PC: "0xbc81c", Frameless: false}]
               Condition: null
     - id: indexMember_sliceStruct_cond
@@ -8187,7 +8385,7 @@ Probes:
         - subprogram: {subprogram: 51}
           events:
             - Kind: Entry
-              Type: 683 EventRootType Probe[main.structSliceArg]
+              Type: 685 EventRootType Probe[main.structSliceArg]
               InjectionPoints: [{PC: "0xbc7a8", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -8214,7 +8412,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 684 EventRootType Probe[main.structSliceArg]Return
+              Type: 686 EventRootType Probe[main.structSliceArg]Return
               InjectionPoints: [{PC: "0xbc81c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -8240,11 +8438,11 @@ Probes:
         - subprogram: {subprogram: 51}
           events:
             - Kind: Entry
-              Type: 685 EventRootType Probe[main.structSliceArg]
+              Type: 687 EventRootType Probe[main.structSliceArg]
               InjectionPoints: [{PC: "0xbc7a8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 686 EventRootType Probe[main.structSliceArg]Return
+              Type: 688 EventRootType Probe[main.structSliceArg]Return
               InjectionPoints: [{PC: "0xbc81c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -8275,11 +8473,11 @@ Probes:
         - subprogram: {subprogram: 55}
           events:
             - Kind: Entry
-              Type: 699 EventRootType Probe[main.indexMemberWrapperArg]
+              Type: 701 EventRootType Probe[main.indexMemberWrapperArg]
               InjectionPoints: [{PC: "0xbcac8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 700 EventRootType Probe[main.indexMemberWrapperArg]Return
+              Type: 702 EventRootType Probe[main.indexMemberWrapperArg]Return
               InjectionPoints: [{PC: "0xbcb60", Frameless: false}]
               Condition: null
     - id: indexMember_wrapper_arr_capture_1
@@ -8300,11 +8498,11 @@ Probes:
         - subprogram: {subprogram: 55}
           events:
             - Kind: Entry
-              Type: 701 EventRootType Probe[main.indexMemberWrapperArg]
+              Type: 703 EventRootType Probe[main.indexMemberWrapperArg]
               InjectionPoints: [{PC: "0xbcac8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 702 EventRootType Probe[main.indexMemberWrapperArg]Return
+              Type: 704 EventRootType Probe[main.indexMemberWrapperArg]Return
               InjectionPoints: [{PC: "0xbcb60", Frameless: false}]
               Condition: null
     - id: indexMember_wrapper_ptrArr_capture
@@ -8325,11 +8523,11 @@ Probes:
         - subprogram: {subprogram: 55}
           events:
             - Kind: Entry
-              Type: 703 EventRootType Probe[main.indexMemberWrapperArg]
+              Type: 705 EventRootType Probe[main.indexMemberWrapperArg]
               InjectionPoints: [{PC: "0xbcac8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 704 EventRootType Probe[main.indexMemberWrapperArg]Return
+              Type: 706 EventRootType Probe[main.indexMemberWrapperArg]Return
               InjectionPoints: [{PC: "0xbcb60", Frameless: false}]
               Condition: null
     - id: indexMember_wrapper_ptrArr_capture_1
@@ -8350,11 +8548,11 @@ Probes:
         - subprogram: {subprogram: 55}
           events:
             - Kind: Entry
-              Type: 705 EventRootType Probe[main.indexMemberWrapperArg]
+              Type: 707 EventRootType Probe[main.indexMemberWrapperArg]
               InjectionPoints: [{PC: "0xbcac8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 706 EventRootType Probe[main.indexMemberWrapperArg]Return
+              Type: 708 EventRootType Probe[main.indexMemberWrapperArg]Return
               InjectionPoints: [{PC: "0xbcb60", Frameless: false}]
               Condition: null
     - id: indexNilPtr_capture
@@ -8374,11 +8572,11 @@ Probes:
         - subprogram: {subprogram: 47}
           events:
             - Kind: Entry
-              Type: 665 EventRootType Probe[main.indexNilPtrSlice]
+              Type: 667 EventRootType Probe[main.indexNilPtrSlice]
               InjectionPoints: [{PC: "0xbc408", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 666 EventRootType Probe[main.indexNilPtrSlice]Return
+              Type: 668 EventRootType Probe[main.indexNilPtrSlice]Return
               InjectionPoints: [{PC: "0xbc47c", Frameless: false}]
               Condition: null
     - id: indexNilPtr_cond
@@ -8397,7 +8595,7 @@ Probes:
         - subprogram: {subprogram: 47}
           events:
             - Kind: Entry
-              Type: 667 EventRootType Probe[main.indexNilPtrSlice]
+              Type: 669 EventRootType Probe[main.indexNilPtrSlice]
               InjectionPoints: [{PC: "0xbc408", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -8428,7 +8626,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 668 EventRootType Probe[main.indexNilPtrSlice]Return
+              Type: 670 EventRootType Probe[main.indexNilPtrSlice]Return
               InjectionPoints: [{PC: "0xbc47c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -8454,11 +8652,11 @@ Probes:
         - subprogram: {subprogram: 47}
           events:
             - Kind: Entry
-              Type: 669 EventRootType Probe[main.indexNilPtrSlice]
+              Type: 671 EventRootType Probe[main.indexNilPtrSlice]
               InjectionPoints: [{PC: "0xbc408", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 670 EventRootType Probe[main.indexNilPtrSlice]Return
+              Type: 672 EventRootType Probe[main.indexNilPtrSlice]Return
               InjectionPoints: [{PC: "0xbc47c", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -8488,11 +8686,11 @@ Probes:
         - subprogram: {subprogram: 44}
           events:
             - Kind: Entry
-              Type: 647 EventRootType Probe[main.lenPtrStructFields]
+              Type: 649 EventRootType Probe[main.lenPtrStructFields]
               InjectionPoints: [{PC: "0xbc09c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 648 EventRootType Probe[main.lenPtrStructFields]Return
+              Type: 650 EventRootType Probe[main.lenPtrStructFields]Return
               InjectionPoints: [{PC: "0xbc194", Frameless: false}]
               Condition: null
     - id: indexStringArray_capture
@@ -8556,11 +8754,11 @@ Probes:
         - subprogram: {subprogram: 43}
           events:
             - Kind: Entry
-              Type: 627 EventRootType Probe[main.lenStructFields]
+              Type: 629 EventRootType Probe[main.lenStructFields]
               InjectionPoints: [{PC: "0xbbf3c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 628 EventRootType Probe[main.lenStructFields]Return
+              Type: 630 EventRootType Probe[main.lenStructFields]Return
               InjectionPoints: [{PC: "0xbc050", Frameless: false}]
               Condition: null
     - id: inlined
@@ -8575,7 +8773,7 @@ Probes:
         - subprogram: {subprogram: 95}
           events:
             - Kind: Entry
-              Type: 809 EventRootType Probe[main.inlined]
+              Type: 843 EventRootType Probe[main.inlined]
               InjectionPoints:
                 - PC: "0xb5e04"
                   Frameless: false
@@ -8583,7 +8781,7 @@ Probes:
                   Frameless: false
               Condition: null
             - Kind: Return
-              Type: 810 EventRootType Probe[main.inlined]Return
+              Type: 844 EventRootType Probe[main.inlined]Return
               InjectionPoints: [{PC: "0xba150", Frameless: false}]
               Condition: null
     - id: inlinedMethod
@@ -8597,7 +8795,7 @@ Probes:
         - subprogram: {subprogram: 98}
           events:
             - Kind: Entry
-              Type: 813 EventRootType Probe[main.(*methodValueReceiver).inlinedMethod]
+              Type: 847 EventRootType Probe[main.(*methodValueReceiver).inlinedMethod]
               InjectionPoints: [{PC: "0xbeaa4", Frameless: true}]
               Condition: null
     - id: intArg
@@ -8680,11 +8878,11 @@ Probes:
         - subprogram: {subprogram: 45}
           events:
             - Kind: Entry
-              Type: 657 EventRootType Probe[main.lenErrInt]
+              Type: 659 EventRootType Probe[main.lenErrInt]
               InjectionPoints: [{PC: "0xbc1ec", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 658 EventRootType Probe[main.lenErrInt]Return
+              Type: 660 EventRootType Probe[main.lenErrInt]Return
               InjectionPoints: [{PC: "0xbc2a0", Frameless: false}]
               Condition: null
     - id: lenErrStruct_nocond
@@ -8699,11 +8897,11 @@ Probes:
         - subprogram: {subprogram: 46}
           events:
             - Kind: Entry
-              Type: 661 EventRootType Probe[main.lenErrStruct]
+              Type: 663 EventRootType Probe[main.lenErrStruct]
               InjectionPoints: [{PC: "0xbc2ec", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 662 EventRootType Probe[main.lenErrStruct]Return
+              Type: 664 EventRootType Probe[main.lenErrStruct]Return
               InjectionPoints: [{PC: "0xbc3bc", Frameless: false}]
               Condition: null
     - id: lenErr_int
@@ -8718,11 +8916,11 @@ Probes:
         - subprogram: {subprogram: 45}
           events:
             - Kind: Entry
-              Type: 659 EventRootType Probe[main.lenErrInt]
+              Type: 661 EventRootType Probe[main.lenErrInt]
               InjectionPoints: [{PC: "0xbc1ec", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 660 EventRootType Probe[main.lenErrInt]Return
+              Type: 662 EventRootType Probe[main.lenErrInt]Return
               InjectionPoints: [{PC: "0xbc2a0", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -8743,11 +8941,11 @@ Probes:
         - subprogram: {subprogram: 46}
           events:
             - Kind: Entry
-              Type: 663 EventRootType Probe[main.lenErrStruct]
+              Type: 665 EventRootType Probe[main.lenErrStruct]
               InjectionPoints: [{PC: "0xbc2ec", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 664 EventRootType Probe[main.lenErrStruct]Return
+              Type: 666 EventRootType Probe[main.lenErrStruct]Return
               InjectionPoints: [{PC: "0xbc3bc", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -8769,7 +8967,7 @@ Probes:
         - subprogram: {subprogram: 41}
           events:
             - Kind: Entry
-              Type: 611 EventRootType Probe[main.lenMap]
+              Type: 613 EventRootType Probe[main.lenMap]
               InjectionPoints: [{PC: "0xbbd2c", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -8794,7 +8992,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 612 EventRootType Probe[main.lenMap]Return
+              Type: 614 EventRootType Probe[main.lenMap]Return
               InjectionPoints: [{PC: "0xbbdec", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -8820,11 +9018,11 @@ Probes:
         - subprogram: {subprogram: 41}
           events:
             - Kind: Entry
-              Type: 613 EventRootType Probe[main.lenMap]
+              Type: 615 EventRootType Probe[main.lenMap]
               InjectionPoints: [{PC: "0xbbd2c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 614 EventRootType Probe[main.lenMap]Return
+              Type: 616 EventRootType Probe[main.lenMap]Return
               InjectionPoints: [{PC: "0xbbdec", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -8850,11 +9048,11 @@ Probes:
         - subprogram: {subprogram: 41}
           events:
             - Kind: Entry
-              Type: 615 EventRootType Probe[main.lenMap]
+              Type: 617 EventRootType Probe[main.lenMap]
               InjectionPoints: [{PC: "0xbbd2c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 616 EventRootType Probe[main.lenMap]Return
+              Type: 618 EventRootType Probe[main.lenMap]Return
               InjectionPoints: [{PC: "0xbbdec", Frameless: false}]
               Condition: null
     - id: lenMap_len_eq_cond
@@ -8872,7 +9070,7 @@ Probes:
         - subprogram: {subprogram: 41}
           events:
             - Kind: Entry
-              Type: 617 EventRootType Probe[main.lenMap]
+              Type: 619 EventRootType Probe[main.lenMap]
               InjectionPoints: [{PC: "0xbbd2c", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -8897,7 +9095,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 618 EventRootType Probe[main.lenMap]Return
+              Type: 620 EventRootType Probe[main.lenMap]Return
               InjectionPoints: [{PC: "0xbbdec", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -8920,11 +9118,11 @@ Probes:
         - subprogram: {subprogram: 41}
           events:
             - Kind: Entry
-              Type: 619 EventRootType Probe[main.lenMap]
+              Type: 621 EventRootType Probe[main.lenMap]
               InjectionPoints: [{PC: "0xbbd2c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 620 EventRootType Probe[main.lenMap]Return
+              Type: 622 EventRootType Probe[main.lenMap]Return
               InjectionPoints: [{PC: "0xbbdec", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -8947,11 +9145,11 @@ Probes:
         - subprogram: {subprogram: 41}
           events:
             - Kind: Entry
-              Type: 621 EventRootType Probe[main.lenMap]
+              Type: 623 EventRootType Probe[main.lenMap]
               InjectionPoints: [{PC: "0xbbd2c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 622 EventRootType Probe[main.lenMap]Return
+              Type: 624 EventRootType Probe[main.lenMap]Return
               InjectionPoints: [{PC: "0xbbdec", Frameless: false}]
               Condition: null
     - id: lenPtrString_len_template
@@ -8966,11 +9164,11 @@ Probes:
         - subprogram: {subprogram: 42}
           events:
             - Kind: Entry
-              Type: 623 EventRootType Probe[main.lenPtrString]
+              Type: 625 EventRootType Probe[main.lenPtrString]
               InjectionPoints: [{PC: "0xbbe3c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 624 EventRootType Probe[main.lenPtrString]Return
+              Type: 626 EventRootType Probe[main.lenPtrString]Return
               InjectionPoints: [{PC: "0xbbee4", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -8993,11 +9191,11 @@ Probes:
         - subprogram: {subprogram: 42}
           events:
             - Kind: Entry
-              Type: 625 EventRootType Probe[main.lenPtrString]
+              Type: 627 EventRootType Probe[main.lenPtrString]
               InjectionPoints: [{PC: "0xbbe3c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 626 EventRootType Probe[main.lenPtrString]Return
+              Type: 628 EventRootType Probe[main.lenPtrString]Return
               InjectionPoints: [{PC: "0xbbee4", Frameless: false}]
               Condition: null
     - id: lenPtrStructFields_nocond
@@ -9012,11 +9210,11 @@ Probes:
         - subprogram: {subprogram: 44}
           events:
             - Kind: Entry
-              Type: 649 EventRootType Probe[main.lenPtrStructFields]
+              Type: 651 EventRootType Probe[main.lenPtrStructFields]
               InjectionPoints: [{PC: "0xbc09c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 650 EventRootType Probe[main.lenPtrStructFields]Return
+              Type: 652 EventRootType Probe[main.lenPtrStructFields]Return
               InjectionPoints: [{PC: "0xbc194", Frameless: false}]
               Condition: null
     - id: lenPtrStruct_field_map
@@ -9034,11 +9232,11 @@ Probes:
         - subprogram: {subprogram: 44}
           events:
             - Kind: Entry
-              Type: 651 EventRootType Probe[main.lenPtrStructFields]
+              Type: 653 EventRootType Probe[main.lenPtrStructFields]
               InjectionPoints: [{PC: "0xbc09c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 652 EventRootType Probe[main.lenPtrStructFields]Return
+              Type: 654 EventRootType Probe[main.lenPtrStructFields]Return
               InjectionPoints: [{PC: "0xbc194", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9064,11 +9262,11 @@ Probes:
         - subprogram: {subprogram: 44}
           events:
             - Kind: Entry
-              Type: 653 EventRootType Probe[main.lenPtrStructFields]
+              Type: 655 EventRootType Probe[main.lenPtrStructFields]
               InjectionPoints: [{PC: "0xbc09c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 654 EventRootType Probe[main.lenPtrStructFields]Return
+              Type: 656 EventRootType Probe[main.lenPtrStructFields]Return
               InjectionPoints: [{PC: "0xbc194", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9094,11 +9292,11 @@ Probes:
         - subprogram: {subprogram: 44}
           events:
             - Kind: Entry
-              Type: 655 EventRootType Probe[main.lenPtrStructFields]
+              Type: 657 EventRootType Probe[main.lenPtrStructFields]
               InjectionPoints: [{PC: "0xbc09c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 656 EventRootType Probe[main.lenPtrStructFields]Return
+              Type: 658 EventRootType Probe[main.lenPtrStructFields]Return
               InjectionPoints: [{PC: "0xbc194", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9122,7 +9320,7 @@ Probes:
         - subprogram: {subprogram: 40}
           events:
             - Kind: Entry
-              Type: 599 EventRootType Probe[main.lenSlice]
+              Type: 601 EventRootType Probe[main.lenSlice]
               InjectionPoints: [{PC: "0xbbc0c", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -9143,7 +9341,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 600 EventRootType Probe[main.lenSlice]Return
+              Type: 602 EventRootType Probe[main.lenSlice]Return
               InjectionPoints: [{PC: "0xbbccc", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9169,11 +9367,11 @@ Probes:
         - subprogram: {subprogram: 40}
           events:
             - Kind: Entry
-              Type: 601 EventRootType Probe[main.lenSlice]
+              Type: 603 EventRootType Probe[main.lenSlice]
               InjectionPoints: [{PC: "0xbbc0c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 602 EventRootType Probe[main.lenSlice]Return
+              Type: 604 EventRootType Probe[main.lenSlice]Return
               InjectionPoints: [{PC: "0xbbccc", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9199,11 +9397,11 @@ Probes:
         - subprogram: {subprogram: 40}
           events:
             - Kind: Entry
-              Type: 603 EventRootType Probe[main.lenSlice]
+              Type: 605 EventRootType Probe[main.lenSlice]
               InjectionPoints: [{PC: "0xbbc0c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 604 EventRootType Probe[main.lenSlice]Return
+              Type: 606 EventRootType Probe[main.lenSlice]Return
               InjectionPoints: [{PC: "0xbbccc", Frameless: false}]
               Condition: null
     - id: lenSlice_len_eq_cond
@@ -9221,7 +9419,7 @@ Probes:
         - subprogram: {subprogram: 40}
           events:
             - Kind: Entry
-              Type: 605 EventRootType Probe[main.lenSlice]
+              Type: 607 EventRootType Probe[main.lenSlice]
               InjectionPoints: [{PC: "0xbbc0c", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -9242,7 +9440,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 606 EventRootType Probe[main.lenSlice]Return
+              Type: 608 EventRootType Probe[main.lenSlice]Return
               InjectionPoints: [{PC: "0xbbccc", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9265,11 +9463,11 @@ Probes:
         - subprogram: {subprogram: 40}
           events:
             - Kind: Entry
-              Type: 607 EventRootType Probe[main.lenSlice]
+              Type: 609 EventRootType Probe[main.lenSlice]
               InjectionPoints: [{PC: "0xbbc0c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 608 EventRootType Probe[main.lenSlice]Return
+              Type: 610 EventRootType Probe[main.lenSlice]Return
               InjectionPoints: [{PC: "0xbbccc", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9292,11 +9490,11 @@ Probes:
         - subprogram: {subprogram: 40}
           events:
             - Kind: Entry
-              Type: 609 EventRootType Probe[main.lenSlice]
+              Type: 611 EventRootType Probe[main.lenSlice]
               InjectionPoints: [{PC: "0xbbc0c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 610 EventRootType Probe[main.lenSlice]Return
+              Type: 612 EventRootType Probe[main.lenSlice]Return
               InjectionPoints: [{PC: "0xbbccc", Frameless: false}]
               Condition: null
     - id: lenString_eq_capture
@@ -9316,11 +9514,11 @@ Probes:
         - subprogram: {subprogram: 39}
           events:
             - Kind: Entry
-              Type: 581 EventRootType Probe[main.lenString]
+              Type: 583 EventRootType Probe[main.lenString]
               InjectionPoints: [{PC: "0xbbafc", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 582 EventRootType Probe[main.lenString]Return
+              Type: 584 EventRootType Probe[main.lenString]Return
               InjectionPoints: [{PC: "0xbbbb0", Frameless: false}]
               Condition: null
     - id: lenString_eq_template
@@ -9338,11 +9536,11 @@ Probes:
         - subprogram: {subprogram: 39}
           events:
             - Kind: Entry
-              Type: 583 EventRootType Probe[main.lenString]
+              Type: 585 EventRootType Probe[main.lenString]
               InjectionPoints: [{PC: "0xbbafc", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 584 EventRootType Probe[main.lenString]Return
+              Type: 586 EventRootType Probe[main.lenString]Return
               InjectionPoints: [{PC: "0xbbbb0", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9368,11 +9566,11 @@ Probes:
         - subprogram: {subprogram: 39}
           events:
             - Kind: Entry
-              Type: 585 EventRootType Probe[main.lenString]
+              Type: 587 EventRootType Probe[main.lenString]
               InjectionPoints: [{PC: "0xbbafc", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 586 EventRootType Probe[main.lenString]Return
+              Type: 588 EventRootType Probe[main.lenString]Return
               InjectionPoints: [{PC: "0xbbbb0", Frameless: false}]
               Condition: null
     - id: lenString_isEmpty_cond
@@ -9388,7 +9586,7 @@ Probes:
         - subprogram: {subprogram: 39}
           events:
             - Kind: Entry
-              Type: 587 EventRootType Probe[main.lenString]
+              Type: 589 EventRootType Probe[main.lenString]
               InjectionPoints: [{PC: "0xbbafc", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -9409,7 +9607,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 588 EventRootType Probe[main.lenString]Return
+              Type: 590 EventRootType Probe[main.lenString]Return
               InjectionPoints: [{PC: "0xbbbb0", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9435,11 +9633,11 @@ Probes:
         - subprogram: {subprogram: 39}
           events:
             - Kind: Entry
-              Type: 589 EventRootType Probe[main.lenString]
+              Type: 591 EventRootType Probe[main.lenString]
               InjectionPoints: [{PC: "0xbbafc", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 590 EventRootType Probe[main.lenString]Return
+              Type: 592 EventRootType Probe[main.lenString]Return
               InjectionPoints: [{PC: "0xbbbb0", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9465,11 +9663,11 @@ Probes:
         - subprogram: {subprogram: 39}
           events:
             - Kind: Entry
-              Type: 591 EventRootType Probe[main.lenString]
+              Type: 593 EventRootType Probe[main.lenString]
               InjectionPoints: [{PC: "0xbbafc", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 592 EventRootType Probe[main.lenString]Return
+              Type: 594 EventRootType Probe[main.lenString]Return
               InjectionPoints: [{PC: "0xbbbb0", Frameless: false}]
               Condition: null
     - id: lenString_len_eq_cond
@@ -9487,7 +9685,7 @@ Probes:
         - subprogram: {subprogram: 39}
           events:
             - Kind: Entry
-              Type: 593 EventRootType Probe[main.lenString]
+              Type: 595 EventRootType Probe[main.lenString]
               InjectionPoints: [{PC: "0xbbafc", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -9508,7 +9706,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 594 EventRootType Probe[main.lenString]Return
+              Type: 596 EventRootType Probe[main.lenString]Return
               InjectionPoints: [{PC: "0xbbbb0", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9531,11 +9729,11 @@ Probes:
         - subprogram: {subprogram: 39}
           events:
             - Kind: Entry
-              Type: 595 EventRootType Probe[main.lenString]
+              Type: 597 EventRootType Probe[main.lenString]
               InjectionPoints: [{PC: "0xbbafc", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 596 EventRootType Probe[main.lenString]Return
+              Type: 598 EventRootType Probe[main.lenString]Return
               InjectionPoints: [{PC: "0xbbbb0", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9558,11 +9756,11 @@ Probes:
         - subprogram: {subprogram: 39}
           events:
             - Kind: Entry
-              Type: 597 EventRootType Probe[main.lenString]
+              Type: 599 EventRootType Probe[main.lenString]
               InjectionPoints: [{PC: "0xbbafc", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 598 EventRootType Probe[main.lenString]Return
+              Type: 600 EventRootType Probe[main.lenString]Return
               InjectionPoints: [{PC: "0xbbbb0", Frameless: false}]
               Condition: null
     - id: lenStructFields_nocond
@@ -9577,11 +9775,11 @@ Probes:
         - subprogram: {subprogram: 43}
           events:
             - Kind: Entry
-              Type: 629 EventRootType Probe[main.lenStructFields]
+              Type: 631 EventRootType Probe[main.lenStructFields]
               InjectionPoints: [{PC: "0xbbf3c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 630 EventRootType Probe[main.lenStructFields]Return
+              Type: 632 EventRootType Probe[main.lenStructFields]Return
               InjectionPoints: [{PC: "0xbc050", Frameless: false}]
               Condition: null
     - id: lenStruct_field_map
@@ -9599,11 +9797,11 @@ Probes:
         - subprogram: {subprogram: 43}
           events:
             - Kind: Entry
-              Type: 631 EventRootType Probe[main.lenStructFields]
+              Type: 633 EventRootType Probe[main.lenStructFields]
               InjectionPoints: [{PC: "0xbbf3c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 632 EventRootType Probe[main.lenStructFields]Return
+              Type: 634 EventRootType Probe[main.lenStructFields]Return
               InjectionPoints: [{PC: "0xbc050", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9629,11 +9827,11 @@ Probes:
         - subprogram: {subprogram: 43}
           events:
             - Kind: Entry
-              Type: 633 EventRootType Probe[main.lenStructFields]
+              Type: 635 EventRootType Probe[main.lenStructFields]
               InjectionPoints: [{PC: "0xbbf3c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 634 EventRootType Probe[main.lenStructFields]Return
+              Type: 636 EventRootType Probe[main.lenStructFields]Return
               InjectionPoints: [{PC: "0xbc050", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9659,11 +9857,11 @@ Probes:
         - subprogram: {subprogram: 43}
           events:
             - Kind: Entry
-              Type: 635 EventRootType Probe[main.lenStructFields]
+              Type: 637 EventRootType Probe[main.lenStructFields]
               InjectionPoints: [{PC: "0xbbf3c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 636 EventRootType Probe[main.lenStructFields]Return
+              Type: 638 EventRootType Probe[main.lenStructFields]Return
               InjectionPoints: [{PC: "0xbc050", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9689,11 +9887,11 @@ Probes:
         - subprogram: {subprogram: 43}
           events:
             - Kind: Entry
-              Type: 637 EventRootType Probe[main.lenStructFields]
+              Type: 639 EventRootType Probe[main.lenStructFields]
               InjectionPoints: [{PC: "0xbbf3c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 638 EventRootType Probe[main.lenStructFields]Return
+              Type: 640 EventRootType Probe[main.lenStructFields]Return
               InjectionPoints: [{PC: "0xbc050", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9719,11 +9917,11 @@ Probes:
         - subprogram: {subprogram: 43}
           events:
             - Kind: Entry
-              Type: 639 EventRootType Probe[main.lenStructFields]
+              Type: 641 EventRootType Probe[main.lenStructFields]
               InjectionPoints: [{PC: "0xbbf3c", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 640 EventRootType Probe[main.lenStructFields]Return
+              Type: 642 EventRootType Probe[main.lenStructFields]Return
               InjectionPoints: [{PC: "0xbc050", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9749,7 +9947,7 @@ Probes:
         - subprogram: {subprogram: 43}
           events:
             - Kind: Entry
-              Type: 641 EventRootType Probe[main.lenStructFields]
+              Type: 643 EventRootType Probe[main.lenStructFields]
               InjectionPoints: [{PC: "0xbbf3c", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -9774,7 +9972,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 642 EventRootType Probe[main.lenStructFields]Return
+              Type: 644 EventRootType Probe[main.lenStructFields]Return
               InjectionPoints: [{PC: "0xbc050", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9800,7 +9998,7 @@ Probes:
         - subprogram: {subprogram: 43}
           events:
             - Kind: Entry
-              Type: 643 EventRootType Probe[main.lenStructFields]
+              Type: 645 EventRootType Probe[main.lenStructFields]
               InjectionPoints: [{PC: "0xbbf3c", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -9821,7 +10019,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 644 EventRootType Probe[main.lenStructFields]Return
+              Type: 646 EventRootType Probe[main.lenStructFields]Return
               InjectionPoints: [{PC: "0xbc050", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9847,7 +10045,7 @@ Probes:
         - subprogram: {subprogram: 43}
           events:
             - Kind: Entry
-              Type: 645 EventRootType Probe[main.lenStructFields]
+              Type: 647 EventRootType Probe[main.lenStructFields]
               InjectionPoints: [{PC: "0xbbf3c", Frameless: false}]
               Condition:
                 Type: 6 BaseType bool
@@ -9868,7 +10066,7 @@ Probes:
                 LeafBodies: []
                 IsSplit: false
             - Kind: Return
-              Type: 646 EventRootType Probe[main.lenStructFields]Return
+              Type: 648 EventRootType Probe[main.lenStructFields]Return
               InjectionPoints: [{PC: "0xbc050", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -9973,11 +10171,11 @@ Probes:
         - subprogram: {subprogram: 70}
           events:
             - Kind: Entry
-              Type: 741 EventRootType Probe[main.mapIndexBoolKey]
+              Type: 743 EventRootType Probe[main.mapIndexBoolKey]
               InjectionPoints: [{PC: "0xbd448", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 742 EventRootType Probe[main.mapIndexBoolKey]Return
+              Type: 744 EventRootType Probe[main.mapIndexBoolKey]Return
               InjectionPoints: [{PC: "0xbd478", Frameless: false}]
               Condition: null
     - id: mapIndex_boolKey_true
@@ -9998,11 +10196,11 @@ Probes:
         - subprogram: {subprogram: 70}
           events:
             - Kind: Entry
-              Type: 743 EventRootType Probe[main.mapIndexBoolKey]
+              Type: 745 EventRootType Probe[main.mapIndexBoolKey]
               InjectionPoints: [{PC: "0xbd448", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 744 EventRootType Probe[main.mapIndexBoolKey]Return
+              Type: 746 EventRootType Probe[main.mapIndexBoolKey]Return
               InjectionPoints: [{PC: "0xbd478", Frameless: false}]
               Condition: null
     - id: mapIndex_emptyKey_capture
@@ -10023,11 +10221,11 @@ Probes:
         - subprogram: {subprogram: 67}
           events:
             - Kind: Entry
-              Type: 735 EventRootType Probe[main.mapIndexEmptyKey]
+              Type: 737 EventRootType Probe[main.mapIndexEmptyKey]
               InjectionPoints: [{PC: "0xbd298", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 736 EventRootType Probe[main.mapIndexEmptyKey]Return
+              Type: 738 EventRootType Probe[main.mapIndexEmptyKey]Return
               InjectionPoints: [{PC: "0xbd2ec", Frameless: false}]
               Condition: null
     - id: mapIndex_intKey_capture
@@ -10048,11 +10246,11 @@ Probes:
         - subprogram: {subprogram: 56}
           events:
             - Kind: Entry
-              Type: 707 EventRootType Probe[main.mapIndexIntKey]
+              Type: 709 EventRootType Probe[main.mapIndexIntKey]
               InjectionPoints: [{PC: "0xbcba8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 708 EventRootType Probe[main.mapIndexIntKey]Return
+              Type: 710 EventRootType Probe[main.mapIndexIntKey]Return
               InjectionPoints: [{PC: "0xbcbd8", Frameless: false}]
               Condition: null
     - id: mapIndex_keyLen16
@@ -10075,11 +10273,11 @@ Probes:
         - subprogram: {subprogram: 68}
           events:
             - Kind: Entry
-              Type: 737 EventRootType Probe[main.mapIndexKeyLen16]
+              Type: 739 EventRootType Probe[main.mapIndexKeyLen16]
               InjectionPoints: [{PC: "0xbd328", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 738 EventRootType Probe[main.mapIndexKeyLen16]Return
+              Type: 740 EventRootType Probe[main.mapIndexKeyLen16]Return
               InjectionPoints: [{PC: "0xbd374", Frameless: false}]
               Condition: null
     - id: mapIndex_keyLen17
@@ -10102,11 +10300,11 @@ Probes:
         - subprogram: {subprogram: 69}
           events:
             - Kind: Entry
-              Type: 739 EventRootType Probe[main.mapIndexKeyLen17]
+              Type: 741 EventRootType Probe[main.mapIndexKeyLen17]
               InjectionPoints: [{PC: "0xbd3b8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 740 EventRootType Probe[main.mapIndexKeyLen17]Return
+              Type: 742 EventRootType Probe[main.mapIndexKeyLen17]Return
               InjectionPoints: [{PC: "0xbd404", Frameless: false}]
               Condition: null
     - id: mapIndex_keyLen200
@@ -10132,11 +10330,11 @@ Probes:
         - subprogram: {subprogram: 64}
           events:
             - Kind: Entry
-              Type: 725 EventRootType Probe[main.mapIndexKeyLen200]
+              Type: 727 EventRootType Probe[main.mapIndexKeyLen200]
               InjectionPoints: [{PC: "0xbd0d8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 726 EventRootType Probe[main.mapIndexKeyLen200]Return
+              Type: 728 EventRootType Probe[main.mapIndexKeyLen200]Return
               InjectionPoints: [{PC: "0xbd124", Frameless: false}]
               Condition: null
     - id: mapIndex_keyLen24
@@ -10159,11 +10357,11 @@ Probes:
         - subprogram: {subprogram: 61}
           events:
             - Kind: Entry
-              Type: 719 EventRootType Probe[main.mapIndexKeyLen24]
+              Type: 721 EventRootType Probe[main.mapIndexKeyLen24]
               InjectionPoints: [{PC: "0xbcf28", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 720 EventRootType Probe[main.mapIndexKeyLen24]Return
+              Type: 722 EventRootType Probe[main.mapIndexKeyLen24]Return
               InjectionPoints: [{PC: "0xbcf74", Frameless: false}]
               Condition: null
     - id: mapIndex_keyLen48
@@ -10189,11 +10387,11 @@ Probes:
         - subprogram: {subprogram: 62}
           events:
             - Kind: Entry
-              Type: 721 EventRootType Probe[main.mapIndexKeyLen48]
+              Type: 723 EventRootType Probe[main.mapIndexKeyLen48]
               InjectionPoints: [{PC: "0xbcfb8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 722 EventRootType Probe[main.mapIndexKeyLen48]Return
+              Type: 724 EventRootType Probe[main.mapIndexKeyLen48]Return
               InjectionPoints: [{PC: "0xbd004", Frameless: false}]
               Condition: null
     - id: mapIndex_keyLen8
@@ -10216,11 +10414,11 @@ Probes:
         - subprogram: {subprogram: 60}
           events:
             - Kind: Entry
-              Type: 717 EventRootType Probe[main.mapIndexKeyLen8]
+              Type: 719 EventRootType Probe[main.mapIndexKeyLen8]
               InjectionPoints: [{PC: "0xbce98", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 718 EventRootType Probe[main.mapIndexKeyLen8]Return
+              Type: 720 EventRootType Probe[main.mapIndexKeyLen8]Return
               InjectionPoints: [{PC: "0xbcee4", Frameless: false}]
               Condition: null
     - id: mapIndex_keyLen96
@@ -10246,11 +10444,11 @@ Probes:
         - subprogram: {subprogram: 63}
           events:
             - Kind: Entry
-              Type: 723 EventRootType Probe[main.mapIndexKeyLen96]
+              Type: 725 EventRootType Probe[main.mapIndexKeyLen96]
               InjectionPoints: [{PC: "0xbd048", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 724 EventRootType Probe[main.mapIndexKeyLen96]Return
+              Type: 726 EventRootType Probe[main.mapIndexKeyLen96]Return
               InjectionPoints: [{PC: "0xbd094", Frameless: false}]
               Condition: null
     - id: mapIndex_largeMap_capture
@@ -10273,11 +10471,11 @@ Probes:
         - subprogram: {subprogram: 58}
           events:
             - Kind: Entry
-              Type: 713 EventRootType Probe[main.mapIndexLargeMap]
+              Type: 715 EventRootType Probe[main.mapIndexLargeMap]
               InjectionPoints: [{PC: "0xbcc88", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 714 EventRootType Probe[main.mapIndexLargeMap]Return
+              Type: 716 EventRootType Probe[main.mapIndexLargeMap]Return
               InjectionPoints: [{PC: "0xbccd4", Frameless: false}]
               Condition: null
     - id: mapIndex_largeValue_capture
@@ -10300,11 +10498,11 @@ Probes:
         - subprogram: {subprogram: 73}
           events:
             - Kind: Entry
-              Type: 749 EventRootType Probe[main.mapIndexLargeValue]
+              Type: 751 EventRootType Probe[main.mapIndexLargeValue]
               InjectionPoints: [{PC: "0xbd598", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 750 EventRootType Probe[main.mapIndexLargeValue]Return
+              Type: 752 EventRootType Probe[main.mapIndexLargeValue]Return
               InjectionPoints: [{PC: "0xbd5ec", Frameless: false}]
               Condition: null
     - id: mapIndex_missing_capture
@@ -10327,11 +10525,11 @@ Probes:
         - subprogram: {subprogram: 59}
           events:
             - Kind: Entry
-              Type: 715 EventRootType Probe[main.mapIndexMissing]
+              Type: 717 EventRootType Probe[main.mapIndexMissing]
               InjectionPoints: [{PC: "0xbcd18", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 716 EventRootType Probe[main.mapIndexMissing]Return
+              Type: 718 EventRootType Probe[main.mapIndexMissing]Return
               InjectionPoints: [{PC: "0xbcd48", Frameless: false}]
               Condition: null
     - id: mapIndex_nilPtrVal_capture
@@ -10354,11 +10552,11 @@ Probes:
         - subprogram: {subprogram: 72}
           events:
             - Kind: Entry
-              Type: 747 EventRootType Probe[main.mapIndexNilPtrVal]
+              Type: 749 EventRootType Probe[main.mapIndexNilPtrVal]
               InjectionPoints: [{PC: "0xbd528", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 748 EventRootType Probe[main.mapIndexNilPtrVal]Return
+              Type: 750 EventRootType Probe[main.mapIndexNilPtrVal]Return
               InjectionPoints: [{PC: "0xbd558", Frameless: false}]
               Condition: null
     - id: mapIndex_ptrStructVal_capture_int
@@ -10381,11 +10579,11 @@ Probes:
         - subprogram: {subprogram: 66}
           events:
             - Kind: Entry
-              Type: 731 EventRootType Probe[main.mapIndexPtrStructVal]
+              Type: 733 EventRootType Probe[main.mapIndexPtrStructVal]
               InjectionPoints: [{PC: "0xbd1f8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 732 EventRootType Probe[main.mapIndexPtrStructVal]Return
+              Type: 734 EventRootType Probe[main.mapIndexPtrStructVal]Return
               InjectionPoints: [{PC: "0xbd254", Frameless: false}]
               Condition: null
     - id: mapIndex_ptrStructVal_capture_string
@@ -10408,11 +10606,11 @@ Probes:
         - subprogram: {subprogram: 66}
           events:
             - Kind: Entry
-              Type: 733 EventRootType Probe[main.mapIndexPtrStructVal]
+              Type: 735 EventRootType Probe[main.mapIndexPtrStructVal]
               InjectionPoints: [{PC: "0xbd1f8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 734 EventRootType Probe[main.mapIndexPtrStructVal]Return
+              Type: 736 EventRootType Probe[main.mapIndexPtrStructVal]Return
               InjectionPoints: [{PC: "0xbd254", Frameless: false}]
               Condition: null
     - id: mapIndex_stringKey_capture
@@ -10435,11 +10633,11 @@ Probes:
         - subprogram: {subprogram: 57}
           events:
             - Kind: Entry
-              Type: 709 EventRootType Probe[main.mapIndexStringKey]
+              Type: 711 EventRootType Probe[main.mapIndexStringKey]
               InjectionPoints: [{PC: "0xbcc18", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 710 EventRootType Probe[main.mapIndexStringKey]Return
+              Type: 712 EventRootType Probe[main.mapIndexStringKey]Return
               InjectionPoints: [{PC: "0xbcc48", Frameless: false}]
               Condition: null
     - id: mapIndex_stringKey_template
@@ -10460,11 +10658,11 @@ Probes:
         - subprogram: {subprogram: 57}
           events:
             - Kind: Entry
-              Type: 711 EventRootType Probe[main.mapIndexStringKey]
+              Type: 713 EventRootType Probe[main.mapIndexStringKey]
               InjectionPoints: [{PC: "0xbcc18", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 712 EventRootType Probe[main.mapIndexStringKey]Return
+              Type: 714 EventRootType Probe[main.mapIndexStringKey]Return
               InjectionPoints: [{PC: "0xbcc48", Frameless: false}]
               Condition: null
           probeTemplate:
@@ -10493,11 +10691,11 @@ Probes:
         - subprogram: {subprogram: 65}
           events:
             - Kind: Entry
-              Type: 727 EventRootType Probe[main.mapIndexStructVal]
+              Type: 729 EventRootType Probe[main.mapIndexStructVal]
               InjectionPoints: [{PC: "0xbd168", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 728 EventRootType Probe[main.mapIndexStructVal]Return
+              Type: 730 EventRootType Probe[main.mapIndexStructVal]Return
               InjectionPoints: [{PC: "0xbd1c0", Frameless: false}]
               Condition: null
     - id: mapIndex_structVal_capture_string
@@ -10520,11 +10718,11 @@ Probes:
         - subprogram: {subprogram: 65}
           events:
             - Kind: Entry
-              Type: 729 EventRootType Probe[main.mapIndexStructVal]
+              Type: 731 EventRootType Probe[main.mapIndexStructVal]
               InjectionPoints: [{PC: "0xbd168", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 730 EventRootType Probe[main.mapIndexStructVal]Return
+              Type: 732 EventRootType Probe[main.mapIndexStructVal]Return
               InjectionPoints: [{PC: "0xbd1c0", Frameless: false}]
               Condition: null
     - id: mapIndex_zeroValue_capture
@@ -10547,11 +10745,11 @@ Probes:
         - subprogram: {subprogram: 71}
           events:
             - Kind: Entry
-              Type: 745 EventRootType Probe[main.mapIndexZeroValue]
+              Type: 747 EventRootType Probe[main.mapIndexZeroValue]
               InjectionPoints: [{PC: "0xbd4b8", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 746 EventRootType Probe[main.mapIndexZeroValue]Return
+              Type: 748 EventRootType Probe[main.mapIndexZeroValue]Return
               InjectionPoints: [{PC: "0xbd4e8", Frameless: false}]
               Condition: null
     - id: noArgs
@@ -10572,6 +10770,64 @@ Probes:
               Type: 379 EventRootType Probe[main.noArgs]Return
               InjectionPoints: [{PC: "0xba340", Frameless: false}]
               Condition: null
+    - id: regression_condEvalErrorIsolation
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllIntSlice}
+      when:
+        dsl: tag == "toolarge"
+        json: {eq: [{ref: tag}, toolarge]}
+      sampling: {snapshotsPerSecond: 10}
+      template: isolation={any(xs, {@it == -1})} tag={tag}
+      segments:
+        - isolation=
+        - json: {any: [{ref: xs}, {eq: [{ref: '@it'}, -1]}]}
+          dsl: any(xs, {@it == -1})
+        - ' tag='
+        - json: {ref: tag}
+          dsl: tag
+      captureSnapshot: false
+      instances:
+        - subprogram: {subprogram: 76}
+          events:
+            - Kind: Entry
+              Type: 785 EventRootType Probe[main.anyAllIntSlice]
+              InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
+              Condition:
+                Type: 6 BaseType bool
+                Operations:
+                    - __kind: LocationOp
+                      Variable: {subprogram: 76, index: 1, name: tag}
+                      Offset: 0
+                      ByteSize: 16
+                    - __kind: ExprReadStringOp
+                      MaxLen: 255
+                    - __kind: ExprLoadLiteralOp
+                      Data: CAAAAHRvb2xhcmdl
+                    - __kind: ExprCmpStringOp
+                      Op: Eq
+                    - __kind: ConditionCheckOp
+                LeafBodies: []
+                IsSplit: false
+            - Kind: Return
+              Type: 786 EventRootType Probe[main.anyAllIntSlice]Return
+              InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
+              Condition: null
+          probeTemplate:
+            TemplateString: isolation={any(xs, {@it == -1})} tag={tag}
+            Segments:
+                - isolation=
+                - JSON:
+                    Base: {Ref: xs}
+                    Pred: {Left: {Ref: '@it'}, Right: {Value: -1}}
+                  DSL: any(xs, {@it == -1})
+                  EventKind: Entry
+                  EventExpressionIndex: 0
+                - ' tag='
+                - JSON: {Ref: tag}
+                  DSL: tag
+                  EventKind: Entry
+                  EventExpressionIndex: 1
     - id: stringArg
       version: 0
       type: LOG_PROBE
@@ -10634,6 +10890,312 @@ Probes:
               Type: 368 EventRootType Probe[main.stringSliceArg]Return
               InjectionPoints: [{PC: "0xba034", Frameless: false}]
               Condition: null
+    - id: templateAllIntSlice_positive
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllIntSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: allpos={all(xs, {@it > 0})} tag={tag}
+      segments:
+        - allpos=
+        - json: {all: [{ref: xs}, {gt: [{ref: '@it'}, 0]}]}
+          dsl: all(xs, {@it > 0})
+        - ' tag='
+        - json: {ref: tag}
+          dsl: tag
+      captureSnapshot: false
+      instances:
+        - subprogram: {subprogram: 76}
+          events:
+            - Kind: Entry
+              Type: 787 EventRootType Probe[main.anyAllIntSlice]
+              InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 788 EventRootType Probe[main.anyAllIntSlice]Return
+              InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
+              Condition: null
+          probeTemplate:
+            TemplateString: allpos={all(xs, {@it > 0})} tag={tag}
+            Segments:
+                - allpos=
+                - JSON:
+                    Base: {Ref: xs}
+                    Pred: {Left: {Ref: '@it'}, Right: {Value: 0}}
+                  DSL: all(xs, {@it > 0})
+                  EventKind: Entry
+                  EventExpressionIndex: 0
+                - ' tag='
+                - JSON: {Ref: tag}
+                  DSL: tag
+                  EventKind: Entry
+                  EventExpressionIndex: 1
+    - id: templateAnyIntSlice_eq42
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllIntSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: any42={any(xs, {@it == 42})} tag={tag}
+      segments:
+        - any42=
+        - json: {any: [{ref: xs}, {eq: [{ref: '@it'}, 42]}]}
+          dsl: any(xs, {@it == 42})
+        - ' tag='
+        - json: {ref: tag}
+          dsl: tag
+      captureSnapshot: false
+      instances:
+        - subprogram: {subprogram: 76}
+          events:
+            - Kind: Entry
+              Type: 789 EventRootType Probe[main.anyAllIntSlice]
+              InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 790 EventRootType Probe[main.anyAllIntSlice]Return
+              InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
+              Condition: null
+          probeTemplate:
+            TemplateString: any42={any(xs, {@it == 42})} tag={tag}
+            Segments:
+                - any42=
+                - JSON:
+                    Base: {Ref: xs}
+                    Pred: {Left: {Ref: '@it'}, Right: {Value: 42}}
+                  DSL: any(xs, {@it == 42})
+                  EventKind: Entry
+                  EventExpressionIndex: 0
+                - ' tag='
+                - JSON: {Ref: tag}
+                  DSL: tag
+                  EventKind: Entry
+                  EventExpressionIndex: 1
+    - id: templateAnyIntSlice_toolarge
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllIntSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: anyTooLarge={any(xs, {@it == -1})} tag={tag}
+      segments:
+        - anyTooLarge=
+        - json: {any: [{ref: xs}, {eq: [{ref: '@it'}, -1]}]}
+          dsl: any(xs, {@it == -1})
+        - ' tag='
+        - json: {ref: tag}
+          dsl: tag
+      captureSnapshot: false
+      instances:
+        - subprogram: {subprogram: 76}
+          events:
+            - Kind: Entry
+              Type: 791 EventRootType Probe[main.anyAllIntSlice]
+              InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 792 EventRootType Probe[main.anyAllIntSlice]Return
+              InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
+              Condition: null
+          probeTemplate:
+            TemplateString: anyTooLarge={any(xs, {@it == -1})} tag={tag}
+            Segments:
+                - anyTooLarge=
+                - JSON:
+                    Base: {Ref: xs}
+                    Pred: {Left: {Ref: '@it'}, Right: {Value: -1}}
+                  DSL: any(xs, {@it == -1})
+                  EventKind: Entry
+                  EventExpressionIndex: 0
+                - ' tag='
+                - JSON: {Ref: tag}
+                  DSL: tag
+                  EventKind: Entry
+                  EventExpressionIndex: 1
+    - id: templateContainsIntArray_42
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllIntArray}
+      sampling: {snapshotsPerSecond: 10}
+      template: containsIntArr42={contains(xs, 42)} tag={tag}
+      segments:
+        - containsIntArr42=
+        - json: {contains: [{ref: xs}, 42]}
+          dsl: contains(xs, 42)
+        - ' tag='
+        - json: {ref: tag}
+          dsl: tag
+      captureSnapshot: false
+      instances:
+        - subprogram: {subprogram: 79}
+          events:
+            - Kind: Entry
+              Type: 819 EventRootType Probe[main.anyAllIntArray]
+              InjectionPoints: [{PC: "0xbdd68", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 820 EventRootType Probe[main.anyAllIntArray]Return
+              InjectionPoints: [{PC: "0xbddf0", Frameless: false}]
+              Condition: null
+          probeTemplate:
+            TemplateString: containsIntArr42={contains(xs, 42)} tag={tag}
+            Segments:
+                - containsIntArr42=
+                - JSON: {Base: {Ref: xs}, Key: {Value: 42}}
+                  DSL: contains(xs, 42)
+                  EventKind: Entry
+                  EventExpressionIndex: 0
+                - ' tag='
+                - JSON: {Ref: tag}
+                  DSL: tag
+                  EventKind: Entry
+                  EventExpressionIndex: 1
+    - id: templateContainsIntSlice_42
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllIntSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: containsInt42={contains(xs, 42)} tag={tag}
+      segments:
+        - containsInt42=
+        - json: {contains: [{ref: xs}, 42]}
+          dsl: contains(xs, 42)
+        - ' tag='
+        - json: {ref: tag}
+          dsl: tag
+      captureSnapshot: false
+      instances:
+        - subprogram: {subprogram: 76}
+          events:
+            - Kind: Entry
+              Type: 793 EventRootType Probe[main.anyAllIntSlice]
+              InjectionPoints: [{PC: "0xbdac8", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 794 EventRootType Probe[main.anyAllIntSlice]Return
+              InjectionPoints: [{PC: "0xbdb48", Frameless: false}]
+              Condition: null
+          probeTemplate:
+            TemplateString: containsInt42={contains(xs, 42)} tag={tag}
+            Segments:
+                - containsInt42=
+                - JSON: {Base: {Ref: xs}, Key: {Value: 42}}
+                  DSL: contains(xs, 42)
+                  EventKind: Entry
+                  EventExpressionIndex: 0
+                - ' tag='
+                - JSON: {Ref: tag}
+                  DSL: tag
+                  EventKind: Entry
+                  EventExpressionIndex: 1
+    - id: templateContainsStringSlice_match
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllStringSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: containsStrMatch={contains(xs, "match")} tag={tag}
+      segments:
+        - containsStrMatch=
+        - json: {contains: [{ref: xs}, match]}
+          dsl: contains(xs, "match")
+        - ' tag='
+        - json: {ref: tag}
+          dsl: tag
+      captureSnapshot: false
+      instances:
+        - subprogram: {subprogram: 89}
+          events:
+            - Kind: Entry
+              Type: 833 EventRootType Probe[main.anyAllStringSlice]
+              InjectionPoints: [{PC: "0xbe618", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 834 EventRootType Probe[main.anyAllStringSlice]Return
+              InjectionPoints: [{PC: "0xbe69c", Frameless: false}]
+              Condition: null
+          probeTemplate:
+            TemplateString: containsStrMatch={contains(xs, "match")} tag={tag}
+            Segments:
+                - containsStrMatch=
+                - JSON: {Base: {Ref: xs}, Key: {Value: match}}
+                  DSL: contains(xs, "match")
+                  EventKind: Entry
+                  EventExpressionIndex: 0
+                - ' tag='
+                - JSON: {Ref: tag}
+                  DSL: tag
+                  EventKind: Entry
+                  EventExpressionIndex: 1
+    - id: templateContains_struct_unsupported
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.anyAllStructSlice}
+      sampling: {snapshotsPerSecond: 10}
+      template: containsStruct={contains(xs, 42)} tag={tag}
+      segments:
+        - containsStruct=
+        - json: {contains: [{ref: xs}, 42]}
+          dsl: contains(xs, 42)
+        - ' tag='
+        - json: {ref: tag}
+          dsl: tag
+      captureSnapshot: false
+      instances:
+        - subprogram: {subprogram: 77}
+          events:
+            - Kind: Entry
+              Type: 805 EventRootType Probe[main.anyAllStructSlice]
+              InjectionPoints: [{PC: "0xbdba8", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 806 EventRootType Probe[main.anyAllStructSlice]Return
+              InjectionPoints: [{PC: "0xbdc2c", Frameless: false}]
+              Condition: null
+          probeTemplate:
+            TemplateString: containsStruct={contains(xs, 42)} tag={tag}
+            Segments:
+                - containsStruct=
+                - Error: 'failed to resolve expression: Eq: unsupported LHS type *ir.StructureType for comparison'
+                  DSL: contains(xs, 42)
+                - ' tag='
+                - JSON: {Ref: tag}
+                  DSL: tag
+                  EventKind: Entry
+                  EventExpressionIndex: 0
+    - id: templateContains_substring_string
+      version: 0
+      type: LOG_PROBE
+      where: {methodName: main.condContainsMap}
+      sampling: {snapshotsPerSecond: 10}
+      template: containsSubstr={contains(tag, "x")} tag={tag}
+      segments:
+        - containsSubstr=
+        - json: {contains: [{ref: tag}, x]}
+          dsl: contains(tag, "x")
+        - ' tag='
+        - json: {ref: tag}
+          dsl: tag
+      captureSnapshot: false
+      instances:
+        - subprogram: {subprogram: 38}
+          events:
+            - Kind: Entry
+              Type: 579 EventRootType Probe[main.condContainsMap]
+              InjectionPoints: [{PC: "0xbb9bc", Frameless: false}]
+              Condition: null
+            - Kind: Return
+              Type: 580 EventRootType Probe[main.condContainsMap]Return
+              InjectionPoints: [{PC: "0xbba94", Frameless: false}]
+              Condition: null
+          probeTemplate:
+            TemplateString: containsSubstr={contains(tag, "x")} tag={tag}
+            Segments:
+                - containsSubstr=
+                - Error: 'contains: substring containment on a string base is not yet supported'
+                  DSL: contains(tag, "x")
+                - ' tag='
+                - JSON: {Ref: tag}
+                  DSL: tag
+                  EventKind: Entry
+                  EventExpressionIndex: 0
     - id: usesMapsOfMapsThatDoNotAppearAsArguments
       version: 0
       type: LOG_PROBE
@@ -10646,11 +11208,11 @@ Probes:
         - subprogram: {subprogram: 48}
           events:
             - Kind: Entry
-              Type: 671 EventRootType Probe[main.usesMapsOfMapsThatDoNotAppearAsArguments]
+              Type: 673 EventRootType Probe[main.usesMapsOfMapsThatDoNotAppearAsArguments]
               InjectionPoints: [{PC: "0xbc4d0", Frameless: false}]
               Condition: null
             - Kind: Return
-              Type: 672 EventRootType Probe[main.usesMapsOfMapsThatDoNotAppearAsArguments]Return
+              Type: 674 EventRootType Probe[main.usesMapsOfMapsThatDoNotAppearAsArguments]Return
               InjectionPoints: [{PC: "0xbc644", Frameless: false}]
               Condition: null
 Subprograms:
@@ -14493,7 +15055,7 @@ Types:
       Name: '@trace_context'
       ByteSize: 40
     - __kind: EventRootType
-      ID: 813
+      ID: 847
       Name: Probe[main.(*methodValueReceiver).inlinedMethod]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -14512,7 +15074,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 811
+      ID: 845
       Name: Probe[main.PointerChainArg]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -14544,7 +15106,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 812
+      ID: 846
       Name: Probe[main.PointerSmallChainArg]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -14563,7 +15125,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 787
+      ID: 813
       Name: Probe[main.anyAllIntArray]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -14582,7 +15144,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 789
+      ID: 815
       Name: Probe[main.anyAllIntArray]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -14601,7 +15163,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 791
+      ID: 817
       Name: Probe[main.anyAllIntArray]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -14620,33 +15182,72 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 788
-      Name: Probe[main.anyAllIntArray]Return
-    - __kind: EventRootType
-      ID: 790
-      Name: Probe[main.anyAllIntArray]Return
-    - __kind: EventRootType
-      ID: 792
-      Name: Probe[main.anyAllIntArray]Return
-    - __kind: EventRootType
-      ID: 761
-      Name: Probe[main.anyAllIntSlice]
-      ByteSize: 17
+      ID: 819
+      Name: Probe[main.anyAllIntArray]
+      ByteSize: 18
       ExprStatusArraySize: 1
       Expressions:
-        - Name: tag
+        - Name: contains(xs, 42)
           Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 6 BaseType bool
+            Operations:
+                - __kind: ExprLoadAddressOp
+                  Variable: {subprogram: 79, index: 0, name: xs}
+                  Offset: 0
+                  PointerBias: 0
+                - __kind: ArrayLoopBeginOp
+                  Quantifier: 1
+                  ElemByteSize: 8
+                  CompileTimeLen: 5
+                  EndLabel: 1
+                - __kind: CondLabelOp
+                  ID: 2
+                - __kind: LocationOp
+                  Variable: {name: '@it', role: LoopIt}
+                  Offset: 0
+                  ByteSize: 8
+                - __kind: ExprPushOffsetOp
+                  ByteSize: 8
+                - __kind: ExprLoadLiteralOp
+                  Data: KgAAAAAAAAA=
+                - __kind: ExprCmpBaseOp
+                  Op: Eq
+                  Kind: Int
+                  ByteSize: 8
+                - __kind: ArrayLoopEndOp
+                  BodyLabel: 2
+                - __kind: CondLabelOp
+                  ID: 1
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+        - Name: tag
+          Offset: 2
           Kind: template_segment
           Expression:
             Type: 12 GoStringHeaderType string
             Operations:
                 - __kind: LocationOp
-                  Variable: {subprogram: 76, index: 1, name: tag}
+                  Variable: {subprogram: 79, index: 1, name: tag}
                   Offset: 0
                   ByteSize: 16
             LeafBodies: []
             IsSplit: false
           DictIndex: -1
+    - __kind: EventRootType
+      ID: 814
+      Name: Probe[main.anyAllIntArray]Return
+    - __kind: EventRootType
+      ID: 816
+      Name: Probe[main.anyAllIntArray]Return
+    - __kind: EventRootType
+      ID: 818
+      Name: Probe[main.anyAllIntArray]Return
+    - __kind: EventRootType
+      ID: 820
+      Name: Probe[main.anyAllIntArray]Return
     - __kind: EventRootType
       ID: 763
       Name: Probe[main.anyAllIntSlice]
@@ -14743,8 +15344,423 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 762
-      Name: Probe[main.anyAllIntSlice]Return
+      ID: 773
+      Name: Probe[main.anyAllIntSlice]
+      ByteSize: 2
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: allpos
+          Offset: 1
+          Kind: capture_expression
+          Expression:
+            Type: 6 BaseType bool
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 0, name: xs}
+                  Offset: 0
+                  ByteSize: 24
+                - __kind: SliceLoopBeginOp
+                  Quantifier: 2
+                  ElemByteSize: 8
+                  EndLabel: 1
+                - __kind: CondLabelOp
+                  ID: 2
+                - __kind: LocationOp
+                  Variable: {name: '@it', role: LoopIt}
+                  Offset: 0
+                  ByteSize: 8
+                - __kind: ExprPushOffsetOp
+                  ByteSize: 8
+                - __kind: ExprLoadLiteralOp
+                  Data: AAAAAAAAAAA=
+                - __kind: ExprCmpBaseOp
+                  Op: Gt
+                  Kind: Int
+                  ByteSize: 8
+                - __kind: SliceLoopEndOp
+                  BodyLabel: 2
+                - __kind: CondLabelOp
+                  ID: 1
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 775
+      Name: Probe[main.anyAllIntSlice]
+      ByteSize: 2
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: any42
+          Offset: 1
+          Kind: capture_expression
+          Expression:
+            Type: 6 BaseType bool
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 0, name: xs}
+                  Offset: 0
+                  ByteSize: 24
+                - __kind: SliceLoopBeginOp
+                  Quantifier: 1
+                  ElemByteSize: 8
+                  EndLabel: 1
+                - __kind: CondLabelOp
+                  ID: 2
+                - __kind: LocationOp
+                  Variable: {name: '@it', role: LoopIt}
+                  Offset: 0
+                  ByteSize: 8
+                - __kind: ExprPushOffsetOp
+                  ByteSize: 8
+                - __kind: ExprLoadLiteralOp
+                  Data: KgAAAAAAAAA=
+                - __kind: ExprCmpBaseOp
+                  Op: Eq
+                  Kind: Int
+                  ByteSize: 8
+                - __kind: SliceLoopEndOp
+                  BodyLabel: 2
+                - __kind: CondLabelOp
+                  ID: 1
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 777
+      Name: Probe[main.anyAllIntSlice]
+    - __kind: EventRootType
+      ID: 779
+      Name: Probe[main.anyAllIntSlice]
+    - __kind: EventRootType
+      ID: 781
+      Name: Probe[main.anyAllIntSlice]
+      ByteSize: 2
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: containsInt42
+          Offset: 1
+          Kind: capture_expression
+          Expression:
+            Type: 6 BaseType bool
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 0, name: xs}
+                  Offset: 0
+                  ByteSize: 24
+                - __kind: SliceLoopBeginOp
+                  Quantifier: 1
+                  ElemByteSize: 8
+                  EndLabel: 1
+                - __kind: CondLabelOp
+                  ID: 2
+                - __kind: LocationOp
+                  Variable: {name: '@it', role: LoopIt}
+                  Offset: 0
+                  ByteSize: 8
+                - __kind: ExprPushOffsetOp
+                  ByteSize: 8
+                - __kind: ExprLoadLiteralOp
+                  Data: KgAAAAAAAAA=
+                - __kind: ExprCmpBaseOp
+                  Op: Eq
+                  Kind: Int
+                  ByteSize: 8
+                - __kind: SliceLoopEndOp
+                  BodyLabel: 2
+                - __kind: CondLabelOp
+                  ID: 1
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 783
+      Name: Probe[main.anyAllIntSlice]
+      ByteSize: 17
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: tag
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 1, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 785
+      Name: Probe[main.anyAllIntSlice]
+      ByteSize: 18
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: any(xs, {@it == -1})
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 6 BaseType bool
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 0, name: xs}
+                  Offset: 0
+                  ByteSize: 24
+                - __kind: SliceLoopBeginOp
+                  Quantifier: 1
+                  ElemByteSize: 8
+                  EndLabel: 1
+                - __kind: CondLabelOp
+                  ID: 2
+                - __kind: LocationOp
+                  Variable: {name: '@it', role: LoopIt}
+                  Offset: 0
+                  ByteSize: 8
+                - __kind: ExprPushOffsetOp
+                  ByteSize: 8
+                - __kind: ExprLoadLiteralOp
+                  Data: //////////8=
+                - __kind: ExprCmpBaseOp
+                  Op: Eq
+                  Kind: Int
+                  ByteSize: 8
+                - __kind: SliceLoopEndOp
+                  BodyLabel: 2
+                - __kind: CondLabelOp
+                  ID: 1
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+        - Name: tag
+          Offset: 2
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 1, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 787
+      Name: Probe[main.anyAllIntSlice]
+      ByteSize: 18
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: all(xs, {@it > 0})
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 6 BaseType bool
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 0, name: xs}
+                  Offset: 0
+                  ByteSize: 24
+                - __kind: SliceLoopBeginOp
+                  Quantifier: 2
+                  ElemByteSize: 8
+                  EndLabel: 1
+                - __kind: CondLabelOp
+                  ID: 2
+                - __kind: LocationOp
+                  Variable: {name: '@it', role: LoopIt}
+                  Offset: 0
+                  ByteSize: 8
+                - __kind: ExprPushOffsetOp
+                  ByteSize: 8
+                - __kind: ExprLoadLiteralOp
+                  Data: AAAAAAAAAAA=
+                - __kind: ExprCmpBaseOp
+                  Op: Gt
+                  Kind: Int
+                  ByteSize: 8
+                - __kind: SliceLoopEndOp
+                  BodyLabel: 2
+                - __kind: CondLabelOp
+                  ID: 1
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+        - Name: tag
+          Offset: 2
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 1, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 789
+      Name: Probe[main.anyAllIntSlice]
+      ByteSize: 18
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: any(xs, {@it == 42})
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 6 BaseType bool
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 0, name: xs}
+                  Offset: 0
+                  ByteSize: 24
+                - __kind: SliceLoopBeginOp
+                  Quantifier: 1
+                  ElemByteSize: 8
+                  EndLabel: 1
+                - __kind: CondLabelOp
+                  ID: 2
+                - __kind: LocationOp
+                  Variable: {name: '@it', role: LoopIt}
+                  Offset: 0
+                  ByteSize: 8
+                - __kind: ExprPushOffsetOp
+                  ByteSize: 8
+                - __kind: ExprLoadLiteralOp
+                  Data: KgAAAAAAAAA=
+                - __kind: ExprCmpBaseOp
+                  Op: Eq
+                  Kind: Int
+                  ByteSize: 8
+                - __kind: SliceLoopEndOp
+                  BodyLabel: 2
+                - __kind: CondLabelOp
+                  ID: 1
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+        - Name: tag
+          Offset: 2
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 1, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 791
+      Name: Probe[main.anyAllIntSlice]
+      ByteSize: 18
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: any(xs, {@it == -1})
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 6 BaseType bool
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 0, name: xs}
+                  Offset: 0
+                  ByteSize: 24
+                - __kind: SliceLoopBeginOp
+                  Quantifier: 1
+                  ElemByteSize: 8
+                  EndLabel: 1
+                - __kind: CondLabelOp
+                  ID: 2
+                - __kind: LocationOp
+                  Variable: {name: '@it', role: LoopIt}
+                  Offset: 0
+                  ByteSize: 8
+                - __kind: ExprPushOffsetOp
+                  ByteSize: 8
+                - __kind: ExprLoadLiteralOp
+                  Data: //////////8=
+                - __kind: ExprCmpBaseOp
+                  Op: Eq
+                  Kind: Int
+                  ByteSize: 8
+                - __kind: SliceLoopEndOp
+                  BodyLabel: 2
+                - __kind: CondLabelOp
+                  ID: 1
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+        - Name: tag
+          Offset: 2
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 1, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 793
+      Name: Probe[main.anyAllIntSlice]
+      ByteSize: 18
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: contains(xs, 42)
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 6 BaseType bool
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 0, name: xs}
+                  Offset: 0
+                  ByteSize: 24
+                - __kind: SliceLoopBeginOp
+                  Quantifier: 1
+                  ElemByteSize: 8
+                  EndLabel: 1
+                - __kind: CondLabelOp
+                  ID: 2
+                - __kind: LocationOp
+                  Variable: {name: '@it', role: LoopIt}
+                  Offset: 0
+                  ByteSize: 8
+                - __kind: ExprPushOffsetOp
+                  ByteSize: 8
+                - __kind: ExprLoadLiteralOp
+                  Data: KgAAAAAAAAA=
+                - __kind: ExprCmpBaseOp
+                  Op: Eq
+                  Kind: Int
+                  ByteSize: 8
+                - __kind: SliceLoopEndOp
+                  BodyLabel: 2
+                - __kind: CondLabelOp
+                  ID: 1
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+        - Name: tag
+          Offset: 2
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 76, index: 1, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
     - __kind: EventRootType
       ID: 764
       Name: Probe[main.anyAllIntSlice]Return
@@ -14761,7 +15777,40 @@ Types:
       ID: 772
       Name: Probe[main.anyAllIntSlice]Return
     - __kind: EventRootType
-      ID: 795
+      ID: 774
+      Name: Probe[main.anyAllIntSlice]Return
+    - __kind: EventRootType
+      ID: 776
+      Name: Probe[main.anyAllIntSlice]Return
+    - __kind: EventRootType
+      ID: 778
+      Name: Probe[main.anyAllIntSlice]Return
+    - __kind: EventRootType
+      ID: 780
+      Name: Probe[main.anyAllIntSlice]Return
+    - __kind: EventRootType
+      ID: 782
+      Name: Probe[main.anyAllIntSlice]Return
+    - __kind: EventRootType
+      ID: 784
+      Name: Probe[main.anyAllIntSlice]Return
+    - __kind: EventRootType
+      ID: 786
+      Name: Probe[main.anyAllIntSlice]Return
+    - __kind: EventRootType
+      ID: 788
+      Name: Probe[main.anyAllIntSlice]Return
+    - __kind: EventRootType
+      ID: 790
+      Name: Probe[main.anyAllIntSlice]Return
+    - __kind: EventRootType
+      ID: 792
+      Name: Probe[main.anyAllIntSlice]Return
+    - __kind: EventRootType
+      ID: 794
+      Name: Probe[main.anyAllIntSlice]Return
+    - __kind: EventRootType
+      ID: 823
       Name: Probe[main.anyAllPtrIntSlice]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -14780,10 +15829,16 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 796
+      ID: 825
+      Name: Probe[main.anyAllPtrIntSlice]
+    - __kind: EventRootType
+      ID: 824
       Name: Probe[main.anyAllPtrIntSlice]Return
     - __kind: EventRootType
-      ID: 781
+      ID: 826
+      Name: Probe[main.anyAllPtrIntSlice]Return
+    - __kind: EventRootType
+      ID: 807
       Name: Probe[main.anyAllPtrSlice]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -14802,7 +15857,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 783
+      ID: 809
       Name: Probe[main.anyAllPtrSlice]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -14821,7 +15876,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 785
+      ID: 811
       Name: Probe[main.anyAllPtrSlice]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -14840,16 +15895,16 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 782
+      ID: 808
       Name: Probe[main.anyAllPtrSlice]Return
     - __kind: EventRootType
-      ID: 784
+      ID: 810
       Name: Probe[main.anyAllPtrSlice]Return
     - __kind: EventRootType
-      ID: 786
+      ID: 812
       Name: Probe[main.anyAllPtrSlice]Return
     - __kind: EventRootType
-      ID: 793
+      ID: 821
       Name: Probe[main.anyAllPtrStrSlice]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -14868,10 +15923,10 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 794
+      ID: 822
       Name: Probe[main.anyAllPtrStrSlice]Return
     - __kind: EventRootType
-      ID: 801
+      ID: 835
       Name: Probe[main.anyAllStringArray]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -14890,7 +15945,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 803
+      ID: 837
       Name: Probe[main.anyAllStringArray]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -14909,13 +15964,13 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 802
+      ID: 836
       Name: Probe[main.anyAllStringArray]Return
     - __kind: EventRootType
-      ID: 804
+      ID: 838
       Name: Probe[main.anyAllStringArray]Return
     - __kind: EventRootType
-      ID: 797
+      ID: 827
       Name: Probe[main.anyAllStringSlice]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -14928,6 +15983,166 @@ Types:
             Operations:
                 - __kind: LocationOp
                   Variable: {subprogram: 89, index: 1, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 829
+      Name: Probe[main.anyAllStringSlice]
+      ByteSize: 2
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: containsStrMatch
+          Offset: 1
+          Kind: capture_expression
+          Expression:
+            Type: 6 BaseType bool
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 89, index: 0, name: xs}
+                  Offset: 0
+                  ByteSize: 24
+                - __kind: SliceLoopBeginOp
+                  Quantifier: 1
+                  ElemByteSize: 16
+                  EndLabel: 1
+                - __kind: CondLabelOp
+                  ID: 2
+                - __kind: LocationOp
+                  Variable: {name: '@it', role: LoopIt}
+                  Offset: 0
+                  ByteSize: 16
+                - __kind: ExprReadStringOp
+                  MaxLen: 255
+                - __kind: ExprLoadLiteralOp
+                  Data: BQAAAG1hdGNo
+                - __kind: ExprCmpStringOp
+                  Op: Eq
+                - __kind: SliceLoopEndOp
+                  BodyLabel: 2
+                - __kind: CondLabelOp
+                  ID: 1
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 831
+      Name: Probe[main.anyAllStringSlice]
+      ByteSize: 17
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: tag
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 89, index: 1, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 833
+      Name: Probe[main.anyAllStringSlice]
+      ByteSize: 18
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: contains(xs, "match")
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 6 BaseType bool
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 89, index: 0, name: xs}
+                  Offset: 0
+                  ByteSize: 24
+                - __kind: SliceLoopBeginOp
+                  Quantifier: 1
+                  ElemByteSize: 16
+                  EndLabel: 1
+                - __kind: CondLabelOp
+                  ID: 2
+                - __kind: LocationOp
+                  Variable: {name: '@it', role: LoopIt}
+                  Offset: 0
+                  ByteSize: 16
+                - __kind: ExprReadStringOp
+                  MaxLen: 255
+                - __kind: ExprLoadLiteralOp
+                  Data: BQAAAG1hdGNo
+                - __kind: ExprCmpStringOp
+                  Op: Eq
+                - __kind: SliceLoopEndOp
+                  BodyLabel: 2
+                - __kind: CondLabelOp
+                  ID: 1
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+        - Name: tag
+          Offset: 2
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 89, index: 1, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 828
+      Name: Probe[main.anyAllStringSlice]Return
+    - __kind: EventRootType
+      ID: 830
+      Name: Probe[main.anyAllStringSlice]Return
+    - __kind: EventRootType
+      ID: 832
+      Name: Probe[main.anyAllStringSlice]Return
+    - __kind: EventRootType
+      ID: 834
+      Name: Probe[main.anyAllStringSlice]Return
+    - __kind: EventRootType
+      ID: 795
+      Name: Probe[main.anyAllStructSlice]
+      ByteSize: 17
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: tag
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 77, index: 1, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 797
+      Name: Probe[main.anyAllStructSlice]
+      ByteSize: 17
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: tag
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 77, index: 1, name: tag}
                   Offset: 0
                   ByteSize: 16
             LeafBodies: []
@@ -14935,7 +16150,7 @@ Types:
           DictIndex: -1
     - __kind: EventRootType
       ID: 799
-      Name: Probe[main.anyAllStringSlice]
+      Name: Probe[main.anyAllStructSlice]
       ByteSize: 17
       ExprStatusArraySize: 1
       Expressions:
@@ -14946,108 +16161,111 @@ Types:
             Type: 12 GoStringHeaderType string
             Operations:
                 - __kind: LocationOp
-                  Variable: {subprogram: 89, index: 1, name: tag}
+                  Variable: {subprogram: 77, index: 1, name: tag}
                   Offset: 0
                   ByteSize: 16
             LeafBodies: []
             IsSplit: false
           DictIndex: -1
+    - __kind: EventRootType
+      ID: 801
+      Name: Probe[main.anyAllStructSlice]
+      ByteSize: 17
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: tag
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 77, index: 1, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 803
+      Name: Probe[main.anyAllStructSlice]
+      ByteSize: 2
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: anyI32_300
+          Offset: 1
+          Kind: capture_expression
+          Expression:
+            Type: 6 BaseType bool
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 77, index: 0, name: xs}
+                  Offset: 0
+                  ByteSize: 24
+                - __kind: SliceLoopBeginOp
+                  Quantifier: 1
+                  ElemByteSize: 80
+                  EndLabel: 1
+                - __kind: CondLabelOp
+                  ID: 2
+                - __kind: LocationOp
+                  Variable: {name: '@it', role: LoopIt}
+                  Offset: 4
+                  ByteSize: 4
+                - __kind: ExprPushOffsetOp
+                  ByteSize: 4
+                - __kind: ExprLoadLiteralOp
+                  Data: LAEAAA==
+                - __kind: ExprCmpBaseOp
+                  Op: Eq
+                  Kind: Int
+                  ByteSize: 4
+                - __kind: SliceLoopEndOp
+                  BodyLabel: 2
+                - __kind: CondLabelOp
+                  ID: 1
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 805
+      Name: Probe[main.anyAllStructSlice]
+      ByteSize: 17
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: tag
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 77, index: 1, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
+      ID: 796
+      Name: Probe[main.anyAllStructSlice]Return
     - __kind: EventRootType
       ID: 798
-      Name: Probe[main.anyAllStringSlice]Return
+      Name: Probe[main.anyAllStructSlice]Return
     - __kind: EventRootType
       ID: 800
-      Name: Probe[main.anyAllStringSlice]Return
-    - __kind: EventRootType
-      ID: 773
-      Name: Probe[main.anyAllStructSlice]
-      ByteSize: 17
-      ExprStatusArraySize: 1
-      Expressions:
-        - Name: tag
-          Offset: 1
-          Kind: template_segment
-          Expression:
-            Type: 12 GoStringHeaderType string
-            Operations:
-                - __kind: LocationOp
-                  Variable: {subprogram: 77, index: 1, name: tag}
-                  Offset: 0
-                  ByteSize: 16
-            LeafBodies: []
-            IsSplit: false
-          DictIndex: -1
-    - __kind: EventRootType
-      ID: 775
-      Name: Probe[main.anyAllStructSlice]
-      ByteSize: 17
-      ExprStatusArraySize: 1
-      Expressions:
-        - Name: tag
-          Offset: 1
-          Kind: template_segment
-          Expression:
-            Type: 12 GoStringHeaderType string
-            Operations:
-                - __kind: LocationOp
-                  Variable: {subprogram: 77, index: 1, name: tag}
-                  Offset: 0
-                  ByteSize: 16
-            LeafBodies: []
-            IsSplit: false
-          DictIndex: -1
-    - __kind: EventRootType
-      ID: 777
-      Name: Probe[main.anyAllStructSlice]
-      ByteSize: 17
-      ExprStatusArraySize: 1
-      Expressions:
-        - Name: tag
-          Offset: 1
-          Kind: template_segment
-          Expression:
-            Type: 12 GoStringHeaderType string
-            Operations:
-                - __kind: LocationOp
-                  Variable: {subprogram: 77, index: 1, name: tag}
-                  Offset: 0
-                  ByteSize: 16
-            LeafBodies: []
-            IsSplit: false
-          DictIndex: -1
-    - __kind: EventRootType
-      ID: 779
-      Name: Probe[main.anyAllStructSlice]
-      ByteSize: 17
-      ExprStatusArraySize: 1
-      Expressions:
-        - Name: tag
-          Offset: 1
-          Kind: template_segment
-          Expression:
-            Type: 12 GoStringHeaderType string
-            Operations:
-                - __kind: LocationOp
-                  Variable: {subprogram: 77, index: 1, name: tag}
-                  Offset: 0
-                  ByteSize: 16
-            LeafBodies: []
-            IsSplit: false
-          DictIndex: -1
-    - __kind: EventRootType
-      ID: 774
       Name: Probe[main.anyAllStructSlice]Return
     - __kind: EventRootType
-      ID: 776
+      ID: 802
       Name: Probe[main.anyAllStructSlice]Return
     - __kind: EventRootType
-      ID: 778
+      ID: 804
       Name: Probe[main.anyAllStructSlice]Return
     - __kind: EventRootType
-      ID: 780
+      ID: 806
       Name: Probe[main.anyAllStructSlice]Return
     - __kind: EventRootType
-      ID: 673
+      ID: 675
       Name: Probe[main.bigArrayArg]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -15066,7 +16284,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 675
+      ID: 677
       Name: Probe[main.bigArrayArg]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -15085,13 +16303,13 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 674
-      Name: Probe[main.bigArrayArg]Return
-    - __kind: EventRootType
       ID: 676
       Name: Probe[main.bigArrayArg]Return
     - __kind: EventRootType
-      ID: 677
+      ID: 678
+      Name: Probe[main.bigArrayArg]Return
+    - __kind: EventRootType
+      ID: 679
       Name: Probe[main.bigArrayStructArg]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -15114,7 +16332,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 678
+      ID: 680
       Name: Probe[main.bigArrayStructArg]Return
     - __kind: EventRootType
       ID: 376
@@ -15329,6 +16547,25 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
+      ID: 579
+      Name: Probe[main.condContainsMap]
+      ByteSize: 17
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: tag
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 38, index: 2, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
+    - __kind: EventRootType
       ID: 574
       Name: Probe[main.condContainsMap]Return
     - __kind: EventRootType
@@ -15336,6 +16573,9 @@ Types:
       Name: Probe[main.condContainsMap]Return
     - __kind: EventRootType
       ID: 578
+      Name: Probe[main.condContainsMap]Return
+    - __kind: EventRootType
+      ID: 580
       Name: Probe[main.condContainsMap]Return
     - __kind: EventRootType
       ID: 444
@@ -16078,9 +17318,6 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 751
-      Name: Probe[main.condMultiReturn]
-    - __kind: EventRootType
       ID: 753
       Name: Probe[main.condMultiReturn]
     - __kind: EventRootType
@@ -16090,7 +17327,10 @@ Types:
       ID: 757
       Name: Probe[main.condMultiReturn]
     - __kind: EventRootType
-      ID: 752
+      ID: 759
+      Name: Probe[main.condMultiReturn]
+    - __kind: EventRootType
+      ID: 754
       Name: Probe[main.condMultiReturn]Return
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -16109,7 +17349,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 754
+      ID: 756
       Name: Probe[main.condMultiReturn]Return
       ByteSize: 25
       ExprStatusArraySize: 1
@@ -16141,7 +17381,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 756
+      ID: 758
       Name: Probe[main.condMultiReturn]Return
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -16160,7 +17400,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 758
+      ID: 760
       Name: Probe[main.condMultiReturn]Return
     - __kind: EventRootType
       ID: 516
@@ -16941,7 +18181,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 759
+      ID: 761
       Name: Probe[main.condReturnPtr]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -16960,7 +18200,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 760
+      ID: 762
       Name: Probe[main.condReturnPtr]Return
     - __kind: EventRootType
       ID: 458
@@ -17985,7 +19225,7 @@ Types:
       ID: 421
       Name: Probe[main.condUint8]Return
     - __kind: EventRootType
-      ID: 807
+      ID: 841
       Name: Probe[main.genericIdentity[go.shape.int]]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -18005,7 +19245,7 @@ Types:
             IsSplit: false
           DictIndex: 0
     - __kind: EventRootType
-      ID: 808
+      ID: 842
       Name: Probe[main.genericIdentity[go.shape.int]]Return
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -18025,7 +19265,7 @@ Types:
             IsSplit: false
           DictIndex: 0
     - __kind: EventRootType
-      ID: 805
+      ID: 839
       Name: Probe[main.genericIdentity[go.shape.string]]
       ByteSize: 25
       ExprStatusArraySize: 1
@@ -18045,7 +19285,7 @@ Types:
             IsSplit: false
           DictIndex: 0
     - __kind: EventRootType
-      ID: 806
+      ID: 840
       Name: Probe[main.genericIdentity[go.shape.string]]Return
       ByteSize: 25
       ExprStatusArraySize: 1
@@ -18065,7 +19305,7 @@ Types:
             IsSplit: false
           DictIndex: 0
     - __kind: EventRootType
-      ID: 699
+      ID: 701
       Name: Probe[main.indexMemberWrapperArg]
       ByteSize: 5
       ExprStatusArraySize: 1
@@ -18092,7 +19332,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 701
+      ID: 703
       Name: Probe[main.indexMemberWrapperArg]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -18119,7 +19359,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 703
+      ID: 705
       Name: Probe[main.indexMemberWrapperArg]
       ByteSize: 5
       ExprStatusArraySize: 1
@@ -18150,7 +19390,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 705
+      ID: 707
       Name: Probe[main.indexMemberWrapperArg]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -18181,9 +19421,6 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 700
-      Name: Probe[main.indexMemberWrapperArg]Return
-    - __kind: EventRootType
       ID: 702
       Name: Probe[main.indexMemberWrapperArg]Return
     - __kind: EventRootType
@@ -18193,7 +19430,10 @@ Types:
       ID: 706
       Name: Probe[main.indexMemberWrapperArg]Return
     - __kind: EventRootType
-      ID: 665
+      ID: 708
+      Name: Probe[main.indexMemberWrapperArg]Return
+    - __kind: EventRootType
+      ID: 667
       Name: Probe[main.indexNilPtrSlice]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -18222,7 +19462,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 667
+      ID: 669
       Name: Probe[main.indexNilPtrSlice]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -18241,7 +19481,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 669
+      ID: 671
       Name: Probe[main.indexNilPtrSlice]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -18270,16 +19510,16 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 666
-      Name: Probe[main.indexNilPtrSlice]Return
-    - __kind: EventRootType
       ID: 668
       Name: Probe[main.indexNilPtrSlice]Return
     - __kind: EventRootType
       ID: 670
       Name: Probe[main.indexNilPtrSlice]Return
     - __kind: EventRootType
-      ID: 809
+      ID: 672
+      Name: Probe[main.indexNilPtrSlice]Return
+    - __kind: EventRootType
+      ID: 843
       Name: Probe[main.inlined]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -18298,7 +19538,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 810
+      ID: 844
       Name: Probe[main.inlined]Return
     - __kind: EventRootType
       ID: 333
@@ -18531,7 +19771,7 @@ Types:
       ID: 354
       Name: Probe[main.intSliceArg]Return
     - __kind: EventRootType
-      ID: 657
+      ID: 659
       Name: Probe[main.lenErrInt]
       ByteSize: 25
       ExprStatusArraySize: 1
@@ -18563,16 +19803,16 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 659
+      ID: 661
       Name: Probe[main.lenErrInt]
-    - __kind: EventRootType
-      ID: 658
-      Name: Probe[main.lenErrInt]Return
     - __kind: EventRootType
       ID: 660
       Name: Probe[main.lenErrInt]Return
     - __kind: EventRootType
-      ID: 661
+      ID: 662
+      Name: Probe[main.lenErrInt]Return
+    - __kind: EventRootType
+      ID: 663
       Name: Probe[main.lenErrStruct]
       ByteSize: 97
       ExprStatusArraySize: 1
@@ -18604,16 +19844,16 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 663
+      ID: 665
       Name: Probe[main.lenErrStruct]
-    - __kind: EventRootType
-      ID: 662
-      Name: Probe[main.lenErrStruct]Return
     - __kind: EventRootType
       ID: 664
       Name: Probe[main.lenErrStruct]Return
     - __kind: EventRootType
-      ID: 611
+      ID: 666
+      Name: Probe[main.lenErrStruct]Return
+    - __kind: EventRootType
+      ID: 613
       Name: Probe[main.lenMap]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -18632,7 +19872,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 613
+      ID: 615
       Name: Probe[main.lenMap]
       ByteSize: 2
       ExprStatusArraySize: 1
@@ -18663,7 +19903,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 615
+      ID: 617
       Name: Probe[main.lenMap]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -18686,7 +19926,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 617
+      ID: 619
       Name: Probe[main.lenMap]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -18705,7 +19945,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 619
+      ID: 621
       Name: Probe[main.lenMap]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -18728,7 +19968,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 621
+      ID: 623
       Name: Probe[main.lenMap]
       ByteSize: 25
       ExprStatusArraySize: 1
@@ -18760,9 +20000,6 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 612
-      Name: Probe[main.lenMap]Return
-    - __kind: EventRootType
       ID: 614
       Name: Probe[main.lenMap]Return
     - __kind: EventRootType
@@ -18778,7 +20015,10 @@ Types:
       ID: 622
       Name: Probe[main.lenMap]Return
     - __kind: EventRootType
-      ID: 623
+      ID: 624
+      Name: Probe[main.lenMap]Return
+    - __kind: EventRootType
+      ID: 625
       Name: Probe[main.lenPtrString]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -18801,7 +20041,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 625
+      ID: 627
       Name: Probe[main.lenPtrString]
       ByteSize: 25
       ExprStatusArraySize: 1
@@ -18833,13 +20073,13 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 624
-      Name: Probe[main.lenPtrString]Return
-    - __kind: EventRootType
       ID: 626
       Name: Probe[main.lenPtrString]Return
     - __kind: EventRootType
-      ID: 647
+      ID: 628
+      Name: Probe[main.lenPtrString]Return
+    - __kind: EventRootType
+      ID: 649
       Name: Probe[main.lenPtrStructFields]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -18868,7 +20108,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 649
+      ID: 651
       Name: Probe[main.lenPtrStructFields]
       ByteSize: 25
       ExprStatusArraySize: 1
@@ -18900,7 +20140,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 651
+      ID: 653
       Name: Probe[main.lenPtrStructFields]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -18927,7 +20167,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 653
+      ID: 655
       Name: Probe[main.lenPtrStructFields]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -18950,7 +20190,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 655
+      ID: 657
       Name: Probe[main.lenPtrStructFields]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -18973,9 +20213,6 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 648
-      Name: Probe[main.lenPtrStructFields]Return
-    - __kind: EventRootType
       ID: 650
       Name: Probe[main.lenPtrStructFields]Return
     - __kind: EventRootType
@@ -18988,7 +20225,10 @@ Types:
       ID: 656
       Name: Probe[main.lenPtrStructFields]Return
     - __kind: EventRootType
-      ID: 599
+      ID: 658
+      Name: Probe[main.lenPtrStructFields]Return
+    - __kind: EventRootType
+      ID: 601
       Name: Probe[main.lenSlice]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -19007,7 +20247,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 601
+      ID: 603
       Name: Probe[main.lenSlice]
       ByteSize: 2
       ExprStatusArraySize: 1
@@ -19034,7 +20274,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 603
+      ID: 605
       Name: Probe[main.lenSlice]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -19053,7 +20293,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 605
+      ID: 607
       Name: Probe[main.lenSlice]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -19072,7 +20312,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 607
+      ID: 609
       Name: Probe[main.lenSlice]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -19091,7 +20331,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 609
+      ID: 611
       Name: Probe[main.lenSlice]
       ByteSize: 41
       ExprStatusArraySize: 1
@@ -19123,9 +20363,6 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 600
-      Name: Probe[main.lenSlice]Return
-    - __kind: EventRootType
       ID: 602
       Name: Probe[main.lenSlice]Return
     - __kind: EventRootType
@@ -19141,7 +20378,10 @@ Types:
       ID: 610
       Name: Probe[main.lenSlice]Return
     - __kind: EventRootType
-      ID: 579
+      ID: 612
+      Name: Probe[main.lenSlice]Return
+    - __kind: EventRootType
+      ID: 581
       Name: Probe[main.lenString]
       ByteSize: 33
       ExprStatusArraySize: 1
@@ -19173,7 +20413,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 581
+      ID: 583
       Name: Probe[main.lenString]
       ByteSize: 2
       ExprStatusArraySize: 1
@@ -19200,7 +20440,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 583
+      ID: 585
       Name: Probe[main.lenString]
       ByteSize: 2
       ExprStatusArraySize: 1
@@ -19227,7 +20467,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 585
+      ID: 587
       Name: Probe[main.lenString]
       ByteSize: 2
       ExprStatusArraySize: 1
@@ -19254,7 +20494,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 587
+      ID: 589
       Name: Probe[main.lenString]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -19273,7 +20513,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 589
+      ID: 591
       Name: Probe[main.lenString]
       ByteSize: 2
       ExprStatusArraySize: 1
@@ -19300,7 +20540,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 591
+      ID: 593
       Name: Probe[main.lenString]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -19319,7 +20559,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 593
+      ID: 595
       Name: Probe[main.lenString]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -19338,7 +20578,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 595
+      ID: 597
       Name: Probe[main.lenString]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -19357,7 +20597,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 597
+      ID: 599
       Name: Probe[main.lenString]
       ByteSize: 33
       ExprStatusArraySize: 1
@@ -19388,9 +20628,6 @@ Types:
             LeafBodies: []
             IsSplit: false
           DictIndex: -1
-    - __kind: EventRootType
-      ID: 580
-      Name: Probe[main.lenString]Return
     - __kind: EventRootType
       ID: 582
       Name: Probe[main.lenString]Return
@@ -19419,7 +20656,10 @@ Types:
       ID: 598
       Name: Probe[main.lenString]Return
     - __kind: EventRootType
-      ID: 627
+      ID: 600
+      Name: Probe[main.lenString]Return
+    - __kind: EventRootType
+      ID: 629
       Name: Probe[main.lenStructFields]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -19444,7 +20684,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 629
+      ID: 631
       Name: Probe[main.lenStructFields]
       ByteSize: 89
       ExprStatusArraySize: 1
@@ -19476,7 +20716,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 631
+      ID: 633
       Name: Probe[main.lenStructFields]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -19499,7 +20739,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 633
+      ID: 635
       Name: Probe[main.lenStructFields]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -19522,7 +20762,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 635
+      ID: 637
       Name: Probe[main.lenStructFields]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -19545,7 +20785,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 637
+      ID: 639
       Name: Probe[main.lenStructFields]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -19564,7 +20804,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 639
+      ID: 641
       Name: Probe[main.lenStructFields]
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -19579,25 +20819,6 @@ Types:
                   Variable: {subprogram: 43, index: 0, name: x}
                   Offset: 8
                   ByteSize: 8
-            LeafBodies: []
-            IsSplit: false
-          DictIndex: -1
-    - __kind: EventRootType
-      ID: 641
-      Name: Probe[main.lenStructFields]
-      ByteSize: 17
-      ExprStatusArraySize: 1
-      Expressions:
-        - Name: tag
-          Offset: 1
-          Kind: template_segment
-          Expression:
-            Type: 12 GoStringHeaderType string
-            Operations:
-                - __kind: LocationOp
-                  Variable: {subprogram: 43, index: 1, name: tag}
-                  Offset: 0
-                  ByteSize: 16
             LeafBodies: []
             IsSplit: false
           DictIndex: -1
@@ -19640,8 +20861,24 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 628
-      Name: Probe[main.lenStructFields]Return
+      ID: 647
+      Name: Probe[main.lenStructFields]
+      ByteSize: 17
+      ExprStatusArraySize: 1
+      Expressions:
+        - Name: tag
+          Offset: 1
+          Kind: template_segment
+          Expression:
+            Type: 12 GoStringHeaderType string
+            Operations:
+                - __kind: LocationOp
+                  Variable: {subprogram: 43, index: 1, name: tag}
+                  Offset: 0
+                  ByteSize: 16
+            LeafBodies: []
+            IsSplit: false
+          DictIndex: -1
     - __kind: EventRootType
       ID: 630
       Name: Probe[main.lenStructFields]Return
@@ -19668,6 +20905,9 @@ Types:
       Name: Probe[main.lenStructFields]Return
     - __kind: EventRootType
       ID: 646
+      Name: Probe[main.lenStructFields]Return
+    - __kind: EventRootType
+      ID: 648
       Name: Probe[main.lenStructFields]Return
     - __kind: EventRootType
       ID: 374
@@ -19705,136 +20945,136 @@ Types:
       ID: 375
       Name: Probe[main.mapArg]Return
     - __kind: EventRootType
-      ID: 741
-      Name: Probe[main.mapIndexBoolKey]
-    - __kind: EventRootType
       ID: 743
       Name: Probe[main.mapIndexBoolKey]
     - __kind: EventRootType
-      ID: 742
-      Name: Probe[main.mapIndexBoolKey]Return
+      ID: 745
+      Name: Probe[main.mapIndexBoolKey]
     - __kind: EventRootType
       ID: 744
       Name: Probe[main.mapIndexBoolKey]Return
     - __kind: EventRootType
-      ID: 735
-      Name: Probe[main.mapIndexEmptyKey]
-    - __kind: EventRootType
-      ID: 736
-      Name: Probe[main.mapIndexEmptyKey]Return
-    - __kind: EventRootType
-      ID: 707
-      Name: Probe[main.mapIndexIntKey]
-    - __kind: EventRootType
-      ID: 708
-      Name: Probe[main.mapIndexIntKey]Return
+      ID: 746
+      Name: Probe[main.mapIndexBoolKey]Return
     - __kind: EventRootType
       ID: 737
-      Name: Probe[main.mapIndexKeyLen16]
+      Name: Probe[main.mapIndexEmptyKey]
     - __kind: EventRootType
       ID: 738
-      Name: Probe[main.mapIndexKeyLen16]Return
+      Name: Probe[main.mapIndexEmptyKey]Return
+    - __kind: EventRootType
+      ID: 709
+      Name: Probe[main.mapIndexIntKey]
+    - __kind: EventRootType
+      ID: 710
+      Name: Probe[main.mapIndexIntKey]Return
     - __kind: EventRootType
       ID: 739
-      Name: Probe[main.mapIndexKeyLen17]
+      Name: Probe[main.mapIndexKeyLen16]
     - __kind: EventRootType
       ID: 740
+      Name: Probe[main.mapIndexKeyLen16]Return
+    - __kind: EventRootType
+      ID: 741
+      Name: Probe[main.mapIndexKeyLen17]
+    - __kind: EventRootType
+      ID: 742
       Name: Probe[main.mapIndexKeyLen17]Return
     - __kind: EventRootType
-      ID: 725
+      ID: 727
       Name: Probe[main.mapIndexKeyLen200]
     - __kind: EventRootType
-      ID: 726
+      ID: 728
       Name: Probe[main.mapIndexKeyLen200]Return
     - __kind: EventRootType
-      ID: 719
+      ID: 721
       Name: Probe[main.mapIndexKeyLen24]
     - __kind: EventRootType
-      ID: 720
+      ID: 722
       Name: Probe[main.mapIndexKeyLen24]Return
     - __kind: EventRootType
-      ID: 721
+      ID: 723
       Name: Probe[main.mapIndexKeyLen48]
     - __kind: EventRootType
-      ID: 722
+      ID: 724
       Name: Probe[main.mapIndexKeyLen48]Return
     - __kind: EventRootType
-      ID: 717
+      ID: 719
       Name: Probe[main.mapIndexKeyLen8]
     - __kind: EventRootType
-      ID: 718
+      ID: 720
       Name: Probe[main.mapIndexKeyLen8]Return
     - __kind: EventRootType
-      ID: 723
+      ID: 725
       Name: Probe[main.mapIndexKeyLen96]
     - __kind: EventRootType
-      ID: 724
+      ID: 726
       Name: Probe[main.mapIndexKeyLen96]Return
     - __kind: EventRootType
-      ID: 713
+      ID: 715
       Name: Probe[main.mapIndexLargeMap]
     - __kind: EventRootType
-      ID: 714
+      ID: 716
       Name: Probe[main.mapIndexLargeMap]Return
     - __kind: EventRootType
-      ID: 749
+      ID: 751
       Name: Probe[main.mapIndexLargeValue]
     - __kind: EventRootType
-      ID: 750
+      ID: 752
       Name: Probe[main.mapIndexLargeValue]Return
     - __kind: EventRootType
-      ID: 715
+      ID: 717
       Name: Probe[main.mapIndexMissing]
     - __kind: EventRootType
-      ID: 716
+      ID: 718
       Name: Probe[main.mapIndexMissing]Return
     - __kind: EventRootType
-      ID: 747
+      ID: 749
       Name: Probe[main.mapIndexNilPtrVal]
     - __kind: EventRootType
-      ID: 748
+      ID: 750
       Name: Probe[main.mapIndexNilPtrVal]Return
-    - __kind: EventRootType
-      ID: 731
-      Name: Probe[main.mapIndexPtrStructVal]
     - __kind: EventRootType
       ID: 733
       Name: Probe[main.mapIndexPtrStructVal]
     - __kind: EventRootType
-      ID: 732
-      Name: Probe[main.mapIndexPtrStructVal]Return
+      ID: 735
+      Name: Probe[main.mapIndexPtrStructVal]
     - __kind: EventRootType
       ID: 734
       Name: Probe[main.mapIndexPtrStructVal]Return
     - __kind: EventRootType
-      ID: 709
-      Name: Probe[main.mapIndexStringKey]
+      ID: 736
+      Name: Probe[main.mapIndexPtrStructVal]Return
     - __kind: EventRootType
       ID: 711
       Name: Probe[main.mapIndexStringKey]
     - __kind: EventRootType
-      ID: 710
-      Name: Probe[main.mapIndexStringKey]Return
+      ID: 713
+      Name: Probe[main.mapIndexStringKey]
     - __kind: EventRootType
       ID: 712
       Name: Probe[main.mapIndexStringKey]Return
     - __kind: EventRootType
-      ID: 727
-      Name: Probe[main.mapIndexStructVal]
+      ID: 714
+      Name: Probe[main.mapIndexStringKey]Return
     - __kind: EventRootType
       ID: 729
       Name: Probe[main.mapIndexStructVal]
     - __kind: EventRootType
-      ID: 728
-      Name: Probe[main.mapIndexStructVal]Return
+      ID: 731
+      Name: Probe[main.mapIndexStructVal]
     - __kind: EventRootType
       ID: 730
       Name: Probe[main.mapIndexStructVal]Return
     - __kind: EventRootType
-      ID: 745
+      ID: 732
+      Name: Probe[main.mapIndexStructVal]Return
+    - __kind: EventRootType
+      ID: 747
       Name: Probe[main.mapIndexZeroValue]
     - __kind: EventRootType
-      ID: 746
+      ID: 748
       Name: Probe[main.mapIndexZeroValue]Return
     - __kind: EventRootType
       ID: 378
@@ -19843,7 +21083,7 @@ Types:
       ID: 379
       Name: Probe[main.noArgs]Return
     - __kind: EventRootType
-      ID: 695
+      ID: 697
       Name: Probe[main.ptrStructArrayArg]
       ByteSize: 5
       ExprStatusArraySize: 1
@@ -19866,7 +21106,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 697
+      ID: 699
       Name: Probe[main.ptrStructArrayArg]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -19889,13 +21129,13 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 696
-      Name: Probe[main.ptrStructArrayArg]Return
-    - __kind: EventRootType
       ID: 698
       Name: Probe[main.ptrStructArrayArg]Return
     - __kind: EventRootType
-      ID: 691
+      ID: 700
+      Name: Probe[main.ptrStructArrayArg]Return
+    - __kind: EventRootType
+      ID: 693
       Name: Probe[main.ptrStructSliceArg]
       ByteSize: 5
       ExprStatusArraySize: 1
@@ -19924,7 +21164,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 693
+      ID: 695
       Name: Probe[main.ptrStructSliceArg]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -19953,10 +21193,10 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 692
+      ID: 694
       Name: Probe[main.ptrStructSliceArg]Return
     - __kind: EventRootType
-      ID: 694
+      ID: 696
       Name: Probe[main.ptrStructSliceArg]Return
     - __kind: EventRootType
       ID: 335
@@ -20135,7 +21375,7 @@ Types:
       ID: 368
       Name: Probe[main.stringSliceArg]Return
     - __kind: EventRootType
-      ID: 687
+      ID: 689
       Name: Probe[main.structArrayArg]
       ByteSize: 5
       ExprStatusArraySize: 1
@@ -20154,7 +21394,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 689
+      ID: 691
       Name: Probe[main.structArrayArg]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -20173,13 +21413,13 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 688
-      Name: Probe[main.structArrayArg]Return
-    - __kind: EventRootType
       ID: 690
       Name: Probe[main.structArrayArg]Return
     - __kind: EventRootType
-      ID: 679
+      ID: 692
+      Name: Probe[main.structArrayArg]Return
+    - __kind: EventRootType
+      ID: 681
       Name: Probe[main.structSliceArg]
       ByteSize: 5
       ExprStatusArraySize: 1
@@ -20204,7 +21444,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 681
+      ID: 683
       Name: Probe[main.structSliceArg]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -20229,7 +21469,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 683
+      ID: 685
       Name: Probe[main.structSliceArg]
       ByteSize: 17
       ExprStatusArraySize: 1
@@ -20248,7 +21488,7 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 685
+      ID: 687
       Name: Probe[main.structSliceArg]
       ByteSize: 5
       ExprStatusArraySize: 1
@@ -20273,9 +21513,6 @@ Types:
             IsSplit: false
           DictIndex: -1
     - __kind: EventRootType
-      ID: 680
-      Name: Probe[main.structSliceArg]Return
-    - __kind: EventRootType
       ID: 682
       Name: Probe[main.structSliceArg]Return
     - __kind: EventRootType
@@ -20285,10 +21522,13 @@ Types:
       ID: 686
       Name: Probe[main.structSliceArg]Return
     - __kind: EventRootType
-      ID: 671
+      ID: 688
+      Name: Probe[main.structSliceArg]Return
+    - __kind: EventRootType
+      ID: 673
       Name: Probe[main.usesMapsOfMapsThatDoNotAppearAsArguments]
     - __kind: EventRootType
-      ID: 672
+      ID: 674
       Name: Probe[main.usesMapsOfMapsThatDoNotAppearAsArguments]Return
       ByteSize: 9
       ExprStatusArraySize: 1
@@ -23211,7 +24451,7 @@ Types:
       ByteSize: 8
       GoRuntimeType: 41184
       GoKind: 26
-MaxTypeID: 813
+MaxTypeID: 847
 Issues:
     - probe_definition:
         id: allIntMap_valuePositive
@@ -24215,6 +25455,23 @@ Issues:
       issue:
         Kind: 8
         Message: 'failed to resolve condition: Eq: type []int can only be compared to null'
+    - probe_definition:
+        id: containsInsideAny_nested_err
+        version: 0
+        type: LOG_PROBE
+        where: {methodName: main.anyAllIntSliceOfSlice}
+        tags: ['issue:ConditionExpressionUnresolvable']
+        when:
+            dsl: ""
+            json: {any: [{ref: xs}, {contains: [{ref: '@it'}, 0]}]}
+        capture: {maxReferenceDepth: 1}
+        sampling: {snapshotsPerSecond: 10}
+        template: should be rejected
+        segments: [should be rejected]
+        captureSnapshot: false
+      issue:
+        Kind: 8
+        Message: 'failed to resolve condition: contains() is not supported inside an any/all predicate body'
     - probe_definition:
         id: containsPtrIntSlice_unsupported
         version: 0
