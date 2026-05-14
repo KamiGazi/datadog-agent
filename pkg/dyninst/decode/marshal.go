@@ -175,6 +175,10 @@ func (m *messageData) processJSONSegment(
 		return errNilPointerEvaluating
 	case ir.ExprStatusOOB:
 		return errIndexOutOfBounds
+	case ir.ExprStatusRecursionStackFull:
+		return errRecursionStackFull
+	case ir.ExprStatusBufferFull:
+		return errBufferFull
 	default: // ExprStatusAbsent
 		if _, ok := expr.Expression.Type.(*ir.DurationType); ok {
 			msg := "@duration is not available: " + ir.ErrDurationNotOnReturn
@@ -346,6 +350,7 @@ func (ce *captureEvent) clear() {
 	ce.rootType = nil
 	ce.traceContext = traceContext{}
 	ce.evaluationErrors = nil
+	ce.currentPeerScope = nil
 
 	clear(ce.dataItems)
 	clear(ce.currentlyEncoding)
@@ -435,6 +440,24 @@ func (ce *captureEvent) init(
 					Expression: expr.Name,
 					Message:    errIndexOutOfBounds.Error(),
 				})
+			case ir.ExprStatusRecursionStackFull:
+				// The SM aborted at a call-stack overflow site
+				// (ENQUEUE_STACK_DEPTH exhausted). Per-expression
+				// attribution is approximate — the SM can't track
+				// 'current root expression' — but reporting on the
+				// affected slot is more informative than today's
+				// silent gap.
+				ce.skippedIndices.set(i)
+				*ce.evaluationErrors = append(*ce.evaluationErrors, evaluationError{
+					Expression: expr.Name,
+					Message:    errRecursionStackFull.Error(),
+				})
+			case ir.ExprStatusBufferFull:
+				ce.skippedIndices.set(i)
+				*ce.evaluationErrors = append(*ce.evaluationErrors, evaluationError{
+					Expression: expr.Name,
+					Message:    errBufferFull.Error(),
+				})
 			case ir.ExprStatusAbsent:
 				// @duration is the only expression type where absent status
 				// has a specific, user-meaningful reason (the BPF program
@@ -484,6 +507,8 @@ func (ddDebuggerSource) MarshalJSONTo(enc *jsontext.Encoder) error {
 var errEvaluation = errors.New("evaluation error")
 var errNilPointerEvaluating = errors.New("nil pointer dereference")
 var errIndexOutOfBounds = errors.New("index out of bounds")
+var errRecursionStackFull = errors.New("capture nesting too deep")
+var errBufferFull = errors.New("event too large")
 
 // processExpression processes a single expression from the root type expressions
 func (ce *captureEvent) processExpression(
@@ -524,8 +549,9 @@ func (ce *captureEvent) processExpression(
 		return err
 	}
 	if statusArray.getExprStatus(expressionIndex) != ir.ExprStatusPresent && parameterSize != 0 {
-		// Nil-deref and OOB expressions are already handled in init() and
-		// marked as skipped, so we only reach here for genuinely unavailable data.
+		// NilDeref, OOB, RecursionStackFull, and BufferFull are all
+		// pre-handled in init() and marked as skipped, so we only reach
+		// here for genuinely absent data (ExprStatusAbsent).
 		if err := writeTokens(enc,
 			jsontext.BeginObject,
 			jsontext.String("type"),

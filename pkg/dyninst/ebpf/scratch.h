@@ -256,15 +256,15 @@ static long copy_stack_loop(unsigned long i, void* _ctx) {
 static const uint64_t FAILED_READ_OFFSET_BIT = 1LL << 63;
 
 // Write a 16-byte placeholder data-item header (no payload) into the
-// scratch buffer. Used by Carrier A peer-dedup emission: when a
-// pointer chase is abandoned because an internal capacity limit
-// fired, the SM emits a single placeholder at the type+address it
-// would have captured, with the failed-read mask set and reason bits
-// describing the cause. Length is 0; address is the would-be pointee
-// address. Returns true on success, false if the scratch buffer is
-// full (the placeholder is silently dropped in that case — the value
-// would have been missing anyway, and the L2 fragment-limit/ringbuf
-// reasons will cover whole-event truncation).
+// scratch buffer. When a pointer chase is abandoned because an
+// internal capacity limit fired, the SM emits a single placeholder
+// at the type+address it would have captured, with the failed-read
+// mask set and reason bits describing the cause. Length is 0;
+// address is the would-be pointee address. Returns true on success,
+// false if the scratch buffer is full (the placeholder is silently
+// dropped in that case — the value would have been missing anyway,
+// and the side-level fragment-limit / ringbuf reasons cover the
+// whole-event truncation that follows).
 static bool
 scratch_buf_emit_placeholder(scratch_buf_t* scratch_buf,
                              uint32_t type_id,

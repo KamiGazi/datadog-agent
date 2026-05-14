@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/btree"
 
+	"github.com/DataDog/datadog-agent/pkg/dyninst/output"
 	"github.com/DataDog/datadog-agent/pkg/util/log"
 )
 
@@ -127,6 +128,15 @@ type Ready struct {
 	// probe fired but its signal couldn't reach userspace. The entry is
 	// complete; Return is nil.
 	ReturnLost bool
+	// NoReturnExpectation carries the BPF-side pairing expectation set
+	// on the first fragment of an entry when the kernel decided no
+	// return will be paired — typically EventPairingExpectationCallMapFull
+	// or EventPairingExpectationCallCountExceeded. The sink renders
+	// these as evaluationErrors for the synthetic "@return" expression
+	// so an operator can see why the return is absent. Zero
+	// (EventPairingExpectationNone) means no pairing decision has been
+	// recorded.
+	NoReturnExpectation output.EventPairingExpectation
 }
 
 // bufferedEvent is an in-progress invocation.
@@ -164,6 +174,13 @@ type bufferedEvent struct {
 	// returnLost: a RETURN_LOST notification was received. Finalize as soon
 	// as the entry is complete; do not wait for any return fragments.
 	returnLost bool
+
+	// noReturnExpectation captures the entry-side pairing decision
+	// (set by the sink on the first fragment when the BPF header
+	// carries CALL_MAP_FULL / CALL_COUNT_EXCEEDED). Persisted on the
+	// buffered state so it survives multi-fragment finalize and ends
+	// up on the Ready.
+	noReturnExpectation output.EventPairingExpectation
 
 	// touch is a monotonic counter used by the budget-driven eviction path
 	// to find the longest-idle entry (smallest touch) to evict first when
@@ -343,15 +360,32 @@ func (b *Buffer) chargeForFragment(excludeKey Key, nbytes int) {
 	)
 }
 
-// NoteReturnLost records a RETURN_LOST drop notification: the return side
-// had no fragments reach userspace. If the entry is already complete the
-// invocation finalizes immediately.
+// NoteReturnLost records that the return side had no fragments reach
+// userspace. If the entry is already complete the invocation finalizes
+// immediately.
 func (b *Buffer) NoteReturnLost(key Key) (Ready, bool) {
 	be := b.getOrCreate(key)
 	b.touch(be)
 	be.returnLost = true
 	be.expectReturn = true
 	return b.tryFinalize(be)
+}
+
+// SetNoReturnExpectation records on the buffered entry that the BPF
+// side decided no return event will be produced for this invocation —
+// typically EventPairingExpectationCallMapFull or
+// EventPairingExpectationCallCountExceeded set on the first fragment's
+// header. The flag survives multi-fragment assembly and surfaces on
+// the Ready when the entry finalizes so the sink can render an
+// evaluationError for the synthetic "@return" expression. Called by
+// the sink on each fragment that carries the expectation; only the
+// first call sticks (later calls with the same key are a no-op).
+func (b *Buffer) SetNoReturnExpectation(key Key, exp output.EventPairingExpectation) {
+	be := b.getOrCreate(key)
+	b.touch(be)
+	if be.noReturnExpectation == output.EventPairingExpectationNone {
+		be.noReturnExpectation = exp
+	}
 }
 
 // Discard removes any buffered state for the key without emitting. Used for
@@ -376,10 +410,11 @@ func (b *Buffer) Discard(key Key) {
 	}
 }
 
-// NotePartial records a PARTIAL_ENTRY or PARTIAL_RETURN drop notification.
-// lastSeq is the continuation_seq of the last fragment BPF successfully
-// submitted on the indicated side; userspace should expect lastSeq+1
-// fragments on that side and treat the resulting event as truncated.
+// NotePartial records that one side of an invocation is partial: BPF
+// successfully submitted fragments [0..lastSeq] on the indicated side
+// and then a subsequent submit failed (or the fragment cap fired).
+// Userspace should expect lastSeq+1 fragments on that side and treat
+// the resulting event as truncated.
 func (b *Buffer) NotePartial(key Key, side Side, lastSeq uint16) (Ready, bool) {
 	be := b.getOrCreate(key)
 	b.touch(be)
@@ -514,12 +549,13 @@ func (b *Buffer) finalize(be *bufferedEvent) Ready {
 
 func readyFrom(be *bufferedEvent) Ready {
 	return Ready{
-		Key:             be.key,
-		Entry:           be.entry,
-		Return:          be.returnList,
-		EntryTruncated:  be.entryTruncated,
-		ReturnTruncated: be.returnTruncated,
-		ReturnLost:      be.returnLost,
+		Key:                 be.key,
+		Entry:               be.entry,
+		Return:              be.returnList,
+		EntryTruncated:      be.entryTruncated,
+		ReturnTruncated:     be.returnTruncated,
+		ReturnLost:          be.returnLost,
+		NoReturnExpectation: be.noReturnExpectation,
 	}
 }
 
