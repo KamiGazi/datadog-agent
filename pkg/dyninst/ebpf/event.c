@@ -252,7 +252,8 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
         LOG(1, "probe_run: failed to submit condition-failed signal for return event");
         send_drop_notification(
             prog_id, params->probe_id, header->goid, header->stack_byte_depth,
-            0, global_ctx.stack_machine->entry_ktime_ns, DROP_REASON_RETURN_LOST);
+            0, global_ctx.stack_machine->entry_ktime_ns,
+            DROP_REASON_FIRST_FLUSH_FAILED, DROP_SIDE_RETURN);
       }
     }
     // Entry: in_progress_calls insertion was deferred, so nothing to clean up.
@@ -270,7 +271,8 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
         LOG(1, "probe_run: failed to submit throttled condition-failed signal");
         send_drop_notification(
             prog_id, params->probe_id, header->goid, header->stack_byte_depth,
-            0, global_ctx.stack_machine->entry_ktime_ns, DROP_REASON_RETURN_LOST);
+            0, global_ctx.stack_machine->entry_ktime_ns,
+            DROP_REASON_FIRST_FLUSH_FAILED, DROP_SIDE_RETURN);
       }
     }
     // Entry: in_progress_calls insertion was deferred, so nothing to clean up.
@@ -312,21 +314,28 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
     // A mid-chase flush failed. Skip the final submit — sending it now
     // would leave a gap in the fragment sequence — and notify userspace
     // so it can finalize whatever (if anything) reached it.
+    uint8_t side = (params->kind == EVENT_KIND_RETURN)
+                       ? DROP_SIDE_RETURN
+                       : DROP_SIDE_ENTRY;
     if (sm->last_submitted_seq != LAST_SUBMITTED_SEQ_NONE) {
       // Earlier fragments reached userspace; tell it to emit them as
-      // truncated.
-      uint8_t reason = (params->kind == EVENT_KIND_RETURN)
-                           ? DROP_REASON_PARTIAL_RETURN
-                           : DROP_REASON_PARTIAL_ENTRY;
+      // truncated. The cause stashed by the SM tells us whether we
+      // hit the fragment cap or the ringbuf was full.
+      uint8_t reason = (sm->flush_failure_cause == (uint8_t)FLUSH_FRAGMENT_CAP)
+                           ? DROP_REASON_FRAGMENT_LIMIT
+                           : DROP_REASON_RING_BUFFER_FULL;
       send_drop_notification(
           prog_id, params->probe_id, header->goid, header->stack_byte_depth,
-          sm->last_submitted_seq, sm->entry_ktime_ns, reason);
+          sm->last_submitted_seq, sm->entry_ktime_ns, reason, side);
     } else if (params->kind == EVENT_KIND_RETURN) {
       // The very first flush failed; no return fragments are in flight.
-      // Tell userspace to emit the matching entry alone.
+      // Tell userspace to emit the matching entry alone. First-flush
+      // ringbuf rejection maps to FIRST_FLUSH_FAILED (not RING_BUFFER_FULL)
+      // so userspace can distinguish "agent overloaded mid-stream" from
+      // "side never reached userspace".
       send_drop_notification(
           prog_id, params->probe_id, header->goid, header->stack_byte_depth,
-          0, sm->entry_ktime_ns, DROP_REASON_RETURN_LOST);
+          0, sm->entry_ktime_ns, DROP_REASON_FIRST_FLUSH_FAILED, DROP_SIDE_RETURN);
     }
     // Entry probe with no fragments: no userspace state to clean up.
     LOG(1, "probe_run: continuation aborted at seq=%d", sm->last_submitted_seq);
@@ -339,21 +348,24 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
   final_header->continuation_flags = 0; // final fragment
   if (!events_scratch_buf_submit(global_ctx.buf, start_ns)) {
     LOG(1, "probe_run output dropped");
+    uint8_t side = (params->kind == EVENT_KIND_RETURN)
+                       ? DROP_SIDE_RETURN
+                       : DROP_SIDE_ENTRY;
     if (sm->last_submitted_seq != LAST_SUBMITTED_SEQ_NONE) {
       // Some fragments already reached userspace; this final fragment is
-      // lost. Notify userspace to emit the partial event as truncated.
-      uint8_t reason = (params->kind == EVENT_KIND_RETURN)
-                           ? DROP_REASON_PARTIAL_RETURN
-                           : DROP_REASON_PARTIAL_ENTRY;
+      // lost to a ringbuf rejection. Notify userspace to emit the partial
+      // event as truncated.
       send_drop_notification(
           prog_id, params->probe_id, header->goid, header->stack_byte_depth,
-          sm->last_submitted_seq, sm->entry_ktime_ns, reason);
+          sm->last_submitted_seq, sm->entry_ktime_ns,
+          DROP_REASON_RING_BUFFER_FULL, side);
     } else if (params->kind == EVENT_KIND_RETURN) {
       // No fragments were submitted; the return probe produced nothing in
       // userspace. Tell userspace to emit the matching entry alone.
+      // First-flush ringbuf rejection maps to FIRST_FLUSH_FAILED.
       send_drop_notification(
           prog_id, params->probe_id, header->goid, header->stack_byte_depth,
-          0, sm->entry_ktime_ns, DROP_REASON_RETURN_LOST);
+          0, sm->entry_ktime_ns, DROP_REASON_FIRST_FLUSH_FAILED, DROP_SIDE_RETURN);
     }
     // Entry probe with no fragments: no userspace state to clean up.
   } else {

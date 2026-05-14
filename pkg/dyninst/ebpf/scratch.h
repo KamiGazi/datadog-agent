@@ -90,13 +90,15 @@ static inline void send_drop_notification(
     uint32_t stack_byte_depth,
     uint16_t last_seq,
     uint64_t entry_ktime_ns,
-    uint8_t drop_reason) {
+    uint8_t drop_reason,
+    uint8_t side) {
   di_drop_notification_t notif = {
       .prog_id = prog_id,
       .probe_id = probe_id,
       .goid = goid,
       .stack_byte_depth = stack_byte_depth,
       .drop_reason = drop_reason,
+      .side = side,
       .last_seq = last_seq,
       .entry_ktime_ns = entry_ktime_ns,
   };
@@ -160,27 +162,35 @@ static bool events_scratch_buf_submit(scratch_buf_t* scratch_buf,
   return bpf_ringbuf_output(&out_ringbuf, scratch_buf, len, 0) == 0;
 }
 
+// Result of an attempted scratch buffer flush. FLUSH_OK means the
+// fragment reached userspace and a fresh buffer is ready for the next
+// item. The non-OK values describe why the flush failed; probe_run
+// translates them (plus side) into the corresponding DropReason on the
+// side-channel notification.
+typedef enum flush_result {
+  FLUSH_OK              = 0,
+  FLUSH_FRAGMENT_CAP    = 1, // hit MAX_CONTINUATION_FRAGMENTS
+  FLUSH_RING_BUFFER_FULL = 2, // bpf_ringbuf_output rejected
+} flush_result_t;
+
 // Flush the current scratch buffer as a continuation fragment and reinitialize
-// for the next fragment. Returns true on success, false if the flush couldn't
-// be submitted — either because the ringbuf is full or because we've reached
-// MAX_CONTINUATION_FRAGMENTS. start_ns is the original probe invocation
-// timestamp, used to correlate all fragments of a single logical event.
-// last_submitted_seq is updated on success so probe_run can fill last_seq on
-// any subsequent drop notification.
-static bool scratch_buf_flush_and_continue(scratch_buf_t* scratch_buf,
-                                           uint16_t* continuation_seq,
-                                           uint16_t* last_submitted_seq,
-                                           uint64_t start_ns,
-                                           uint64_t entry_ktime_ns) {
-  // Reject flushes once we'd cross the per-invocation fragment cap. The
-  // caller will set continuation_aborted and probe_run will emit the
-  // appropriate PARTIAL_* / RETURN_LOST notification — userspace already
-  // has fragments [0..MAX_CONTINUATION_FRAGMENTS-1] and is told to
-  // finalize them as a truncated event.
+// for the next fragment. Returns FLUSH_OK on success. On failure, the caller
+// must set continuation_aborted and emit the appropriate drop notification —
+// userspace already has fragments [0..last_submitted_seq] (zero if no prior
+// fragments) and is told to finalize them as a truncated event.
+// start_ns is the original probe invocation timestamp, used to correlate all
+// fragments of a single logical event. last_submitted_seq is updated on
+// success so probe_run can fill last_seq on any subsequent drop notification.
+static flush_result_t scratch_buf_flush_and_continue(
+    scratch_buf_t* scratch_buf,
+    uint16_t* continuation_seq,
+    uint16_t* last_submitted_seq,
+    uint64_t start_ns,
+    uint64_t entry_ktime_ns) {
   if (*continuation_seq >= MAX_CONTINUATION_FRAGMENTS) {
     LOG(1, "flush: hit MAX_CONTINUATION_FRAGMENTS (%d), aborting continuation",
         MAX_CONTINUATION_FRAGMENTS);
-    return false;
+    return FLUSH_FRAGMENT_CAP;
   }
 
   di_event_header_t* header = (di_event_header_t*)scratch_buf;
@@ -195,7 +205,7 @@ static bool scratch_buf_flush_and_continue(scratch_buf_t* scratch_buf,
   unsigned char event_pairing_expectation = header->event_pairing_expectation;
 
   if (!events_scratch_buf_submit(scratch_buf, start_ns)) {
-    return false;
+    return FLUSH_RING_BUFFER_FULL;
   }
 
   *last_submitted_seq = *continuation_seq;
@@ -215,7 +225,7 @@ static bool scratch_buf_flush_and_continue(scratch_buf_t* scratch_buf,
       .ktime_ns = start_ns, // same timestamp for fragment correlation
       .entry_ktime_ns = entry_ktime_ns,
   };
-  return true;
+  return FLUSH_OK;
 }
 
 typedef struct copy_stack_loop_ctx {
