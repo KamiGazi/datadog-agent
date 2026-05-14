@@ -17,10 +17,23 @@ const (
 	ExprStatusPresent  ExprStatus = 1 // evaluation succeeded
 	ExprStatusNilDeref ExprStatus = 2 // nil pointer dereference
 	ExprStatusOOB      ExprStatus = 3 // index out of bounds
+	// ExprStatusRecursionStackFull is set by SM_OP_CALL overflow at the
+	// root-expression level when the SM's PC stack is exhausted (S5 in
+	// the dyninst capture-reasons design). The site has no specific
+	// type+address for a placeholder data item, so the reason is
+	// propagated at the expression level instead.
+	ExprStatusRecursionStackFull ExprStatus = 4
+	// ExprStatusBufferFull is set when the SM aborted before emitting
+	// any data item for this expression (continuation_aborted before
+	// the first useful item reached scratch).
+	ExprStatusBufferFull ExprStatus = 5
+	// 6..15 reserved for future use.
 )
 
 // ExprStatusBits is the number of bits per entry in the ExprStatusArray.
-const ExprStatusBits = 2
+// 4 bits per slot leaves room for the full ExprStatus enum (today 6
+// values, capacity 16).
+const ExprStatusBits = 4
 
 // Expression is a typed and validated set of operations for compilation
 // and evaluation.

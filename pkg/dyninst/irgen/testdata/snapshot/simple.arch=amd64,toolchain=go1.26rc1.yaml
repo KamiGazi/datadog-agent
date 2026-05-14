@@ -18998,11 +18998,11 @@ Types:
     - __kind: EventRootType
       ID: 583
       Name: Probe[main.condStructArg]
-      ByteSize: 37
-      ExprStatusArraySize: 1
+      ByteSize: 38
+      ExprStatusArraySize: 2
       Expressions:
         - Name: x.I32
-          Offset: 1
+          Offset: 2
           Kind: template_segment
           Expression:
             Type: 12 BaseType int32
@@ -19015,7 +19015,7 @@ Types:
             IsSplit: false
           DictIndex: -1
         - Name: x.S
-          Offset: 5
+          Offset: 6
           Kind: template_segment
           Expression:
             Type: 11 GoStringHeaderType string
@@ -19028,7 +19028,7 @@ Types:
             IsSplit: false
           DictIndex: -1
         - Name: tag
-          Offset: 21
+          Offset: 22
           Kind: template_segment
           Expression:
             Type: 11 GoStringHeaderType string
