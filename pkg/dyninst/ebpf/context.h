@@ -236,6 +236,14 @@ typedef struct stack_machine {
   // (plus side) into the appropriate DropReason on the side-channel
   // notification. Undefined when continuation_aborted is false.
   uint8_t flush_failure_cause;
+
+  // Records the cause of the most recent abandoned pointer chase
+  // (sm_record_pointer returning false), as a data_item_reason_t value
+  // cast to uint8_t. Set at the abandonment site so the caller emitting
+  // a Carrier A placeholder can stamp the right reason. Overwritten on
+  // each abandonment; cleared to DATA_ITEM_REASON_NONE when a chase
+  // succeeds.
+  uint8_t last_chase_failure_cause;
   // Original probe invocation timestamp, shared across all continuation
   // fragments for correlation.
   uint64_t start_ns;
@@ -423,6 +431,8 @@ static stack_machine_t* stack_machine_ctx_load(const probe_params_t* probe_param
   stack_machine->continuation_seq = 0;
   stack_machine->last_submitted_seq = LAST_SUBMITTED_SEQ_NONE;
   stack_machine->continuation_aborted = false;
+  stack_machine->flush_failure_cause = 0;
+  stack_machine->last_chase_failure_cause = 0; // DATA_ITEM_REASON_NONE
   // start_ns and entry_ktime_ns are set explicitly by probe_run before use.
   return stack_machine;
 }
