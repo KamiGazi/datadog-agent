@@ -17,7 +17,7 @@ import (
 	"github.com/DataDog/datadog-agent/comp/aggregator/demultiplexer"
 	"github.com/DataDog/datadog-agent/comp/core/hostname"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
-	"github.com/DataDog/datadog-agent/comp/core/status"
+	status "github.com/DataDog/datadog-agent/comp/core/status/def"
 	compdef "github.com/DataDog/datadog-agent/comp/def"
 	forwarder "github.com/DataDog/datadog-agent/comp/ndmtmp/forwarder/def"
 	nfconfig "github.com/DataDog/datadog-agent/comp/netflow/config/def"

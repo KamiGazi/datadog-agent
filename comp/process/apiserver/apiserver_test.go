@@ -25,8 +25,8 @@ import (
 	secrets "github.com/DataDog/datadog-agent/comp/core/secrets/def"
 	secretsmock "github.com/DataDog/datadog-agent/comp/core/secrets/mock"
 	"github.com/DataDog/datadog-agent/comp/core/settings/settingsimpl"
-	"github.com/DataDog/datadog-agent/comp/core/status"
-	"github.com/DataDog/datadog-agent/comp/core/status/statusimpl"
+	status "github.com/DataDog/datadog-agent/comp/core/status/def"
+	statusfx "github.com/DataDog/datadog-agent/comp/core/status/fx"
 	tagger "github.com/DataDog/datadog-agent/comp/core/tagger/def"
 	taggerfxmock "github.com/DataDog/datadog-agent/comp/core/tagger/fx-mock"
 	workloadmeta "github.com/DataDog/datadog-agent/comp/core/workloadmeta/def"
@@ -57,7 +57,7 @@ func TestLifecycle(t *testing.T) {
 			},
 		),
 		fx.Provide(func() tagger.Component { return taggerfxmock.SetupFakeTagger(t) }),
-		statusimpl.Module(),
+		statusfx.Module(),
 		settingsimpl.MockModule(),
 		fx.Provide(func() ipc.Component { return ipcmock.New(t) }),
 		fx.Populate(&ipcComp),
@@ -93,7 +93,7 @@ func TestPostAuthentication(t *testing.T) {
 			},
 		),
 		fx.Provide(func() tagger.Component { return taggerfxmock.SetupFakeTagger(t) }),
-		statusimpl.Module(),
+		statusfx.Module(),
 		settingsimpl.MockModule(),
 		fx.Provide(func() ipc.Component { return ipcmock.New(t) }),
 		fx.Populate(&ipcComp),

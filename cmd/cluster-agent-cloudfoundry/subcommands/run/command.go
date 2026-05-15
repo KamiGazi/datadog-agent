@@ -47,7 +47,7 @@ import (
 	secrets "github.com/DataDog/datadog-agent/comp/core/secrets/def"
 	"github.com/DataDog/datadog-agent/comp/core/settings"
 	"github.com/DataDog/datadog-agent/comp/core/settings/settingsimpl"
-	"github.com/DataDog/datadog-agent/comp/core/status"
+	status "github.com/DataDog/datadog-agent/comp/core/status/def"
 	tagger "github.com/DataDog/datadog-agent/comp/core/tagger/def"
 	localTaggerfx "github.com/DataDog/datadog-agent/comp/core/tagger/fx"
 	telemetry "github.com/DataDog/datadog-agent/comp/core/telemetry/def"

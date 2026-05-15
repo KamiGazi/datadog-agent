@@ -32,7 +32,7 @@ import (
 	guicomp "github.com/DataDog/datadog-agent/comp/core/gui"
 	"github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
-	"github.com/DataDog/datadog-agent/comp/core/status"
+	status "github.com/DataDog/datadog-agent/comp/core/status/def"
 	"github.com/DataDog/datadog-agent/pkg/api/security"
 	template "github.com/DataDog/datadog-agent/pkg/template/html"
 	"github.com/DataDog/datadog-agent/pkg/util/defaultpaths"

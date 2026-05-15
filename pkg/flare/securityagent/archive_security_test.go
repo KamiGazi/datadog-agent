@@ -14,7 +14,7 @@ import (
 
 	flarehelpers "github.com/DataDog/datadog-agent/comp/core/flare/helpers"
 	flaretypes "github.com/DataDog/datadog-agent/comp/core/flare/types"
-	"github.com/DataDog/datadog-agent/comp/core/status"
+	status "github.com/DataDog/datadog-agent/comp/core/status/def"
 	"github.com/DataDog/datadog-agent/comp/core/status/statusimpl"
 	configmock "github.com/DataDog/datadog-agent/pkg/config/mock"
 	"github.com/DataDog/datadog-agent/pkg/util/fxutil"
@@ -27,7 +27,7 @@ import (
 func TestCreateSecurityAgentArchive(t *testing.T) {
 	mockConfig := configmock.New(t)
 	statusComponent := fxutil.Test[status.Mock](t, fx.Options(
-		statusimpl.MockModule(),
+		statusmock.MockModule(),
 	))
 
 	mockConfig.SetWithoutSource("compliance_config.dir", "./test/compliance.d")

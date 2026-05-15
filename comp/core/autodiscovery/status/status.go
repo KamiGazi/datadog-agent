@@ -11,7 +11,7 @@ import (
 	"io"
 
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery"
-	"github.com/DataDog/datadog-agent/comp/core/status"
+	status "github.com/DataDog/datadog-agent/comp/core/status/def"
 	workloadfilter "github.com/DataDog/datadog-agent/comp/core/workloadfilter/def"
 	"github.com/DataDog/datadog-agent/pkg/config/env"
 )

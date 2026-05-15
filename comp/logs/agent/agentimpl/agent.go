@@ -24,7 +24,7 @@ import (
 	"github.com/DataDog/datadog-agent/comp/core/hostname"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
 	secrets "github.com/DataDog/datadog-agent/comp/core/secrets/def"
-	statusComponent "github.com/DataDog/datadog-agent/comp/core/status"
+	statusComponent "github.com/DataDog/datadog-agent/comp/core/status/def"
 	tagger "github.com/DataDog/datadog-agent/comp/core/tagger/def"
 	workloadmeta "github.com/DataDog/datadog-agent/comp/core/workloadmeta/def"
 	"github.com/DataDog/datadog-agent/comp/logs-library/metrics"

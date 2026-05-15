@@ -24,7 +24,7 @@ import (
 	"github.com/DataDog/datadog-agent/comp/core/config"
 	"github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
-	"github.com/DataDog/datadog-agent/comp/core/status"
+	status "github.com/DataDog/datadog-agent/comp/core/status/def"
 	haagent "github.com/DataDog/datadog-agent/comp/haagent/def"
 	healthplatform "github.com/DataDog/datadog-agent/comp/healthplatform/store/def"
 	metadata "github.com/DataDog/datadog-agent/comp/metadata/runner/def"

@@ -42,8 +42,8 @@ import (
 	secrets "github.com/DataDog/datadog-agent/comp/core/secrets/def"
 	"github.com/DataDog/datadog-agent/comp/core/settings"
 	"github.com/DataDog/datadog-agent/comp/core/settings/settingsimpl"
-	"github.com/DataDog/datadog-agent/comp/core/status"
-	"github.com/DataDog/datadog-agent/comp/core/status/statusimpl"
+	status "github.com/DataDog/datadog-agent/comp/core/status/def"
+	statusfx "github.com/DataDog/datadog-agent/comp/core/status/fx"
 	sysprobeconfig "github.com/DataDog/datadog-agent/comp/core/sysprobeconfig/def"
 	sysprobeconfigimpl "github.com/DataDog/datadog-agent/comp/core/sysprobeconfig/impl"
 	tagger "github.com/DataDog/datadog-agent/comp/core/tagger/def"
@@ -171,7 +171,7 @@ func Commands(globalParams *command.GlobalParams) []*cobra.Command {
 						PythonVersionGetFunc: python.GetPythonVersion,
 					},
 				),
-				statusimpl.Module(),
+				statusfx.Module(),
 				configsyncimpl.Module(configsyncimpl.NewDefaultParams()),
 				autoexitfx.Module(),
 				fx.Supply(pidimpl.NewParams(params.pidfilePath)),
