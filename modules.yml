@@ -68,8 +68,6 @@ modules:
     used_by_otel: true
   comp/core/status:
     used_by_otel: true
-  comp/core/status/fx: default
-  comp/core/status/mock: default
   comp/core/status/statusimpl: default
   comp/core/tagger/def:
     used_by_otel: true
@@ -227,8 +225,6 @@ modules:
     used_by_otel: true
   pkg/logs/message:
     used_by_otel: true
-  pkg/logs/pipeline: default
-  pkg/logs/sender: default
   pkg/logs/sources:
     used_by_otel: true
   pkg/logs/status/statusinterface:
@@ -283,7 +279,6 @@ modules:
     used_by_otel: true
   pkg/tagset:
     used_by_otel: true
-  pkg/telemetry: default
   pkg/template:
     should_replace_internal_modules: false
     should_test_condition: never

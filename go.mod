@@ -936,7 +936,6 @@ require (
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azsecrets v1.4.0
 	github.com/DataDog/datadog-agent/comp/core/delegatedauth v0.0.0-00010101000000-000000000000
-	github.com/DataDog/datadog-agent/comp/core/status/fx v0.0.0-00010101000000-000000000000
 	github.com/DataDog/datadog-agent/comp/logs-library v0.77.0-devel.0.20260211235139-a5361978c2b6
 	github.com/DataDog/datadog-agent/comp/otelcol/collector-contrib/impl v0.0.0-00010101000000-000000000000
 	github.com/DataDog/datadog-agent/comp/otelcol/ddflareextension/impl v0.0.0-00010101000000-000000000000
@@ -1310,8 +1309,6 @@ replace (
 	github.com/DataDog/datadog-agent/comp/core/secrets/noop-impl => ./comp/core/secrets/noop-impl
 	github.com/DataDog/datadog-agent/comp/core/secrets/utils => ./comp/core/secrets/utils
 	github.com/DataDog/datadog-agent/comp/core/status => ./comp/core/status
-	github.com/DataDog/datadog-agent/comp/core/status/fx => ./comp/core/status/fx
-	github.com/DataDog/datadog-agent/comp/core/status/mock => ./comp/core/status/mock
 	github.com/DataDog/datadog-agent/comp/core/status/statusimpl => ./comp/core/status/statusimpl
 	github.com/DataDog/datadog-agent/comp/core/tagger/def => ./comp/core/tagger/def
 	github.com/DataDog/datadog-agent/comp/core/tagger/fx-remote => ./comp/core/tagger/fx-remote
