@@ -28,12 +28,26 @@ reason-propagation work should produce; the "regression check" column
 is what today's pre-change code would have emitted (and what should
 no longer appear).
 
-Schema rule: `notCapturedReason` is reserved for values that have
-**no captured bytes**. When a value is partially captured (a string
-clamped to `MaxLength`, or a value clamped to the 8 KiB per-item
-ceiling), the existing `size` + `truncated: true` pair already tells
-the consumer the original length and the captured prefix; no
-`notCapturedReason` is emitted alongside the captured value.
+Schema rule: `notCapturedReason` is **never emitted in the same JSON
+object as a captured value or a captured-peer array**. Concretely:
+
+- A scalar / leaf value never has a sibling `notCapturedReason` when
+  it also has a `value` field. When a string or other variable-sized
+  payload is partially captured (clamped by `MaxLength`, or by the
+  8 KiB per-item ceiling), the `size` + `truncated: true` pair on the
+  value object already tells the consumer the original length and the
+  captured prefix.
+- A container block (slice / array / map) never has a sibling
+  `notCapturedReason` when it also has `elements` or `entries`. If
+  some peers were omitted (collection-size limit fired, userspace
+  size accounting pruned entries, etc.) the block emits `truncated:
+  true` alongside `size`. The consumer reads `size > len(elements)`
+  + `truncated: true` as "the rest was cut."
+- `notCapturedReason` is reserved for objects with **no captured
+  bytes**: a `value`-less leaf, or a container that has neither
+  `elements` nor `entries`. Per-peer scope propagation (see
+  `pkg/dyninst/decode/reason.go`) still surfaces a specific cause on
+  absent siblings *inside* the container's array.
 
 | Cause                                | Probe / scenario                                                | Expected in snapshot                                     | Regression check (must NOT appear) |
 |--------------------------------------|------------------------------------------------------------------|----------------------------------------------------------|------------------------------------|
@@ -44,7 +58,7 @@ the consumer the original length and the captured prefix; no
 | `captureNestingTooDeep` (per-field)  | Probe a struct nested past `ENQUEUE_STACK_DEPTH` (32 levels)     | `"notCapturedReason": "captureNestingTooDeep"` on the deepest reachable field | `"depth"`                          |
 | `valueTooLarge`                      | Probe with `MaxLength: 16384` on a 10 KiB string                 | `"truncated": true` on the value (`notCapturedReason` is never emitted next to a captured value; the `size`/`truncated` pair already communicates the clamp) | no behavior change for partial captures |
 | `stringSize`                         | Probe with `MaxLength: 32` on a 4 KiB string                     | `"truncated": true` on the value (same rule — `notCapturedReason` is reserved for values with no captured bytes) | no behavior change for partial captures |
-| `collectionSize` (exactly-at-limit)  | Probe with `MaxCollectionSize: 50` on a slice of exactly 50 elements | `"notCapturedReason": "collectionSize"` on the slice block | no reason at all (today emits silence) |
+| `collectionSize` (exactly-at-limit)  | Probe with `MaxCollectionSize: 50` on a slice of exactly 50 elements | `"truncated": true` on the slice block (alongside `size` and `elements`); `notCapturedReason` is never emitted next to `elements` | `"notCapturedReason": "collectionSize"` on the slice block (the schema rule forbids it) |
 | Event too large (fragment cap)       | Probe with arguments large enough to exceed 16 fragments × 32 KiB | `evaluationErrors[].expr == "@entry"` with message `event too large` on the affected side | `"depth"` on missing fields, no event-level reason |
 | Agent overloaded (ringbuf rejection) | Stall the userspace ringbuf reader while a multi-fragment event is in flight | `evaluationErrors[].expr == "@entry"` (or `"@return"`) with message `agent overloaded` | `"depth"`                          |
 | Return event lost                    | Force return-side first-flush failure (test hook in `pkg/dyninst/integration_first_flush_fail_test.go`) | `evaluationErrors[].expr == "@return"` with message `return event lost` | entry-only snapshot with no explanation |
