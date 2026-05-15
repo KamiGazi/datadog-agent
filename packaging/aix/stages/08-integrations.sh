@@ -62,7 +62,7 @@ log "Copying built-in Go check default configs"
 # agent to attempt loading the Python check and log an ImportError at startup.
 for check in cpu memory disk load; do
     mkdir -p "$STAGING/etc/datadog-agent/conf.d/${check}.d"
-    cp "/opt/datadog-agent/cmd/agent/dist/conf.d/${check}.d/conf.yaml.default" \
+    cp "$AGENT_SRC/cmd/agent/dist/conf.d/${check}.d/conf.yaml.default" \
        "$STAGING/etc/datadog-agent/conf.d/${check}.d/" 2>/dev/null || \
         log "WARNING: no conf.yaml.default for built-in check: $check"
 done
