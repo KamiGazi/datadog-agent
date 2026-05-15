@@ -9,6 +9,8 @@
 package fx
 
 import (
+	"go.uber.org/fx"
+
 	adcmock "github.com/DataDog/datadog-agent/comp/core/autodiscovery/mock"
 	"github.com/DataDog/datadog-agent/pkg/util/fxutil"
 )
@@ -16,6 +18,6 @@ import (
 // MockModule provides the default autoconfig without other components configured, and not started.
 func MockModule() fxutil.Module {
 	return fxutil.Component(
-		fxutil.ProvideComponentConstructor(adcmock.NewMockComponent),
+		fx.Provide(adcmock.NewMockComponent),
 	)
 }
