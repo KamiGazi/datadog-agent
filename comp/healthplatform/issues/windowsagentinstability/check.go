@@ -9,9 +9,9 @@ package windowsagentinstability
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -47,7 +47,7 @@ func Check() (*healthplatform.IssueReport, error) {
 	return &healthplatform.IssueReport{
 		IssueId: IssueID,
 		Context: map[string]string{
-			"crashCount": fmt.Sprintf("%d", count),
+			"crashCount": strconv.Itoa(count),
 			"timeWindow": "24h",
 		},
 		Tags: []string{"windows", "service-crash", "stability"},
