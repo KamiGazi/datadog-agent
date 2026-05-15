@@ -6,8 +6,8 @@ go_library(
     importpath = "github.com/DataDog/datadog-agent/pkg/networkdevice/diagnoses",
     visibility = ["//visibility:public"],
     deps = [
-        "//comp/core/diagnose/def",
         "//pkg/networkdevice/metadata",
+        "@//comp/core/diagnose/def",
     ],
 )
 
@@ -17,8 +17,8 @@ go_test(
     embed = [":diagnoses"],
     gotags = ["test"],
     deps = [
-        "//comp/core/diagnose/def",
         "//pkg/networkdevice/metadata",
+        "@//comp/core/diagnose/def",
         "@com_github_stretchr_testify//assert",
     ],
 )
