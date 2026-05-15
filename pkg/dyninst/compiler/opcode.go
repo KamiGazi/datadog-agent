@@ -84,6 +84,15 @@ const (
 	OpcodeSwissMapLoopBegin
 	OpcodeSwissMapLoopEnd
 	OpcodeExprAdvanceOffset
+	// Filter (deferred collection-filter) opcodes.
+	OpcodeEmitFilterSliceMarker
+	OpcodeEmitFilterMapMarker
+	OpcodeInitFilterSliceLoop
+	OpcodeEmitFilterSliceElement
+	OpcodeFilterSliceAdvance
+	OpcodeInitFilterMapLoop
+	OpcodeEmitFilterMapElement
+	OpcodeFilterMapAdvance
 )
 
 //revive:enable:exported

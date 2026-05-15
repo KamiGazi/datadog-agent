@@ -147,6 +147,22 @@ func opcodeByte(opcode compiler.Opcode) uint8 {
 		return C.SM_OP_SWISS_MAP_LOOP_END
 	case compiler.OpcodeExprAdvanceOffset:
 		return C.SM_OP_EXPR_ADVANCE_OFFSET
+	case compiler.OpcodeEmitFilterSliceMarker:
+		return C.SM_OP_EMIT_FILTER_SLICE_MARKER
+	case compiler.OpcodeEmitFilterMapMarker:
+		return C.SM_OP_EMIT_FILTER_MAP_MARKER
+	case compiler.OpcodeInitFilterSliceLoop:
+		return C.SM_OP_INIT_FILTER_SLICE_LOOP
+	case compiler.OpcodeEmitFilterSliceElement:
+		return C.SM_OP_EMIT_FILTER_SLICE_ELEMENT
+	case compiler.OpcodeFilterSliceAdvance:
+		return C.SM_OP_FILTER_SLICE_ADVANCE
+	case compiler.OpcodeInitFilterMapLoop:
+		return C.SM_OP_INIT_FILTER_MAP_LOOP
+	case compiler.OpcodeEmitFilterMapElement:
+		return C.SM_OP_EMIT_FILTER_MAP_ELEMENT
+	case compiler.OpcodeFilterMapAdvance:
+		return C.SM_OP_FILTER_MAP_ADVANCE
 	default:
 		panic(fmt.Sprintf("unknown opcode: %s", opcode))
 	}

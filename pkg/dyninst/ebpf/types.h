@@ -43,6 +43,12 @@ typedef enum dynamic_size_class {
   DYNAMIC_SIZE_CLASS_SLICE = 1,
   DYNAMIC_SIZE_CLASS_STRING = 2,
   DYNAMIC_SIZE_CLASS_HASHMAP = 3,
+  // FILTER_DEFERRED marks per-call-site filter data types whose
+  // enqueue_pc runs the deferred filter loop. sm_chase_pointer
+  // emits no header and reads no payload for these types — the
+  // enqueue_pc itself does all the work. Must stay in sync with
+  // ir.DynamicSizeFilterDeferred.
+  DYNAMIC_SIZE_CLASS_FILTER_DEFERRED = 4,
 } dynamic_size_class_t;
 
 typedef struct type_info {
@@ -194,6 +200,18 @@ typedef enum sm_opcode {
   // lowering for @it to position sm->offset at a field within the loop's
   // @it scratch slot before the body's PushOffset/CmpBase sequence.
   SM_OP_EXPR_ADVANCE_OFFSET = 57,
+  // Filter (deferred collection-filter) opcodes. See
+  // ir.EmitFilter{Slice,Map}MarkerOp, ir.InitFilter{Slice,Map}LoopOp,
+  // ir.FilterSliceLoopStepOp, ir.FilterMapLoopStepOp, and the
+  // compiler-only EmitFilter{Slice,Map}ElementOp / Filter{Slice,Map}AdvanceOp.
+  SM_OP_EMIT_FILTER_SLICE_MARKER = 58,
+  SM_OP_EMIT_FILTER_MAP_MARKER = 59,
+  SM_OP_INIT_FILTER_SLICE_LOOP = 60,
+  SM_OP_EMIT_FILTER_SLICE_ELEMENT = 61,
+  SM_OP_FILTER_SLICE_ADVANCE = 62,
+  SM_OP_INIT_FILTER_MAP_LOOP = 63,
+  SM_OP_EMIT_FILTER_MAP_ELEMENT = 64,
+  SM_OP_FILTER_MAP_ADVANCE = 65,
 } sm_opcode_t;
 
 // cmp_op_t identifies which comparison SM_OP_EXPR_CMP_BASE /
