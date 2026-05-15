@@ -139,7 +139,7 @@
         "evaluationErrors": [
           {
             "expr": "all(xs, {@it > 0})",
-            "message": "error evaluating condition"
+            "message": "any/all iteration limit exceeded (4096 elements)"
           }
         ]
       },
@@ -174,7 +174,7 @@
         "evaluationErrors": [
           {
             "expr": "all(xs, {@it > 0})",
-            "message": "error evaluating condition"
+            "message": "any/all iteration limit exceeded (4096 elements)"
           }
         ]
       },
@@ -209,7 +209,7 @@
         "evaluationErrors": [
           {
             "expr": "all(xs, {@it > 0})",
-            "message": "error evaluating condition"
+            "message": "any/all iteration limit exceeded (4096 elements)"
           }
         ]
       },

@@ -110,7 +110,7 @@
         "evaluationErrors": [
           {
             "expr": "all(m, {@value > 0})",
-            "message": "error evaluating condition"
+            "message": "any/all iteration limit exceeded (4096 elements)"
           }
         ]
       },

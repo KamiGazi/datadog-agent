@@ -52,7 +52,7 @@
         "evaluationErrors": [
           {
             "expr": "any(xs, {@it == 42}) && tag == \"match\"",
-            "message": "error evaluating condition"
+            "message": "any/all iteration limit exceeded (4096 elements)"
           }
         ]
       },
@@ -87,7 +87,7 @@
         "evaluationErrors": [
           {
             "expr": "any(xs, {@it == 42}) && tag == \"match\"",
-            "message": "error evaluating condition"
+            "message": "any/all iteration limit exceeded (4096 elements)"
           }
         ]
       },

@@ -28,6 +28,13 @@ reason-propagation work should produce; the "regression check" column
 is what today's pre-change code would have emitted (and what should
 no longer appear).
 
+Schema rule: `notCapturedReason` is reserved for values that have
+**no captured bytes**. When a value is partially captured (a string
+clamped to `MaxLength`, or a value clamped to the 8 KiB per-item
+ceiling), the existing `size` + `truncated: true` pair already tells
+the consumer the original length and the captured prefix; no
+`notCapturedReason` is emitted alongside the captured value.
+
 | Cause                                | Probe / scenario                                                | Expected in snapshot                                     | Regression check (must NOT appear) |
 |--------------------------------------|------------------------------------------------------------------|----------------------------------------------------------|------------------------------------|
 | `depth` (pointer-chasing limit)      | `MaxReferenceDepth: 2`, probe a struct with a 5-level pointer chain | `"notCapturedReason": "depth"` on the unreachable pointee | n/a — depth was correct before     |
@@ -35,8 +42,8 @@ no longer appear).
 | `tooManyUniquePointers`              | Probe a graph with >1024 distinct addresses                      | `"notCapturedReason": "tooManyUniquePointers"`           | `"depth"`                          |
 | `tooManySlicesCaptured`              | Probe a struct holding >128 distinct slices                      | `"notCapturedReason": "tooManySlicesCaptured"`           | `"depth"`                          |
 | `captureNestingTooDeep` (per-field)  | Probe a struct nested past `ENQUEUE_STACK_DEPTH` (32 levels)     | `"notCapturedReason": "captureNestingTooDeep"` on the deepest reachable field | `"depth"`                          |
-| `valueTooLarge`                      | Probe with `MaxLength: 16384` on a 10 KiB string                 | `"truncated": true` *and* `"notCapturedReason": "valueTooLarge"` on the value | no reason at all                   |
-| `stringSize`                         | Probe with `MaxLength: 32` on a 4 KiB string                     | `"truncated": true` *and* `"notCapturedReason": "stringSize"` | no reason at all                   |
+| `valueTooLarge`                      | Probe with `MaxLength: 16384` on a 10 KiB string                 | `"truncated": true` on the value (`notCapturedReason` is never emitted next to a captured value; the `size`/`truncated` pair already communicates the clamp) | no behavior change for partial captures |
+| `stringSize`                         | Probe with `MaxLength: 32` on a 4 KiB string                     | `"truncated": true` on the value (same rule — `notCapturedReason` is reserved for values with no captured bytes) | no behavior change for partial captures |
 | `collectionSize` (exactly-at-limit)  | Probe with `MaxCollectionSize: 50` on a slice of exactly 50 elements | `"notCapturedReason": "collectionSize"` on the slice block | no reason at all (today emits silence) |
 | Event too large (fragment cap)       | Probe with arguments large enough to exceed 16 fragments × 32 KiB | `evaluationErrors[].expr == "@entry"` with message `event too large` on the affected side | `"depth"` on missing fields, no event-level reason |
 | Agent overloaded (ringbuf rejection) | Stall the userspace ringbuf reader while a multi-fragment event is in flight | `evaluationErrors[].expr == "@entry"` (or `"@return"`) with message `agent overloaded` | `"depth"`                          |

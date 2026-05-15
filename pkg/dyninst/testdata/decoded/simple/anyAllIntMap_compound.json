@@ -52,7 +52,7 @@
         "evaluationErrors": [
           {
             "expr": "any(m, {@value == 42}) && all(m, {@value > 0})",
-            "message": "error evaluating condition"
+            "message": "any/all iteration limit exceeded (4096 elements)"
           }
         ]
       },
