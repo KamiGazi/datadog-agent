@@ -20,7 +20,7 @@ import (
 	serverlessInitTag "github.com/DataDog/datadog-agent/cmd/serverless-init/tag"
 	secretsmock "github.com/DataDog/datadog-agent/comp/core/secrets/mock"
 	taggerfxmock "github.com/DataDog/datadog-agent/comp/core/tagger/fx-mock"
-	"github.com/DataDog/datadog-agent/comp/logs/agent/agentimpl"
+	agentimpl "github.com/DataDog/datadog-agent/comp/logs/agent/impl"
 	configmock "github.com/DataDog/datadog-agent/pkg/config/mock"
 	pkgconfigsetup "github.com/DataDog/datadog-agent/pkg/config/setup"
 	configUtils "github.com/DataDog/datadog-agent/pkg/config/utils"

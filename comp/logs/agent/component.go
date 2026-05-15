@@ -4,40 +4,20 @@
 // Copyright 2023-present Datadog, Inc.
 
 // Package agent contains logs agent component.
+//
+// Deprecated: use comp/logs/agent/def instead.
 package agent
 
 import (
-	"context"
-
-	"github.com/DataDog/datadog-agent/comp/logs-library/pipeline"
-	"github.com/DataDog/datadog-agent/pkg/logs/diagnostic"
-	"github.com/DataDog/datadog-agent/pkg/logs/schedulers"
-	"github.com/DataDog/datadog-agent/pkg/logs/sources"
+	agent "github.com/DataDog/datadog-agent/comp/logs/agent/def"
 )
 
-// team: agent-log-pipelines
-
 // Component is the component type.
-type Component interface {
-	// AddScheduler adds an AD scheduler to the logs agent
-	AddScheduler(scheduler schedulers.Scheduler)
+//
+// Deprecated: use comp/logs/agent/def.Component instead.
+type Component = agent.Component
 
-	// Get the logs sources
-	GetSources() *sources.LogSources
-
-	// GetMessageReceiver gets the diagnostic message receiver
-	GetMessageReceiver() *diagnostic.BufferedMessageReceiver
-
-	// GetPipelineProvider gets the pipeline provider
-	GetPipelineProvider() pipeline.Provider
-}
-
-// ServerlessLogsAgent is a compat version of the component for the serverless agent
-type ServerlessLogsAgent interface {
-	Component
-	Start() error
-	Stop()
-
-	// Flush flushes synchronously the pipelines managed by the Logs Agent.
-	Flush(ctx context.Context)
-}
+// ServerlessLogsAgent is a compat version of the component for the serverless agent.
+//
+// Deprecated: use comp/logs/agent/def.ServerlessLogsAgent instead.
+type ServerlessLogsAgent = agent.ServerlessLogsAgent

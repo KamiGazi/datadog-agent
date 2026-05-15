@@ -6,15 +6,15 @@
 //go:build test
 
 // Package agent contains logs agent component.
+//
+// Deprecated: use comp/logs/agent/def instead.
 package agent
 
 import (
-	"github.com/DataDog/datadog-agent/pkg/logs/sources"
+	agent "github.com/DataDog/datadog-agent/comp/logs/agent/def"
 )
 
 // Mock implements mock-specific methods.
-type Mock interface {
-	Component
-
-	SetSources(sources *sources.LogSources)
-}
+//
+// Deprecated: use comp/logs/agent/def.Mock instead.
+type Mock = agent.Mock
