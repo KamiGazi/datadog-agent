@@ -101,6 +101,8 @@ exports_files(glob(
 # gazelle:exclude comp/core/configstream
 # gazelle:exclude comp/core/diagnose
 # gazelle:exclude comp/core/flare/flareimpl
+# gazelle:exclude comp/core/flare/fx
+# gazelle:exclude comp/core/flare/impl
 # gazelle:exclude comp/core/flare/helpers
 # gazelle:exclude comp/core/gui/guiimpl
 # gazelle:exclude comp/core/hostname/hostnameimpl
