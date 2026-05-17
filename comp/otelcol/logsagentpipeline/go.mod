@@ -54,13 +54,11 @@ require (
 	github.com/DataDog/datadog-agent/pkg/logs/status/utils v0.78.1 // indirect
 	github.com/DataDog/datadog-agent/pkg/logs/types v0.78.1 // indirect
 	github.com/DataDog/datadog-agent/pkg/template v0.78.1 // indirect
-	github.com/DataDog/datadog-agent/pkg/util/backoff v0.78.1 // indirect
 	github.com/DataDog/datadog-agent/pkg/util/compression v0.64.0-rc.3 // indirect
 	github.com/DataDog/datadog-agent/pkg/util/defaultpaths v0.64.0-devel // indirect
 	github.com/DataDog/datadog-agent/pkg/util/executable v0.78.1 // indirect
 	github.com/DataDog/datadog-agent/pkg/util/filesystem v0.78.1 // indirect
-	github.com/DataDog/datadog-agent/pkg/util/flavor v0.0.0-00010101000000-000000000000 // indirect
-	github.com/DataDog/datadog-agent/pkg/util/http v0.78.1 // indirect
+	github.com/DataDog/datadog-agent/pkg/util/flavor v0.56.0-rc.3 // indirect
 	github.com/DataDog/datadog-agent/pkg/util/log v0.78.1 // indirect
 	github.com/DataDog/datadog-agent/pkg/util/pointer v0.78.1 // indirect
 	github.com/DataDog/datadog-agent/pkg/util/scrubber v0.78.1 // indirect
@@ -73,7 +71,6 @@ require (
 )
 
 require (
-	github.com/DataDog/datadog-agent/pkg/util/hostport v0.0.0-00010101000000-000000000000 // indirect
 	github.com/DataDog/go-acl v1.0.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect

@@ -2,11 +2,7 @@ load("@rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "status",
-    srcs = [
-        "component.go",
-        "component_mock.go",
-        "render_helpers.go",
-    ],
+    srcs = ["render_helpers.go"],
     importpath = "github.com/DataDog/datadog-agent/comp/core/status",
     visibility = ["//visibility:public"],
     deps = [
