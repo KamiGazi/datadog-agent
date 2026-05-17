@@ -36,8 +36,6 @@ use (
 	comp/core/secrets/noop-impl
 	comp/core/secrets/utils
 	comp/core/status
-	comp/core/status/fx
-	comp/core/status/mock
 	comp/core/status/statusimpl
 	comp/core/tagger/def
 	comp/core/tagger/fx-remote
@@ -112,7 +110,6 @@ use (
 	pkg/fips
 	pkg/fleet/installer
 	pkg/gohai
-	pkg/logs/client
 	pkg/logs/diagnostic
 	pkg/logs/message
 	pkg/logs/sources
