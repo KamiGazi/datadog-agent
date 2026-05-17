@@ -4,8 +4,6 @@ go_library(
     name = "impl",
     srcs = [
         "forwarder_no_orchestrator.go",
-        "forwarder_orchestrator.go",
-        "forwarder_orchestrator_mock.go",
         "params.go",
     ],
     importpath = "github.com/DataDog/datadog-agent/comp/forwarder/orchestrator/impl",
@@ -13,17 +11,10 @@ go_library(
     deps = [
         "//comp/core/config",
         "//comp/core/log/def",
-        "//comp/core/secrets/def",
-        "//comp/core/tagger/def",
-        "//comp/core/tagger/types",
         "//comp/forwarder/defaultforwarder",
-        "//comp/forwarder/defaultforwarder/resolver",
         "//comp/forwarder/orchestrator/def",
-        "//pkg/config/env",
-        "//pkg/process/util/api/config",
         "//pkg/util/fxutil",
         "//pkg/util/option",
-        "@//pkg/orchestrator/config",
         "@org_uber_go_fx//:fx",
     ],
 )
