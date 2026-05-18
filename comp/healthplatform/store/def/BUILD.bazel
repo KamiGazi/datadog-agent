@@ -6,12 +6,8 @@ go_library(
         "component.go",
         "constants.go",
         "issue_report.go",
-        "proto.go",
     ],
     importpath = "github.com/DataDog/datadog-agent/comp/healthplatform/store/def",
     visibility = ["//visibility:public"],
-    deps = [
-        "//pkg/proto/pbgo/core",
-        "@com_github_datadog_agent_payload_v5//healthplatform",
-    ],
+    deps = ["//pkg/proto/datadog/healthplatform:healthplatform_go_proto"],
 )

@@ -1,3 +1,5 @@
+github.com/DataDog/agent-payload/v5 v5.0.196 h1:YdxilvpEGdiT5OVz9dkVqxEKoAA1frt0l9GjWJAt9lY=
+github.com/DataDog/agent-payload/v5 v5.0.196/go.mod h1:GyA1vuCeRywrNNCbYeR0cOYKE8QkOVNAFDqsH8VNF5M=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
