@@ -40,7 +40,7 @@ bazel:test:windows-amd64:
   variables:
     FLAVOR: datadog-agent
   script:
-    - bazel test --keep_going --config=$FLAVOR //...
+    - bazel test --keep_going --build_tests_only --config=$FLAVOR //...
 
 bazel:test:linux-amd64:datadog-agent:
   extends: [ .bazel:test:flavor, .bazel:runner:linux-amd64 ]
