@@ -15,11 +15,11 @@ import (
 	"github.com/DataDog/datadog-agent/comp/forwarder/eventplatform"
 	"github.com/DataDog/datadog-agent/comp/forwarder/eventplatformreceiver"
 	"github.com/DataDog/datadog-agent/comp/forwarder/eventplatformreceiver/eventplatformreceiverimpl"
+	logshttp "github.com/DataDog/datadog-agent/comp/logs-library/client/http"
 	laconfig "github.com/DataDog/datadog-agent/comp/logs/agent/config"
 	logscompression "github.com/DataDog/datadog-agent/comp/serializer/logscompression/def"
 	logscompressionfxmock "github.com/DataDog/datadog-agent/comp/serializer/logscompression/fx-mock"
 	pkgconfigsetup "github.com/DataDog/datadog-agent/pkg/config/setup"
-	logshttp "github.com/DataDog/datadog-agent/pkg/logs/client/http"
 	"github.com/DataDog/datadog-agent/pkg/util/fxutil"
 )
 
