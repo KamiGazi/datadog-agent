@@ -12,11 +12,11 @@ import (
 	"context"
 
 	"github.com/DataDog/datadog-agent/comp/core/config"
-	compdef "github.com/DataDog/datadog-agent/comp/def"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
 	secrets "github.com/DataDog/datadog-agent/comp/core/secrets/def"
 	tagger "github.com/DataDog/datadog-agent/comp/core/tagger/def"
 	"github.com/DataDog/datadog-agent/comp/core/tagger/types"
+	compdef "github.com/DataDog/datadog-agent/comp/def"
 	"github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder"
 	"github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/resolver"
 	orchestrator "github.com/DataDog/datadog-agent/comp/forwarder/orchestrator/def"
