@@ -1,17 +1,2 @@
-load("@rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "def",
-    srcs = [
-        "component.go",
-        "mock.go",
-    ],
-    importpath = "github.com/DataDog/datadog-agent/comp/logs/agent/def",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//pkg/logs/diagnostic",
-        "//pkg/logs/sources",
-        "@//pkg/logs/schedulers",
-        "@com_github_datadog_datadog_agent_comp_logs_library//pipeline",
-    ],
-)
+# gazelle:ignore
+# Stub: comp/logs-library/pipeline is excluded from Bazel (no BUILD.bazel).
