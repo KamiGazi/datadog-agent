@@ -1,12 +1,2 @@
-load("@rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "fx",
-    srcs = ["fx.go"],
-    importpath = "github.com/DataDog/datadog-agent/comp/logs/agent/fx",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//comp/logs/agent/impl",
-        "//pkg/util/fxutil",
-    ],
-)
+# gazelle:ignore
+# Stub: depends on //comp/logs/agent/impl which is not yet migrated to Bazel.
