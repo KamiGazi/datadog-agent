@@ -2374,9 +2374,9 @@ func TestDefaultTagsInjectMissingPreserveTag(t *testing.T) {
             metrics:
               - name: bar.zoo
                 preserve_tags:
-                  - emitter
+                  - remote_agent
                 default_tags:
-                  emitter: agent
+                  remote_agent: agent
     `
 	tel := makeTelMock(t)
 	counter := tel.NewCounter("bar", "zoo", []string{}, "")
@@ -2398,36 +2398,36 @@ func TestDefaultTagsInjectMissingPreserveTag(t *testing.T) {
 
 	// injected default tag must appear
 	require.Equal(t, 1, len(m.GetLabel()))
-	assert.Equal(t, "emitter", m.GetLabel()[0].GetName())
+	assert.Equal(t, "remote_agent", m.GetLabel()[0].GetName())
 	assert.Equal(t, "agent", m.GetLabel()[0].GetValue())
 }
 
-// TestDefaultTagsTaggedAndUntaggedGrouped verifies that tagged metrics (emitter=adp)
-// and tagless metrics (default: emitter=agent) aggregate into separate buckets.
+// TestDefaultTagsTaggedAndUntaggedGrouped verifies that tagged metrics (remote_agent=adp)
+// and tagless metrics (default: remote_agent=agent) aggregate into separate buckets.
 // This test exercises aggregateMetricTags directly with crafted dto.Metric values
 // to simulate the case where two separate components produce the same metric, one
-// with the emitter label and one without.
+// with the remote_agent label and one without.
 func TestDefaultTagsTaggedAndUntaggedGrouped(t *testing.T) {
 	// Build a compiled MetricConfig directly (mirrors what compileMetric would produce)
-	emitterKey := "emitter"
+	remoteAgentKey := "remote_agent"
 	mCfg := &MetricConfig{
 		Name:               "bar.zoo",
-		PreserveTags:       []string{"emitter"},
-		DefaultTags:        map[string]string{"emitter": "agent"},
+		PreserveTags:       []string{"remote_agent"},
+		DefaultTags:        map[string]string{"remote_agent": "agent"},
 		preserveTagsExists: true,
-		preserveTagsMap:    map[string]any{"emitter": struct{}{}},
-		defaultTagsMap:     map[string]string{"emitter": "agent"},
+		preserveTagsMap:    map[string]any{"remote_agent": struct{}{}},
+		defaultTagsMap:     map[string]string{"remote_agent": "agent"},
 	}
 
 	// Build dto.Metric slices that simulate two separate timeseries:
-	// 1. emitter=adp (value: 30)
-	// 2. no labels at all (value: 30, should become emitter=agent)
+	// 1. remote_agent=adp (value: 30)
+	// 2. no labels at all (value: 30, should become remote_agent=agent)
 	adpVal := "adp"
 	counterVal30 := float64(30)
 	counterVal30b := float64(30)
 
 	mWithTag := &dto.Metric{
-		Label:   []*dto.LabelPair{{Name: &emitterKey, Value: &adpVal}},
+		Label:   []*dto.LabelPair{{Name: &remoteAgentKey, Value: &adpVal}},
 		Counter: &dto.Counter{Value: &counterVal30},
 	}
 	mWithoutTag := &dto.Metric{
@@ -2443,13 +2443,13 @@ func TestDefaultTagsTaggedAndUntaggedGrouped(t *testing.T) {
 	require.Len(t, results, 2)
 	metrics := makeStableMetricMap(results)
 
-	// emitter=adp bucket
-	require.Contains(t, metrics, "emitter:adp:")
-	assert.Equal(t, float64(30), metrics["emitter:adp:"].Counter.GetValue())
+	// remote_agent=adp bucket
+	require.Contains(t, metrics, "remote_agent:adp:")
+	assert.Equal(t, float64(30), metrics["remote_agent:adp:"].Counter.GetValue())
 
-	// emitter=agent bucket (from default injection)
-	require.Contains(t, metrics, "emitter:agent:")
-	assert.Equal(t, float64(30), metrics["emitter:agent:"].Counter.GetValue())
+	// remote_agent=agent bucket (from default injection)
+	require.Contains(t, metrics, "remote_agent:agent:")
+	assert.Equal(t, float64(30), metrics["remote_agent:agent:"].Counter.GetValue())
 }
 
 // TestDefaultTagsNoDefaultForMissingTagFiltersOut verifies that a metric missing a
@@ -2464,7 +2464,7 @@ func TestDefaultTagsNoDefaultForMissingTagFiltersOut(t *testing.T) {
             metrics:
               - name: bar.zoo
                 preserve_tags:
-                  - emitter
+                  - remote_agent
     `
 	tel := makeTelMock(t)
 	counter := tel.NewCounter("bar", "zoo", []string{}, "")
@@ -2478,7 +2478,7 @@ func TestDefaultTagsNoDefaultForMissingTagFiltersOut(t *testing.T) {
 	a.start()
 	r.(*runnerMock).run()
 
-	// metric must be dropped (no emitter tag and no default)
+	// metric must be dropped (no remote_agent tag and no default)
 	assert.Equal(t, 0, len(s.sentMetrics))
 }
 
@@ -2494,10 +2494,10 @@ func TestDefaultTagsPartialDefaultsFiltersOut(t *testing.T) {
             metrics:
               - name: bar.zoo
                 preserve_tags:
-                  - emitter
+                  - remote_agent
                   - compression_kind
                 default_tags:
-                  emitter: agent
+                  remote_agent: agent
     `
 	// compression_kind has no default, so a tagless metric must be filtered
 	tel := makeTelMock(t)

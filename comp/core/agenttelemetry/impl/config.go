@@ -133,7 +133,7 @@ type Event struct {
 // -----------------------------------------------------
 // Map of tag name → default value. When a preserve_tag is absent from a metric's labels,
 // the default value is injected before aggregation. This allows metrics from agents that do
-// not set a particular tag (e.g., the Core Agent never sets emitter=agent explicitly) to still
+// not set a particular tag (e.g., the Core Agent never sets remote_agent=agent explicitly) to still
 // be preserved and grouped correctly. Only tags listed in preserve_tags are consulted.
 //
 // profiles[].metric.metrics[].aggregate_total (optional)
