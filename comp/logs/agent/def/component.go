@@ -41,10 +41,3 @@ type ServerlessLogsAgent interface {
 	// Flush flushes synchronously the pipelines managed by the Logs Agent.
 	Flush(ctx context.Context)
 }
-
-// Mock implements mock-specific methods.
-type Mock interface {
-	Component
-
-	SetSources(sources *sources.LogSources)
-}
