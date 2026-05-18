@@ -18,9 +18,10 @@ go_library(
         "//comp/core/telemetry/def",
         "//comp/core/workloadfilter/def",
         "//comp/core/workloadmeta/def",
+        "//comp/def",
         "//comp/healthplatform/store/def",
+        "//pkg/util/fxutil",
         "//pkg/util/option",
         "@//comp/core/tagger/mock",
-        "@org_uber_go_fx//:fx",
     ],
 )

@@ -10,10 +10,9 @@ package mock
 import (
 	"testing"
 
-	"go.uber.org/fx"
-
 	autodiscoveryimpl "github.com/DataDog/datadog-agent/comp/core/autodiscovery/impl"
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/scheduler"
+	compdef "github.com/DataDog/datadog-agent/comp/def"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
 	secrets "github.com/DataDog/datadog-agent/comp/core/secrets/def"
 	mockTagger "github.com/DataDog/datadog-agent/comp/core/tagger/mock"
@@ -21,6 +20,7 @@ import (
 	workloadfilter "github.com/DataDog/datadog-agent/comp/core/workloadfilter/def"
 	workloadmeta "github.com/DataDog/datadog-agent/comp/core/workloadmeta/def"
 	healthplatformdef "github.com/DataDog/datadog-agent/comp/healthplatform/store/def"
+	"github.com/DataDog/datadog-agent/pkg/util/fxutil"
 	"github.com/DataDog/datadog-agent/pkg/util/option"
 )
 
@@ -31,7 +31,7 @@ type MockParams struct {
 
 // MockRequires defines the dependencies of the mock autodiscovery component.
 type MockRequires struct {
-	fx.In
+	compdef.In
 	WMeta      option.Option[workloadmeta.Component]
 	Params     MockParams
 	TaggerComp mockTagger.Mock
@@ -43,9 +43,16 @@ type MockRequires struct {
 
 // MockProvides defines the outputs of the mock autodiscovery component.
 type MockProvides struct {
-	fx.Out
+	compdef.Out
 
 	Comp Mock
+}
+
+// MockModule defines the fx options for the mock autodiscovery component.
+func MockModule() fxutil.Module {
+	return fxutil.Component(
+		fxutil.ProvideComponentConstructor(NewMockComponent),
+	)
 }
 
 // NewMockComponent creates a mock AutoConfig for use in tests.

@@ -23,7 +23,7 @@ import (
 	demultiplexerimpl "github.com/DataDog/datadog-agent/comp/aggregator/demultiplexer/impl"
 	collectornoopimpl "github.com/DataDog/datadog-agent/comp/collector/collector/noop-impl"
 	autodiscovery "github.com/DataDog/datadog-agent/comp/core/autodiscovery/def"
-	adfxmock "github.com/DataDog/datadog-agent/comp/core/autodiscovery/fx-mock"
+	admock "github.com/DataDog/datadog-agent/comp/core/autodiscovery/mock"
 	adcmock "github.com/DataDog/datadog-agent/comp/core/autodiscovery/mock"
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/scheduler"
 	"github.com/DataDog/datadog-agent/comp/core/config"
@@ -76,7 +76,7 @@ func getFlareWithParams(t *testing.T, params Params, overrides map[string]interf
 			fx.Provide(func() Params { return params }),
 			collectornoopimpl.NoneModule(),
 			workloadmetafxmock.MockModule(workloadmeta.NewParams()),
-			adfxmock.MockModule(),
+			admock.MockModule(),
 			fx.Supply(adcmock.MockParams{Scheduler: scheduler.NewController()}),
 			fx.Provide(func(ac adcmock.Mock) autodiscovery.Component { return ac.(autodiscovery.Component) }),
 			fx.Provide(func() taggermock.Mock { return fakeTagger }),
@@ -104,7 +104,7 @@ func getFlareComponent(t *testing.T, params Params, overrides map[string]interfa
 			fx.Provide(func() Params { return params }),
 			collectornoopimpl.NoneModule(),
 			workloadmetafxmock.MockModule(workloadmeta.NewParams()),
-			adfxmock.MockModule(),
+			admock.MockModule(),
 			fx.Supply(adcmock.MockParams{Scheduler: scheduler.NewController()}),
 			fx.Provide(func(ac adcmock.Mock) autodiscovery.Component { return ac.(autodiscovery.Component) }),
 			fx.Provide(func() taggermock.Mock { return fakeTagger }),

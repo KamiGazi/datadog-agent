@@ -11,7 +11,7 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/DataDog/datadog-agent/comp/core"
-	adfxmock "github.com/DataDog/datadog-agent/comp/core/autodiscovery/fx-mock"
+	admock "github.com/DataDog/datadog-agent/comp/core/autodiscovery/mock"
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/integration"
 	adcmock "github.com/DataDog/datadog-agent/comp/core/autodiscovery/mock"
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/scheduler"
@@ -30,7 +30,7 @@ func TestListenersGetScheduleCalls(t *testing.T) {
 	ac := fxutil.Test[adcmock.Mock](t,
 		fx.Supply(adcmock.MockParams{Scheduler: adsched}),
 		fx.Provide(func() secrets.Component { return secretsmock.New(t) }),
-		adfxmock.MockModule(),
+		admock.MockModule(),
 		workloadmetafxmock.MockModule(workloadmeta.NewParams()),
 		core.MockBundle(),
 		taggerfxmock.MockModule(),
