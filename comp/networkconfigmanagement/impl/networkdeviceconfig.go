@@ -61,6 +61,11 @@ func NewComponent(reqs Requires) (Provides, error) {
 }
 
 func newComponent(reqs Requires) (networkconfigmanagement.Component, error) {
+	ncmConfig, err := newConfig(reqs.Config)
+	if err != nil {
+		return nil, err
+	}
+
 	runPath := reqs.Config.GetString("run_path")
 	dbPath := filepath.Join(runPath, "ncm_config.db")
 	store, err := ncmstore.Open(dbPath)
@@ -69,9 +74,9 @@ func newComponent(reqs Requires) (networkconfigmanagement.Component, error) {
 	}
 
 	store.UpdateStoreConfig(
-		ncmConfig.Store.MinConfigsPerDevice,
-		ncmConfig.Store.MaxConfigsPerDevice,
-		ncmConfig.Store.MaxRawConfigStoreBytes,
+		ncmConfig.Rollback.Store.MinConfigsPerDevice,
+		ncmConfig.Rollback.Store.MaxConfigsPerDevice,
+		ncmConfig.Rollback.Store.MaxRawConfigStoreBytes,
 	)
 
 	reqs.Lifecycle.Append(compdef.Hook{OnStop: store.Close})
