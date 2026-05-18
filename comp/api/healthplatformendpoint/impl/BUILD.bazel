@@ -1,0 +1,14 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "impl",
+    srcs = ["endpoint.go"],
+    importpath = "github.com/DataDog/datadog-agent/comp/api/healthplatformendpoint/impl",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//comp/api/api/def",
+        "//comp/healthplatform/store/def",
+        "//pkg/util/log",
+        "//pkg/util/option",
+    ],
+)
