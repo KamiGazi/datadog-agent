@@ -87,10 +87,12 @@ def _agent_integrations_impl(ctx):
             sha256 = wheel.sha256,
         )
 
-    # TODO: Generate the build file such that it will have a rule that
-    # gets a python executable or environment as an input and pip installs
-    # the downloaded packages
-    ctx.file("BUILD.bazel", "")
+    wheel_srcs = "\n".join(['        "wheelhouse/{}",'.format(w.filename) for w in wheels])
+    ctx.template(
+        "BUILD.bazel",
+        Label("//deps/agent_integrations:integrations.BUILD.bazel"),
+        substitutions = {"{wheel_srcs}": wheel_srcs},
+    )
 
 agent_integrations = repository_rule(
     implementation = _agent_integrations_impl,
