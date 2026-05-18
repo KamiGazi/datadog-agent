@@ -11,7 +11,7 @@ go_library(
     deps = [
         "//comp/core/config",
         "//comp/healthplatform/scheduler/def",
-        "//pkg/proto/datadog/healthplatform:healthplatform_go_proto",
+        "@com_github_datadog_agent_payload_v5//healthplatform",
     ],
 )
 
@@ -21,7 +21,7 @@ go_test(
     embed = [":issues"],
     gotags = ["test"],
     deps = [
-        "//pkg/proto/datadog/healthplatform:healthplatform_go_proto",
+        "@com_github_datadog_agent_payload_v5//healthplatform",
         "@com_github_stretchr_testify//assert",
         "@com_github_stretchr_testify//require",
     ],
