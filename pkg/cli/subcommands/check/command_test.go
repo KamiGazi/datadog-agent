@@ -19,7 +19,6 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/DataDog/datadog-agent/comp/core"
-	admock "github.com/DataDog/datadog-agent/comp/core/autodiscovery/mock"
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/integration"
 	adcmock "github.com/DataDog/datadog-agent/comp/core/autodiscovery/mock"
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/scheduler"
@@ -64,7 +63,7 @@ func TestGetAllCheckConfigs_CustomConfig(t *testing.T) {
 	ac := fxutil.Test[adcmock.Mock](t,
 		fx.Supply(adcmock.MockParams{Scheduler: adsched}),
 		fx.Provide(func() secrets.Component { return secretsmock.New(t) }),
-		admock.MockModule(),
+		adcmock.MockModule(),
 		workloadmetafxmock.MockModule(workloadmeta.NewParams()),
 		core.MockBundle(),
 		taggerfxmock.MockModule(),

@@ -18,7 +18,6 @@ import (
 
 	"github.com/DataDog/datadog-agent/cmd/agent/command"
 	"github.com/DataDog/datadog-agent/comp/core"
-	admock "github.com/DataDog/datadog-agent/comp/core/autodiscovery/mock"
 	adcmock "github.com/DataDog/datadog-agent/comp/core/autodiscovery/mock"
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/scheduler"
 	"github.com/DataDog/datadog-agent/comp/core/config"
@@ -129,7 +128,7 @@ Auto-discovery IDs:
 	deps := fxutil.Test[testDeps](t,
 		fx.Supply(adcmock.MockParams{Scheduler: adsched}),
 		fx.Provide(func() secrets.Component { return secretsmock.New(t) }),
-		admock.MockModule(),
+		adcmock.MockModule(),
 		workloadmetafxmock.MockModule(workloadmeta.NewParams()),
 		core.MockBundle(),
 		taggerfxmock.MockModule(),
@@ -201,7 +200,7 @@ func TestRunAnalyzeLogsInvalidConfig(t *testing.T) {
 	deps := fxutil.Test[testDeps](t,
 		fx.Supply(adcmock.MockParams{Scheduler: adsched}),
 		fx.Provide(func() secrets.Component { return secretsmock.New(t) }),
-		admock.MockModule(),
+		adcmock.MockModule(),
 		workloadmetafxmock.MockModule(workloadmeta.NewParams()),
 		core.MockBundle(),
 		taggerfxmock.MockModule(),
