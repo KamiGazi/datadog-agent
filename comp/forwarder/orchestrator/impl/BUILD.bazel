@@ -19,6 +19,5 @@ go_library(
         "//comp/forwarder/orchestrator/def",
         "//pkg/util/fxutil",
         "//pkg/util/option",
-        "@org_uber_go_fx//:fx",
     ],
 )

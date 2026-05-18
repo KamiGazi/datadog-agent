@@ -8,8 +8,6 @@
 package orchestratorimpl
 
 import (
-	"go.uber.org/fx"
-
 	"github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder"
 	orchestrator "github.com/DataDog/datadog-agent/comp/forwarder/orchestrator/def"
 	"github.com/DataDog/datadog-agent/pkg/util/fxutil"
@@ -19,7 +17,7 @@ import (
 // MockModule defines the fx options for this mock component.
 func MockModule() fxutil.Module {
 	return fxutil.Component(
-		fx.Provide(NewMockOrchestratorForwarder))
+		fxutil.ProvideComponentConstructor(NewMockOrchestratorForwarder))
 }
 
 // NewMockOrchestratorForwarder returns an orchestratorForwarder

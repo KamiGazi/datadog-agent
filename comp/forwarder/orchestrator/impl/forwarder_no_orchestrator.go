@@ -9,8 +9,6 @@
 package orchestratorimpl
 
 import (
-	"go.uber.org/fx"
-
 	"github.com/DataDog/datadog-agent/comp/core/config"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
 	"github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder"
@@ -22,8 +20,8 @@ import (
 // Module defines the fx options for this component.
 func Module(params Params) fxutil.Module {
 	return fxutil.Component(
-		fx.Provide(newOrchestratorForwarder),
-		fx.Supply(params))
+		fxutil.ProvideComponentConstructor(newOrchestratorForwarder),
+		fxutil.ProvideComponentConstructor(func() Params { return params }))
 }
 
 // newOrchestratorForwarder builds the orchestrator forwarder.

@@ -11,9 +11,8 @@ package orchestratorimpl
 import (
 	"context"
 
-	"go.uber.org/fx"
-
 	"github.com/DataDog/datadog-agent/comp/core/config"
+	compdef "github.com/DataDog/datadog-agent/comp/def"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
 	secrets "github.com/DataDog/datadog-agent/comp/core/secrets/def"
 	tagger "github.com/DataDog/datadog-agent/comp/core/tagger/def"
@@ -28,45 +27,57 @@ import (
 	"github.com/DataDog/datadog-agent/pkg/util/option"
 )
 
+// Requires defines the dependencies of the orchestrator forwarder component.
+type Requires struct {
+	compdef.In
+
+	Lc      compdef.Lifecycle
+	Log     log.Component
+	Config  config.Component
+	Secrets secrets.Component
+	Tagger  tagger.Component
+	Params  Params
+}
+
 // Module defines the fx options for this component.
 func Module(params Params) fxutil.Module {
 	return fxutil.Component(
-		fx.Provide(newOrchestratorForwarder),
-		fx.Supply(params))
+		fxutil.ProvideComponentConstructor(newOrchestratorForwarder),
+		fxutil.ProvideComponentConstructor(func() Params { return params }))
 }
 
 // newOrchestratorForwarder returns an orchestratorForwarder
 // if the feature is activated on the cluster-agent/cluster-check runner, nil otherwise
-func newOrchestratorForwarder(log log.Component, config config.Component, secrets secrets.Component, tagger tagger.Component, lc fx.Lifecycle, params Params) orchestrator.Component {
-	if params.useNoopOrchestratorForwarder {
+func newOrchestratorForwarder(deps Requires) orchestrator.Component {
+	if deps.Params.useNoopOrchestratorForwarder {
 		return createComponent(defaultforwarder.NoopForwarder{})
 	}
-	if params.useOrchestratorForwarder {
+	if deps.Params.useOrchestratorForwarder {
 		isOrchestratorEnv := env.IsKubernetes() || env.IsECS() || env.IsECSFargate() || env.IsECSManagedInstances()
-		orchestratorExplorerEnabled := config.GetBool(orchestratorconfig.OrchestratorNSKey("enabled"))
+		orchestratorExplorerEnabled := deps.Config.GetBool(orchestratorconfig.OrchestratorNSKey("enabled"))
 		if !orchestratorExplorerEnabled || !isOrchestratorEnv {
 			forwarder := option.None[defaultforwarder.Forwarder]()
 			return &forwarder
 		}
-		globalTags, err := tagger.GlobalTags(types.LowCardinality)
+		globalTags, err := deps.Tagger.GlobalTags(types.LowCardinality)
 		if err != nil {
-			log.Debugf("Error getting global tags for orchestrator config: %s", err)
+			deps.Log.Debugf("Error getting global tags for orchestrator config: %s", err)
 		}
 		orchestratorCfg := orchestratorconfig.NewDefaultOrchestratorConfig(globalTags)
 		if err := orchestratorCfg.Load(); err != nil {
-			log.Errorf("Error loading the orchestrator config: %s", err)
+			deps.Log.Errorf("Error loading the orchestrator config: %s", err)
 		}
 		keysPerDomain := apicfg.KeysPerDomains(orchestratorCfg.OrchestratorEndpoints)
 		resolver, err := resolver.NewSingleDomainResolvers(keysPerDomain)
 		if err != nil {
-			log.Errorf("Error creating domain resolver: %s", err)
+			deps.Log.Errorf("Error creating domain resolver: %s", err)
 		}
-		orchestratorForwarderOpts := defaultforwarder.NewOptionsWithResolvers(config, log, resolver)
+		orchestratorForwarderOpts := defaultforwarder.NewOptionsWithResolvers(deps.Config, deps.Log, resolver)
 		orchestratorForwarderOpts.DisableAPIKeyChecking = true
-		orchestratorForwarderOpts.Secrets = secrets
+		orchestratorForwarderOpts.Secrets = deps.Secrets
 
-		forwarder := defaultforwarder.NewDefaultForwarder(config, log, orchestratorForwarderOpts)
-		lc.Append(fx.Hook{
+		forwarder := defaultforwarder.NewDefaultForwarder(deps.Config, deps.Log, orchestratorForwarderOpts)
+		deps.Lc.Append(compdef.Hook{
 			OnStart: func(context.Context) error {
 				_ = forwarder.Start()
 				return nil
