@@ -18,6 +18,8 @@ go_library(
         "@rules_go//go/platform:windows": [
             "//comp/core/config",
             "//comp/healthplatform/issues",
+            "//pkg/util/winutil/eventlog/api",
+            "//pkg/util/winutil/eventlog/api/windows",
         ],
         "//conditions:default": [],
     }),

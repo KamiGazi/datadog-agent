@@ -8,34 +8,43 @@
 package windowsagentinstability
 
 import (
-	"bufio"
-	"os"
-	"path/filepath"
+	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/DataDog/agent-payload/v5/healthplatform"
+	evtapi "github.com/DataDog/datadog-agent/pkg/util/winutil/eventlog/api"
+	winevtapi "github.com/DataDog/datadog-agent/pkg/util/winutil/eventlog/api/windows"
 )
 
 const (
-	// crashThreshold is the number of crashes in the time window that triggers an issue
+	// crashThreshold is the number of SCM crash events in the time window that triggers an issue
 	crashThreshold = 2
 
 	// timeWindow is the duration to look back for crash events
 	timeWindow = 24 * time.Hour
 
-	// agentLogRelPath is the path to the agent log file relative to ProgramData
-	agentLogRelPath = `Datadog\logs\agent.log`
+	// systemLog is the Windows System event log channel
+	systemLog = "System"
+
+	// scmProvider is the Windows Service Control Manager event source name
+	scmProvider = "Service Control Manager"
+
+	// datadogServiceName is the display name of the Datadog Agent Windows service as
+	// recorded in SCM events. Event IDs 7031 and 7034 include this name in param1.
+	datadogServiceName = "Datadog Agent"
 )
 
-// Check scans the Datadog Agent log file for recent crash/exit entries.
-// If more than crashThreshold exits are found in the last timeWindow, it returns an IssueReport.
-// If the log file is inaccessible or unreadable, the function returns nil to avoid false positives.
+// Check queries the Windows System Event Log for recent Datadog Agent service termination
+// events written by the Service Control Manager (SCM). SCM event IDs 7034 and 7031 are
+// written unconditionally by Windows when a service exits unexpectedly, regardless of
+// whether the agent itself had time to write anything to its own log file.
+//
+// If more than crashThreshold events are found in the last timeWindow, it returns an
+// IssueReport. If the event log is inaccessible the function returns nil to avoid
+// false positives.
 func Check() (*healthplatform.IssueReport, error) {
-	logPath := resolveAgentLogPath()
-
-	count, err := countRecentCrashes(logPath, timeWindow)
+	count, err := countSCMCrashEvents(timeWindow)
 	if err != nil {
 		return nil, nil //nolint:nilerr
 	}
@@ -54,67 +63,56 @@ func Check() (*healthplatform.IssueReport, error) {
 	}, nil
 }
 
-func resolveAgentLogPath() string {
-	programData := os.Getenv("PROGRAMDATA")
-	if programData == "" {
-		programData = `C:\ProgramData`
-	}
-	return filepath.Join(programData, agentLogRelPath)
-}
+// countSCMCrashEvents returns the number of SCM events (7031 or 7034) for the Datadog
+// Agent service that occurred within the given time window.
+func countSCMCrashEvents(window time.Duration) (int, error) {
+	api := winevtapi.New()
+	query := buildXPathQuery(window)
 
-func countRecentCrashes(logPath string, window time.Duration) (int, error) {
-	f, err := os.Open(logPath)
+	// EvtQueryReverseDirection reads newest-first; we just count so direction does not matter.
+	resultSet, err := api.EvtQuery(
+		evtapi.EventSessionHandle(0),
+		systemLog,
+		query,
+		evtapi.EvtQueryChannelPath|evtapi.EvtQueryReverseDirection,
+	)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("EvtQuery on System log failed: %w", err)
 	}
-	defer f.Close()
+	defer evtapi.EvtCloseResultSet(api, resultSet)
 
-	cutoff := time.Now().Add(-window)
 	count := 0
-
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if isCrashLine(line) {
-			ts, ok := parseLogTimestamp(line)
-			if ok && ts.After(cutoff) {
-				count++
-			}
+	batch := make([]evtapi.EventRecordHandle, 16)
+	for {
+		records, err := api.EvtNext(resultSet, batch, uint(len(batch)), 0)
+		if err != nil || len(records) == 0 {
+			// ERROR_NO_MORE_ITEMS is the normal end-of-query signal; any error here means done.
+			break
 		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return 0, err
+		count += len(records)
+		for _, r := range records {
+			evtapi.EvtCloseRecord(api, r)
+		}
 	}
 
 	return count, nil
 }
 
-func isCrashLine(line string) bool {
-	lower := strings.ToLower(line)
-	return strings.Contains(lower, "agent exited") ||
-		strings.Contains(lower, "unexpected exit") ||
-		strings.Contains(lower, "panic:") ||
-		strings.Contains(lower, "fatal error:")
-}
-
-func parseLogTimestamp(line string) (time.Time, bool) {
-	formats := []string{
-		"2006-01-02 15:04:05 MST",
-		"2006-01-02 15:04:05 UTC",
-		"2006-01-02T15:04:05Z07:00",
-	}
-
-	for _, format := range formats {
-		prefixLen := len(format)
-		if len(line) < prefixLen {
-			continue
-		}
-		ts, err := time.Parse(format, line[:prefixLen])
-		if err == nil {
-			return ts, true
-		}
-	}
-
-	return time.Time{}, false
+// buildXPathQuery returns an XPath 1.0 query that selects SCM service-crash events for
+// the Datadog Agent service within the given time window.
+//
+// Event IDs used:
+//   - 7034: "The <service> service terminated unexpectedly."
+//   - 7031: "The <service> service terminated unexpectedly. It has done this N time(s)."
+//
+// timediff(@SystemTime) is a Windows-specific XPath extension that returns the elapsed
+// milliseconds since the event timestamp, allowing server-side time filtering.
+func buildXPathQuery(window time.Duration) string {
+	ms := int64(window / time.Millisecond)
+	return fmt.Sprintf(
+		"*[System[Provider[@Name='%s'] and (EventID=7031 or EventID=7034) and TimeCreated[timediff(@SystemTime) <= %d]] and EventData[Data='%s']]",
+		scmProvider,
+		ms,
+		datadogServiceName,
+	)
 }
