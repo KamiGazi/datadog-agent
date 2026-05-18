@@ -160,6 +160,7 @@ func (s *observerSender) GetSenderStats() stats.SenderStats {
 
 func (s *observerSender) DisableDefaultHostname(_ bool) {}
 func (s *observerSender) SetCheckCustomTags(_ []string) {}
+func (s *observerSender) AppendInfraTags(_ []string)    {}
 func (s *observerSender) SetCheckService(_ string)      {}
 func (s *observerSender) SetNoIndex(_ bool)             {}
 func (s *observerSender) FinalizeCheckServiceTag()      {}
