@@ -15,6 +15,7 @@ go_library(
     deps = [
         "//comp/core/config",
         "//comp/core/log/def",
+        "//comp/def",
         "//comp/forwarder/defaultforwarder",
         "//comp/forwarder/orchestrator/def",
         "//pkg/util/fxutil",
