@@ -11,24 +11,35 @@ package orchestratorimpl
 import (
 	"github.com/DataDog/datadog-agent/comp/core/config"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
+	compdef "github.com/DataDog/datadog-agent/comp/def"
 	"github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder"
 	orchestrator "github.com/DataDog/datadog-agent/comp/forwarder/orchestrator/def"
 	"github.com/DataDog/datadog-agent/pkg/util/fxutil"
 	"github.com/DataDog/datadog-agent/pkg/util/option"
 )
 
+// noOrchRequires holds the dependencies for the no-orchestrator forwarder build.
+type noOrchRequires struct {
+	compdef.In
+
+	Log    log.Component
+	Config config.Component
+	Params Params
+}
+
 // Module defines the fx options for this component.
 func Module(params Params) fxutil.Module {
 	return fxutil.Component(
 		fxutil.ProvideComponentConstructor(newOrchestratorForwarder),
-		fxutil.ProvideComponentConstructor(func() Params { return params }))
+		fxutil.ProvideComponentConstructor(func() paramsProvides { return paramsProvides{Params: params} }),
+	)
 }
 
 // newOrchestratorForwarder builds the orchestrator forwarder.
 // This func has been extracted in this file to not include all the orchestrator
 // dependencies (k8s, several MBs) while building binaries not needing these.
-func newOrchestratorForwarder(_ log.Component, _ config.Component, params Params) orchestrator.Component {
-	if params.useNoopOrchestratorForwarder {
+func newOrchestratorForwarder(deps noOrchRequires) orchestrator.Component {
+	if deps.Params.useNoopOrchestratorForwarder {
 		forwarder := option.New[defaultforwarder.Forwarder](defaultforwarder.NoopForwarder{})
 		return &forwarder
 	}

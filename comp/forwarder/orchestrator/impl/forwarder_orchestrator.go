@@ -43,7 +43,8 @@ type Requires struct {
 func Module(params Params) fxutil.Module {
 	return fxutil.Component(
 		fxutil.ProvideComponentConstructor(newOrchestratorForwarder),
-		fxutil.ProvideComponentConstructor(func() Params { return params }))
+		fxutil.ProvideComponentConstructor(func() paramsProvides { return paramsProvides{Params: params} }),
+	)
 }
 
 // newOrchestratorForwarder returns an orchestratorForwarder

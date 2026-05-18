@@ -5,6 +5,15 @@
 
 package orchestratorimpl
 
+import compdef "github.com/DataDog/datadog-agent/comp/def"
+
+// paramsProvides wraps Params in a compdef.Out struct so ProvideComponentConstructor
+// can provide it — Params itself has unexported fields which ProvideComponentConstructor rejects.
+type paramsProvides struct {
+	compdef.Out
+	Params Params
+}
+
 // Params defines the parameters for the orchestrator forwarder.
 type Params struct {
 	useNoopOrchestratorForwarder bool
