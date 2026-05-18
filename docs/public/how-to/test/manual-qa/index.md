@@ -7,8 +7,10 @@ realistic environment.
 
 ## Prerequisites
 
-Complete the [one-time setup](e2e.md#one-time-setup) from the E2E testing guide
+Complete the [one-time setup](../e2e.md#one-time-setup) from the E2E testing guide
 before creating any environment.
+
+If you do not want to rely on fake intake, and send data to the real Datadog backend, you should make sure you set a valid API in ~/.test_infra_config.yaml
 
 ## Stack lifecycle
 
@@ -39,14 +41,9 @@ metrics and logs in the Datadog UI to a specific environment.
 | [Azure VM](manual-qa/azure-vm.md) | `dda inv az.create-vm` | Azure VM + Agent |
 | [GCP VM](manual-qa/gcp-vm.md) | `dda inv gcp.create-vm` | GCP VM + Agent |
 
-## FakeIntake
-
-All scenarios support `--use-fakeintake`, which deploys a mock Datadog intake
-alongside the agent. Payloads are captured locally so you can inspect them
-without sending data to a production org. Dual-shipping is enabled by default,
-so the agent also sends to the real Datadog backend.
+All the scenarios should support a `--no-interactive` flag to avoid interactiveness that can block AI agents
 
 ## See Also
 
 - [Running E2E tests](e2e.md) — automated test execution against the same infrastructure
-- [test/e2e-framework](../../../../test/e2e-framework/AGENTS.md) — framework internals and provisioner API
+`
