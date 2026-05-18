@@ -10,13 +10,6 @@ proto_library(
 )
 
 proto_library(
-    name = "healthissues_proto",
-    srcs = ["healthissues.proto"],
-    strip_import_prefix = "/pkg/proto",
-    visibility = ["//visibility:public"],
-)
-
-proto_library(
     name = "remoteagent_proto",
     srcs = ["remoteagent.proto"],
     strip_import_prefix = "/pkg/proto",
@@ -46,7 +39,6 @@ go_proto_library(
     importpath = "pkg/proto/pbgo/core",
     protos = [
         ":flare_proto",
-        ":healthissues_proto",
         ":remoteagent_proto",
         ":status_proto",
         ":telemetry_proto",

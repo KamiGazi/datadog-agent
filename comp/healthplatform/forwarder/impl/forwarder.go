@@ -21,15 +21,12 @@ import (
 	"github.com/DataDog/datadog-agent/comp/core/config"
 	"github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
-	remoteagentregistry "github.com/DataDog/datadog-agent/comp/core/remoteagentregistry/def"
 	compdef "github.com/DataDog/datadog-agent/comp/def"
 	forwarderdef "github.com/DataDog/datadog-agent/comp/healthplatform/forwarder/def"
-	storedef "github.com/DataDog/datadog-agent/comp/healthplatform/store/def"
 	pkgconfigmodel "github.com/DataDog/datadog-agent/pkg/config/model"
 	configutils "github.com/DataDog/datadog-agent/pkg/config/utils"
 	"github.com/DataDog/datadog-agent/pkg/util/flavor"
 	httputils "github.com/DataDog/datadog-agent/pkg/util/http"
-	"github.com/DataDog/datadog-agent/pkg/util/option"
 	"github.com/DataDog/datadog-agent/pkg/util/pointer"
 	"github.com/DataDog/datadog-agent/pkg/version"
 )
@@ -60,7 +57,6 @@ type forwarder struct {
 	agentFlavor string
 	providerMu  sync.RWMutex
 	provider    forwarderdef.IssueProvider
-	rar         option.Option[remoteagentregistry.Component]
 	httpClient  *http.Client
 	log         log.Component
 
@@ -70,11 +66,10 @@ type forwarder struct {
 
 // Requires defines the dependencies for the forwarder.
 type Requires struct {
-	Log            log.Component
-	Config         config.Component
-	Hostname       hostnameinterface.Component
-	Lifecycle      compdef.Lifecycle
-	RemoteAgentReg option.Option[remoteagentregistry.Component]
+	Log       log.Component
+	Config    config.Component
+	Hostname  hostnameinterface.Component
+	Lifecycle compdef.Lifecycle
 }
 
 // New creates a new forwarder instance and registers its lifecycle hooks.
@@ -102,7 +97,6 @@ func New(reqs Requires) forwarderdef.Component {
 		agentFlavor: flavor.GetFlavor(),
 		httpClient:  buildHTTPClient(reqs.Config),
 		log:         reqs.Log,
-		rar:         reqs.RemoteAgentReg,
 		stopCh:      make(chan struct{}),
 		doneCh:      make(chan struct{}),
 	}
@@ -166,33 +160,6 @@ func (f *forwarder) run() {
 	}
 }
 
-// collectRemoteAgentIssues polls all registered remote agents for their active
-// health issues and injects them into the store before each backend push.
-func (f *forwarder) collectRemoteAgentIssues(provider forwarderdef.IssueProvider) {
-	reg, ok := f.rar.Get()
-	if !ok {
-		return
-	}
-
-	for _, agentData := range reg.GetRegisteredAgentHealthIssues() {
-		if agentData.FailureReason != "" {
-			f.log.Warnf("health platform: failed to collect issues from remote agent %s: %s", agentData.SanitizedDisplayName, agentData.FailureReason)
-			continue
-		}
-		for _, issue := range agentData.Issues {
-			if err := provider.ReportIssue(storedef.IssueReport{
-				IssueID:   issue.IssueID,
-				IssueType: issue.IssueType,
-				Source:    issue.Source,
-				Context:   issue.Context,
-				Tags:      issue.Tags,
-			}); err != nil {
-				f.log.Warnf("health platform: failed to inject remote issue %q from %s: %v", issue.IssueID, agentData.SanitizedDisplayName, err)
-			}
-		}
-	}
-}
-
 // sendHealthReport collects issues and sends them to the intake endpoint
 func (f *forwarder) sendHealthReport() {
 	f.providerMu.RLock()
@@ -203,10 +170,6 @@ func (f *forwarder) sendHealthReport() {
 		f.log.Warn("Health platform forwarder has no provider set, skipping report")
 		return
 	}
-
-	// Collect health issues from registered sub-agents before reading the store.
-	f.collectRemoteAgentIssues(provider)
-
 	count, issues := provider.GetAllIssues()
 
 	if count == 0 {

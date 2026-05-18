@@ -22,7 +22,6 @@ import (
 
 	"github.com/DataDog/datadog-agent/comp/core/config"
 	logmock "github.com/DataDog/datadog-agent/comp/core/log/mock"
-	storedef "github.com/DataDog/datadog-agent/comp/healthplatform/store/def"
 	"github.com/DataDog/datadog-agent/pkg/util/flavor"
 	"github.com/DataDog/datadog-agent/pkg/version"
 )
@@ -46,10 +45,6 @@ func (m *mockIssueProvider) GetAllIssues() (int, map[string]*healthplatform.Issu
 		}
 	}
 	return count, m.issues
-}
-
-func (m *mockIssueProvider) ReportIssue(_ storedef.IssueReport) error {
-	return nil
 }
 
 func (m *mockIssueProvider) addIssue(checkID string, issue *healthplatform.Issue) {

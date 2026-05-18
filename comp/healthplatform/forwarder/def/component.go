@@ -8,16 +8,13 @@ package forwarder
 
 import (
 	healthplatformpayload "github.com/DataDog/agent-payload/v5/healthplatform"
-	storedef "github.com/DataDog/datadog-agent/comp/healthplatform/store/def"
 )
 
 // team: agent-health
 
-// IssueProvider provides the current set of issues to report and allows
-// injecting issues from remote agents before each send.
+// IssueProvider provides the current set of issues to report.
 type IssueProvider interface {
 	GetAllIssues() (int, map[string]*healthplatformpayload.Issue)
-	ReportIssue(report storedef.IssueReport) error
 }
 
 // Component is the forwarder component.

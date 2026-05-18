@@ -17,10 +17,15 @@ import (
 
 // Component is the health platform store component interface.
 type Component interface {
-	// ReportIssue records a new or ongoing issue. Two calls with the same
-	// report.IssueID update the same instance (state machine: new → ongoing).
-	// Call ResolveIssue to mark an issue as resolved.
+	// ReportIssue records a new or ongoing issue via template lookup.
+	// Two calls with the same report.IssueID update the same instance
+	// (state machine: new → ongoing). Call ResolveIssue to mark it resolved.
 	ReportIssue(report IssueReport) error
+
+	// AcceptIssue stores a fully-built issue directly, bypassing template lookup.
+	// Use this when the caller (e.g. a sub-agent over gRPC) provides all display
+	// fields and no issue registry entry is needed.
+	AcceptIssue(issue *healthplatformpayload.Issue) error
 
 	// =========================================================================
 	// Query Methods

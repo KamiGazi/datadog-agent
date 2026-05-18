@@ -147,6 +147,8 @@ const (
 	AgentSecure_StreamConfigEvents_FullMethodName                      = "/datadog.api.v1.AgentSecure/StreamConfigEvents"
 	AgentSecure_WorkloadFilterEvaluate_FullMethodName                  = "/datadog.api.v1.AgentSecure/WorkloadFilterEvaluate"
 	AgentSecure_StreamKubeMetadata_FullMethodName                      = "/datadog.api.v1.AgentSecure/StreamKubeMetadata"
+	AgentSecure_ReportHealthIssue_FullMethodName                       = "/datadog.api.v1.AgentSecure/ReportHealthIssue"
+	AgentSecure_ResolveHealthIssue_FullMethodName                      = "/datadog.api.v1.AgentSecure/ResolveHealthIssue"
 )
 
 // AgentSecureClient is the client API for AgentSecure service.
@@ -187,6 +189,11 @@ type AgentSecureClient interface {
 	WorkloadFilterEvaluate(ctx context.Context, in *WorkloadFilterEvaluateRequest, opts ...grpc.CallOption) (*WorkloadFilterEvaluateResponse, error)
 	// Streams pod-to-service metadata for a specific node.
 	StreamKubeMetadata(ctx context.Context, in *KubeMetadataStreamRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[KubeMetadataStreamResponse], error)
+	// Reports a fully-built health issue from a sub-agent to the core agent's health platform store.
+	// The issue is stored as-is; no template lookup is performed.
+	ReportHealthIssue(ctx context.Context, in *HealthIssueReport, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Resolves (clears) a previously reported health issue by its unique ID.
+	ResolveHealthIssue(ctx context.Context, in *HealthIssueResolve, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type agentSecureClient struct {
@@ -435,6 +442,26 @@ func (c *agentSecureClient) StreamKubeMetadata(ctx context.Context, in *KubeMeta
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type AgentSecure_StreamKubeMetadataClient = grpc.ServerStreamingClient[KubeMetadataStreamResponse]
 
+func (c *agentSecureClient) ReportHealthIssue(ctx context.Context, in *HealthIssueReport, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AgentSecure_ReportHealthIssue_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *agentSecureClient) ResolveHealthIssue(ctx context.Context, in *HealthIssueResolve, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AgentSecure_ResolveHealthIssue_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentSecureServer is the server API for AgentSecure service.
 // All implementations must embed UnimplementedAgentSecureServer
 // for forward compatibility.
@@ -473,6 +500,11 @@ type AgentSecureServer interface {
 	WorkloadFilterEvaluate(context.Context, *WorkloadFilterEvaluateRequest) (*WorkloadFilterEvaluateResponse, error)
 	// Streams pod-to-service metadata for a specific node.
 	StreamKubeMetadata(*KubeMetadataStreamRequest, grpc.ServerStreamingServer[KubeMetadataStreamResponse]) error
+	// Reports a fully-built health issue from a sub-agent to the core agent's health platform store.
+	// The issue is stored as-is; no template lookup is performed.
+	ReportHealthIssue(context.Context, *HealthIssueReport) (*emptypb.Empty, error)
+	// Resolves (clears) a previously reported health issue by its unique ID.
+	ResolveHealthIssue(context.Context, *HealthIssueResolve) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAgentSecureServer()
 }
 
@@ -539,6 +571,12 @@ func (UnimplementedAgentSecureServer) WorkloadFilterEvaluate(context.Context, *W
 }
 func (UnimplementedAgentSecureServer) StreamKubeMetadata(*KubeMetadataStreamRequest, grpc.ServerStreamingServer[KubeMetadataStreamResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method StreamKubeMetadata not implemented")
+}
+func (UnimplementedAgentSecureServer) ReportHealthIssue(context.Context, *HealthIssueReport) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReportHealthIssue not implemented")
+}
+func (UnimplementedAgentSecureServer) ResolveHealthIssue(context.Context, *HealthIssueResolve) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResolveHealthIssue not implemented")
 }
 func (UnimplementedAgentSecureServer) mustEmbedUnimplementedAgentSecureServer() {}
 func (UnimplementedAgentSecureServer) testEmbeddedByValue()                     {}
@@ -857,6 +895,42 @@ func _AgentSecure_StreamKubeMetadata_Handler(srv interface{}, stream grpc.Server
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type AgentSecure_StreamKubeMetadataServer = grpc.ServerStreamingServer[KubeMetadataStreamResponse]
 
+func _AgentSecure_ReportHealthIssue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HealthIssueReport)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentSecureServer).ReportHealthIssue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AgentSecure_ReportHealthIssue_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentSecureServer).ReportHealthIssue(ctx, req.(*HealthIssueReport))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AgentSecure_ResolveHealthIssue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HealthIssueResolve)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentSecureServer).ResolveHealthIssue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AgentSecure_ResolveHealthIssue_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentSecureServer).ResolveHealthIssue(ctx, req.(*HealthIssueResolve))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AgentSecure_ServiceDesc is the grpc.ServiceDesc for AgentSecure service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -915,6 +989,14 @@ var AgentSecure_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "WorkloadFilterEvaluate",
 			Handler:    _AgentSecure_WorkloadFilterEvaluate_Handler,
+		},
+		{
+			MethodName: "ReportHealthIssue",
+			Handler:    _AgentSecure_ReportHealthIssue_Handler,
+		},
+		{
+			MethodName: "ResolveHealthIssue",
+			Handler:    _AgentSecure_ResolveHealthIssue_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

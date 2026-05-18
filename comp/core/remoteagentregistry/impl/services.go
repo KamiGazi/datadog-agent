@@ -31,37 +31,6 @@ const (
 	remoteAgentMetricTagName = "remote_agent"
 )
 
-func (ra *remoteAgentRegistry) GetRegisteredAgentHealthIssues() []remoteagentregistry.HealthIssueData {
-	client := func(ctx context.Context, remoteAgent *remoteAgentClient, opts ...grpc.CallOption) (*pb.GetHealthIssuesResponse, error) {
-		return remoteAgent.GetHealthIssues(ctx, &pb.GetHealthIssuesRequest{}, opts...)
-	}
-	processor := func(details remoteagentregistry.RegisteredAgent, in *pb.GetHealthIssuesResponse, err error) remoteagentregistry.HealthIssueData {
-		out := remoteagentregistry.HealthIssueData{
-			RegisteredAgent: details,
-		}
-
-		if err != nil {
-			out.FailureReason = fmt.Sprintf("Failed to query for health issues: %v", err)
-			return out
-		}
-
-		out.Issues = make([]remoteagentregistry.IssueReport, 0, len(in.Issues))
-		for _, pbIssue := range in.Issues {
-			out.Issues = append(out.Issues, remoteagentregistry.IssueReport{
-				IssueID:   pbIssue.IssueId,
-				IssueType: pbIssue.IssueType,
-				Source:    pbIssue.Source,
-				Context:   pbIssue.Context,
-				Tags:      pbIssue.Tags,
-			})
-		}
-
-		return out
-	}
-
-	return callAgentsForService(ra, HealthIssueServiceName, client, processor)
-}
-
 func (ra *remoteAgentRegistry) GetRegisteredAgentStatuses() []remoteagentregistry.StatusData {
 	client := func(ctx context.Context, remoteAgent *remoteAgentClient, opts ...grpc.CallOption) (*pb.GetStatusDetailsResponse, error) {
 		return remoteAgent.GetStatusDetails(ctx, &pb.GetStatusDetailsRequest{}, opts...)

@@ -382,6 +382,25 @@ func (h *healthPlatformImpl) ReportIssue(report healthplatformdef.IssueReport) e
 	return nil
 }
 
+// AcceptIssue stores a fully-built issue directly, bypassing template lookup.
+// Used by sub-agents that report issues over gRPC with all display fields already set.
+func (h *healthPlatformImpl) AcceptIssue(issue *healthplatform.Issue) error {
+	if issue == nil {
+		return errors.New("issue cannot be nil")
+	}
+	if issue.Id == "" {
+		return errors.New("issue id cannot be empty")
+	}
+
+	h.issuesMux.RLock()
+	previousIssue := h.issues[issue.Id]
+	h.issuesMux.RUnlock()
+
+	h.handleIssueStateChange(issue.Source, previousIssue, issue)
+	h.storeIssue(issue.Id, issue)
+	return nil
+}
+
 // scheduleHealthCheck is an internal helper used from the lifecycle start hook.
 func (h *healthPlatformImpl) scheduleHealthCheck(checkID string, checkName string, checkFn checkrunnerdef.HealthCheckFunc, interval time.Duration) error {
 	return h.checkRunner.ScheduleHealthCheck(checkID, checkName, checkFn, interval)
