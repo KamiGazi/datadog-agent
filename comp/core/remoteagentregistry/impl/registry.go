@@ -68,9 +68,10 @@ func newRegistry(reqs Requires) *remoteAgentRegistry {
 		telemetryStore: newTelemetryStore(reqs.Telemetry),
 		// Services currently supported by the remote agent registry
 		remoteAgentServices: map[remoteAgentServiceName]struct{}{
-			StatusServiceName:    {},
-			FlareServiceName:     {},
-			TelemetryServiceName: {},
+			StatusServiceName:      {},
+			FlareServiceName:       {},
+			TelemetryServiceName:   {},
+			HealthIssueServiceName: {},
 		},
 	}
 

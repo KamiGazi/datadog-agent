@@ -20,6 +20,8 @@ write_pb_go(
         "//pkg/proto/datadog/remoteagent:core_go_proto": [
             "flare.pb.go",
             "flare_grpc.pb.go",
+            "healthissues.pb.go",
+            "healthissues_grpc.pb.go",
             "remoteagent.pb.go",
             "status.pb.go",
             "status_grpc.pb.go",
@@ -50,6 +52,8 @@ go_library(
         "echo_grpc.pb.go",
         "flare.pb.go",
         "flare_grpc.pb.go",
+        "healthissues.pb.go",
+        "healthissues_grpc.pb.go",
         "kubemetadata.pb.go",
         "model.pb.go",
         "remoteagent.pb.go",

@@ -38,6 +38,22 @@ type FlareData struct {
 	Files map[string][]byte
 }
 
+// IssueReport is the agent-internal representation of a health issue report from a remote agent.
+type IssueReport struct {
+	IssueID   string
+	IssueType string
+	Source    string
+	Context   map[string]string
+	Tags      []string
+}
+
+// HealthIssueData contains the health issues reported by a remote agent.
+type HealthIssueData struct {
+	RegisteredAgent
+	FailureReason string
+	Issues        []IssueReport
+}
+
 // RegistrationData contains the registration information for a remote agent
 type RegistrationData struct {
 	AgentFlavor      string

@@ -15,4 +15,5 @@ type Component interface {
 	RefreshRemoteAgent(sessionID string) bool
 	GetRegisteredAgents() []RegisteredAgent
 	GetRegisteredAgentStatuses() []StatusData
+	GetRegisteredAgentHealthIssues() []HealthIssueData
 }

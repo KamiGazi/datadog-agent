@@ -71,7 +71,6 @@ import (
 	internalAPI "github.com/DataDog/datadog-agent/comp/api/api/def"
 	commonendpoints "github.com/DataDog/datadog-agent/comp/api/commonendpoints/fx"
 	grpcAgentfx "github.com/DataDog/datadog-agent/comp/api/grpcserver/fx-agent"
-	healthplatformendpointfx "github.com/DataDog/datadog-agent/comp/api/healthplatformendpoint/fx"
 	"github.com/DataDog/datadog-agent/comp/collector/collector"
 	"github.com/DataDog/datadog-agent/comp/collector/collector/collectorimpl"
 	connectivitycheckerfx "github.com/DataDog/datadog-agent/comp/connectivitychecker/fx"
@@ -467,7 +466,6 @@ func getSharedFxOption() fx.Option {
 		apiimpl.Module(),
 		grpcAgentfx.Module(),
 		commonendpoints.Module(),
-		healthplatformendpointfx.Module(),
 		filterlist.Module(),
 		demultiplexerimpl.Module(demultiplexerimpl.NewDefaultParams(demultiplexerimpl.WithDogstatsdNoAggregationPipelineConfig())),
 		demultiplexerendpointfx.Module(),
