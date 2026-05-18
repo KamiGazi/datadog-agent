@@ -22,19 +22,19 @@ type IssueReport struct {
 	//   "check-execution-failure:mysql:0123abcd"
 	//   "ad-template:redis:svc-foo:deadbeef"
 	//   "db-not-reachable:mysql-prod-1"
-	IssueID string
+	IssueID string `json:"issue_id"`
 
 	// IssueType is the template id looked up in the issue registry.
 	// Examples: "check-execution-failure", "ad-misconfiguration"
-	IssueType string
+	IssueType string `json:"issue_type"`
 
 	// Source is the reporting integration or component name.
 	// Examples: "mysql", "autodiscovery", "docker"
-	Source string
+	Source string `json:"source"`
 
 	// Context provides variables for filling in the issue template.
-	Context map[string]string
+	Context map[string]string `json:"context,omitempty"`
 
 	// Tags are appended to the template's default tags.
-	Tags []string
+	Tags []string `json:"tags,omitempty"`
 }
