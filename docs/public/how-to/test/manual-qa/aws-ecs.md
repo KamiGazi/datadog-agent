@@ -23,6 +23,7 @@ dda inv aws.create-ecs
 | `--full-image-path` | — | Full registry path to a custom agent image |
 | `--agent-flavor` | — | Agent flavor (e.g. `datadog-fips-agent`) |
 | `--agent-env` | — | Extra env vars for the agent container (`VAR1=val1,VAR2=val2`) |
+| `--no-interactive` | — | Disable clipboard prompt and desktop notification |
 
 ### Examples
 

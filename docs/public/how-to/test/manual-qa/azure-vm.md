@@ -27,7 +27,7 @@ dda inv az.create-vm
 | `--stack-name` | `az-vm` | Suffix for the Pulumi stack name |
 | `--os-family` | `windows` | OS: `windows` or `ubuntu` |
 | `--os-version` | latest | OS version for the chosen family |
-| `--architecture` | `amd64` | CPU architecture: `amd64` or `arm64` |
+| `--architecture` | `x86_64` | CPU architecture: `x86_64` or `arm64` |
 | `--instance-type` | `Standard_B4ms` | Azure VM size |
 | `--pipeline-id` | — | Deploy the agent build from a specific GitLab pipeline |
 | `--agent-version` | latest | Pin an agent version (e.g. `7.58.0-1`) |

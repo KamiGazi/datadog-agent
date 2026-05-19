@@ -37,8 +37,9 @@ dda inv aws.create-eks
 | `--cluster-agent-full-image-path` | — | Full registry path to a custom Cluster Agent image |
 | `--helm-config` | — | Path to a custom Helm values file to merge with defaults |
 | `--local-chart-path` | — | Path to a local Helm chart |
-| `--kubernetes-version` | latest | Kubernetes version (e.g. `1.31`) |
+| `--kube-version` | latest | Kubernetes version (e.g. `1.31`) |
 | `--agent-flavor` | — | Agent flavor (e.g. `datadog-fips-agent`) |
+| `--no-interactive` | — | Disable clipboard prompt and desktop notification |
 
 ### Examples
 
@@ -47,7 +48,7 @@ dda inv aws.create-eks
 dda inv aws.create-eks --windows-node-group=true
 
 # EKS with a specific Kubernetes version and custom Helm values
-dda inv aws.create-eks --kubernetes-version=1.31 --helm-config=./my-values.yaml
+dda inv aws.create-eks --kube-version=1.31 --helm-config=./my-values.yaml
 
 # GPU-only cluster
 dda inv aws.create-eks --gpu-node-group=true

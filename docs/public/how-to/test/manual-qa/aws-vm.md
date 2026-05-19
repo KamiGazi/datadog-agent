@@ -18,7 +18,7 @@ The task prints SSH connection details when the instance is ready.
 | `--stack-name` | `aws-vm` | Suffix for the Pulumi stack name |
 | `--os-family` | `ubuntu` | OS: `ubuntu`, `debian`, `centos`, `redhat`, `suse`, `windows`, `macos` |
 | `--os-version` | latest | OS version for the chosen family |
-| `--architecture` | `amd64` | CPU architecture: `amd64` or `arm64` |
+| `--architecture` | `x86_64` | CPU architecture: `x86_64` or `arm64` |
 | `--instance-type` | auto | EC2 instance type (e.g. `t3.medium`) |
 | `--ami-id` | — | Use a specific AMI instead of the default for the OS family |
 | `--pipeline-id` | — | Deploy the agent build from a specific GitLab pipeline |

@@ -15,7 +15,7 @@ dda inv aws.create-docker
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--stack-name` | `aws-dockervm` | Suffix for the Pulumi stack name |
-| `--architecture` | `amd64` | CPU architecture: `amd64` or `arm64` |
+| `--architecture` | `x86_64` | CPU architecture: `x86_64` or `arm64` |
 | `--agent-version` | latest | Container image tag (e.g. `7.58.0-rc.3`) |
 | `--full-image-path` | — | Full registry path to a custom agent image |
 | `--agent-flavor` | — | Agent flavor (e.g. `datadog-fips-agent`) |

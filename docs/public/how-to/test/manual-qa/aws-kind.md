@@ -20,13 +20,13 @@ dda inv aws.create-kind
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--stack-name` | `aws-kind` | Suffix for the Pulumi stack name |
-| `--architecture` | `amd64` | CPU architecture: `amd64` or `arm64` |
+| `--architecture` | `x86_64` | CPU architecture: `x86_64` or `arm64` |
 | `--agent-version` | latest | Container image tag |
 | `--full-image-path` | — | Full registry path to a custom agent image |
 | `--cluster-agent-full-image-path` | — | Full registry path to a custom Cluster Agent image |
 | `--install-agent-with-operator` | `false` | Deploy the agent via the Datadog Operator instead of Helm |
 | `--helm-config` | — | Path to a custom Helm values file to merge with defaults |
-| `--kubernetes-version` | latest | Kubernetes version (e.g. `1.31`) |
+| `--kube-version` | latest | Kubernetes version (e.g. `1.31`) |
 | `--use-fakeintake` | `false` | Deploy a local mock intake alongside the agent |
 | `--agent-flavor` | — | Agent flavor (e.g. `datadog-fips-agent`) |
 
@@ -37,7 +37,7 @@ dda inv aws.create-kind
 dda inv aws.create-kind --architecture=arm64
 
 # KinD with a specific Kubernetes version
-dda inv aws.create-kind --kubernetes-version=1.31
+dda inv aws.create-kind --kube-version=1.31
 
 # Deploy agent via Operator instead of Helm
 dda inv aws.create-kind --install-agent-with-operator=true

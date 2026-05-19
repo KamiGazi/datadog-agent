@@ -25,7 +25,7 @@ dda inv gcp.create-vm
 | `--stack-name` | `gcp-vm` | Suffix for the Pulumi stack name |
 | `--os-family` | `ubuntu` | OS: `ubuntu` (only supported family) |
 | `--os-version` | latest | Ubuntu version |
-| `--architecture` | `amd64` | CPU architecture: `amd64` or `arm64` |
+| `--architecture` | `x86_64` | CPU architecture: `x86_64` or `arm64` |
 | `--instance-type` | `e2-medium` | GCP machine type |
 | `--pipeline-id` | — | Deploy the agent build from a specific GitLab pipeline |
 | `--agent-version` | latest | Pin an agent version (e.g. `7.58.0-1`) |

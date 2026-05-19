@@ -33,17 +33,16 @@ metrics and logs in the Datadog UI to a specific environment.
 
 | Scenario | Command | What it creates |
 |----------|---------|-----------------|
-| [AWS VM](manual-qa/aws-vm.md) | `dda inv aws.create-vm` | EC2 instance + Agent |
-| [AWS Docker VM](manual-qa/aws-docker.md) | `dda inv aws.create-docker` | EC2 + Docker + containerized Agent |
-| [AWS EKS](manual-qa/aws-eks.md) | `dda inv aws.create-eks` | EKS cluster + Agent DaemonSet |
-| [AWS ECS](manual-qa/aws-ecs.md) | `dda inv aws.create-ecs` | ECS cluster + Agent |
-| [AWS KinD](manual-qa/aws-kind.md) | `dda inv aws.create-kind` | EC2 + KinD cluster + Agent |
-| [Azure VM](manual-qa/azure-vm.md) | `dda inv az.create-vm` | Azure VM + Agent |
-| [GCP VM](manual-qa/gcp-vm.md) | `dda inv gcp.create-vm` | GCP VM + Agent |
+| [AWS VM](aws-vm.md) | `dda inv aws.create-vm` | EC2 instance + Agent |
+| [AWS Docker VM](aws-docker.md) | `dda inv aws.create-docker` | EC2 + Docker + containerized Agent |
+| [AWS EKS](aws-eks.md) | `dda inv aws.create-eks` | EKS cluster + Agent DaemonSet |
+| [AWS ECS](aws-ecs.md) | `dda inv aws.create-ecs` | ECS cluster + Agent |
+| [AWS KinD](aws-kind.md) | `dda inv aws.create-kind` | EC2 + KinD cluster + Agent |
+| [Azure VM](azure-vm.md) | `dda inv az.create-vm` | Azure VM + Agent |
+| [GCP VM](gcp-vm.md) | `dda inv gcp.create-vm` | GCP VM + Agent |
 
-All the scenarios should support a `--no-interactive` flag to avoid interactiveness that can block AI agents
+Pass `--no-interactive` to any scenario to disable the clipboard prompt and desktop notification, which is useful when running from an AI agent or CI context.
 
 ## See Also
 
-- [Running E2E tests](e2e.md) — automated test execution against the same infrastructure
-`
+- [Running E2E tests](../e2e.md) — automated test execution against the same infrastructure
