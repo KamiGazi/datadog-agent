@@ -56,6 +56,7 @@ use (
 	comp/netflow/payload
 	comp/otelcol/collector-contrib/def
 	comp/otelcol/collector-contrib/impl
+	pkg/util/confmaputils
 	comp/otelcol/converter/def
 	comp/otelcol/converter/impl
 	comp/otelcol/ddflareextension/def
