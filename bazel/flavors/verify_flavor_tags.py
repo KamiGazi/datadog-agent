@@ -1,5 +1,5 @@
 """Verify that bazel/flavors/defs.bzl is in sync with tasks/build_tags.py and
-with the FlavorUnitTestTags map exported by bazel/rules/dd_go_test.
+with the FlavorUnitTestTags map exported by bazel/rules/dd_agent_go_test.
 
 Run with: bazel test //bazel/flavors:verify_flavor_tags
 """
@@ -49,7 +49,7 @@ def _load_defs_bzl():
 
 
 def _load_go_extension_tags(dump_tags_rlocation):
-    """Run //bazel/rules/dd_go_test/dump_tags and parse its `flavor\\ttag` lines.
+    """Run //bazel/rules/dd_agent_go_test/dump_tags and parse its `flavor\\ttag` lines.
 
     Running the binary instead of parsing the Go source means this test stays
     blind to the extension's internal layout (single map, composed-at-init,

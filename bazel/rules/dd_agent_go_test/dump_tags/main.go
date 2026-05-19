@@ -14,13 +14,13 @@ import (
 	"fmt"
 	"os"
 
-	ddgotest "github.com/DataDog/datadog-agent/bazel/rules/dd_go_test"
+	ddagentgotest "github.com/DataDog/datadog-agent/bazel/rules/dd_agent_go_test"
 )
 
 func main() {
 	w := bufio.NewWriter(os.Stdout)
 	defer w.Flush()
-	for flavor, tags := range ddgotest.FlavorUnitTestTags {
+	for flavor, tags := range ddagentgotest.FlavorUnitTestTags {
 		for _, tag := range tags {
 			fmt.Fprintf(w, "%s\t%s\n", flavor, tag)
 		}

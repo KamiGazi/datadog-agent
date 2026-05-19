@@ -4,13 +4,13 @@
 // Copyright 2026-present Datadog, Inc.
 
 // This file is the package's only non-underscored source — it carries the
-// flavor tag data the extension and //bazel/rules/dd_go_test/dump_tags both
-// need, and crucially makes the package visible to `go mod tidy` and friends
-// (which skip files starting with `_`). The extension itself lives in
+// flavor tag data the extension and //bazel/rules/dd_agent_go_test/dump_tags
+// both need, and crucially makes the package visible to `go mod tidy` and
+// friends (which skip files starting with `_`). The extension itself lives in
 // _gazelle_extension.go so its @gazelle deps don't leak into the root
 // go.mod; Bazel stitches both files into one go_library via copy_file.
 
-package dd_go_test
+package dd_agent_go_test
 
 // flavorSpecificTags / commonTags / unitTestTags mirror their counterparts in
 // bazel/flavors/defs.bzl (which in turn mirror tasks/build_tags.py).
@@ -47,9 +47,9 @@ var flavorSpecificTags = map[string][]string{
 }
 
 // FlavorUnitTestTags is the per-flavor tag set the extension uses to decide
-// which dd_go_test variants apply to a package's srcs. Composed from
+// which dd_agent_go_test variants apply to a package's srcs. Composed from
 // flavorSpecificTags + commonTags + unitTestTags at package init. Exported so
-// //bazel/rules/dd_go_test/dump_tags can serialize it for
+// //bazel/rules/dd_agent_go_test/dump_tags can serialize it for
 // //bazel/flavors:verify_flavor_tags.
 var FlavorUnitTestTags = func() map[string][]string {
 	out := make(map[string][]string, len(flavorSpecificTags))

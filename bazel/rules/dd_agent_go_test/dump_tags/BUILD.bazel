@@ -4,5 +4,5 @@ go_binary(
     name = "dump_tags",
     srcs = ["main.go"],
     visibility = ["//bazel/flavors:__pkg__"],
-    deps = ["//bazel/rules/dd_go_test:gazelle_extension"],
+    deps = ["//bazel/rules/dd_agent_go_test:gazelle_extension"],
 )
