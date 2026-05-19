@@ -5,11 +5,15 @@ package(default_visibility = ["//visibility:public"])
 py_test(
     name = "verify_flavor_tags",
     srcs = ["verify_flavor_tags.py"],
+    args = ["$(rlocationpath //bazel/rules/dd_go_test/dump_tags)"],
     data = [
         "defs.bzl",
-        "//bazel/rules/dd_go_test:_gazelle_extension.go",
+        "//bazel/rules/dd_go_test/dump_tags",
         "//tasks:build_tags.py",
         "//tasks:flavor.py",
     ],
-    deps = ["@py_dev_requirements//invoke"],
+    deps = [
+        "@py_dev_requirements//invoke",
+        "@rules_python//python/runfiles",
+    ],
 )
