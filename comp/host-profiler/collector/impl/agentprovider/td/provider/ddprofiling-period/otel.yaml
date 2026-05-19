@@ -8,10 +8,10 @@ exporters:
         metrics_endpoint: https://otlp.datadoghq.com/v1/metrics
         profiles_endpoint: https://intake.profile.datadoghq.com/v1development/profiles
 extensions:
-    ddprofiling/default:
+    ddprofiling:
         profiler_options:
             period: 30
-    hpflare/default:
+    hpflare:
         endpoint: localhost:7778
 processors:
     cumulativetodelta: {}
@@ -23,7 +23,7 @@ processors:
                     - ^scrape_.*$
                     - ^up$
                     - ^promhttp_metric_handler_errors_total$
-    infraattributes/default:
+    infraattributes:
         allow_hostname_override: true
         cardinality: 2
     resource/dd-profiler-internal-metadata:
@@ -56,8 +56,8 @@ receivers:
                         - 127.0.0.1:8889
 service:
     extensions:
-        - hpflare/default
-        - ddprofiling/default
+        - hpflare
+        - ddprofiling
     pipelines:
         metrics:
             exporters:
@@ -65,7 +65,7 @@ service:
             processors:
                 - filter
                 - cumulativetodelta
-                - infraattributes/default
+                - infraattributes
                 - resource/dd-profiler-internal-metadata
             receivers:
                 - prometheus
@@ -73,7 +73,7 @@ service:
             exporters:
                 - otlp_http/datadoghq.com_0
             processors:
-                - infraattributes/default
+                - infraattributes
                 - resource/dd-profiler-internal-metadata
             receivers:
                 - profiling
