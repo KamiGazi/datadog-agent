@@ -229,6 +229,10 @@ func fargateLinuxContainerDefinition(apiKeySSMParamName pulumi.StringInput, para
 		command = append(command, "-retention-period="+params.RetentionPeriod)
 	}
 
+	if params.RCSigningKeySeed != "" {
+		command = append(command, "--rc-key-data="+params.RCSigningKeySeed)
+	}
+
 	return &awsxEcs.TaskDefinitionContainerDefinitionArgs{
 		Name:        pulumi.String(containerName),
 		Image:       pulumi.String(params.ImageURL),

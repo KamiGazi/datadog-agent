@@ -68,6 +68,9 @@ func Run(ctx *pulumi.Context, awsEnv aws.Environment, env outputs.HostOutputs, p
 		if params.agentOptions != nil {
 			// Prepend in case it's overridden by the user
 			newOpts := []agentparams.Option{agentparams.WithFakeintake(fakeIntake)}
+			if params.wireRCToAgent {
+				newOpts = append(newOpts, agentparams.WithFakeintakeRemoteConfig(fakeIntake, params.rcRootJSON))
+			}
 			params.agentOptions = append(newOpts, params.agentOptions...)
 		}
 	} else {

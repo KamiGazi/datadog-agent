@@ -338,6 +338,26 @@ func WithFakeintake(fakeintake *fakeintake.Fakeintake) func(*Params) error {
 	}
 }
 
+// WithFakeintakeRemoteConfig configures the agent to use fakeintake as its Remote Config
+// backend. rootJSON is the TUF root JSON (as produced by rcstore.BuildRootJSON) matching
+// the signing key passed to the fakeintake at startup via --rc-key-data.
+func WithFakeintakeRemoteConfig(fi *fakeintake.Fakeintake, rootJSON string) func(*Params) error {
+	return func(p *Params) error {
+		p.ResourceOptions = append(p.ResourceOptions, pulumi.DependsOn([]pulumi.Resource{fi}))
+		extraConfig := fi.URL.ApplyT(func(fiURL string) (string, error) {
+			return fmt.Sprintf(`remote_configuration.enabled: true
+remote_configuration.rc_dd_url: %s
+remote_configuration.no_tls_validation: true
+remote_configuration.refresh_interval: 5s
+remote_configuration.config_root: '%s'
+remote_configuration.director_root: '%s'
+`, fiURL, rootJSON, rootJSON), nil
+		}).(pulumi.StringOutput)
+		p.ExtraAgentConfig = append(p.ExtraAgentConfig, extraConfig)
+		return nil
+	}
+}
+
 // WithLogs enables the log agent
 func WithLogs() func(*Params) error {
 	return func(p *Params) error {
