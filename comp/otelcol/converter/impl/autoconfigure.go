@@ -9,12 +9,12 @@ package converterimpl
 import (
 	"context"
 	"slices"
-	"strings"
 
+	"github.com/DataDog/datadog-agent/pkg/util/confmaputils"
 	"go.opentelemetry.io/collector/confmap"
 )
 
-var ddAutoconfiguredSuffix = "dd-autoconfigured"
+var ddAutoconfiguredSuffix = confmaputils.AutoConfiguredSuffix
 
 const (
 	defaultSite = "datadoghq.com"
@@ -131,95 +131,52 @@ func (c *ddConverter) warnIfHostmetricsInConnectedMode(conf *confmap.Conf) {
 	}
 }
 
-func componentName(fullName string) string {
-	parts := strings.SplitN(fullName, "/", 2)
-	return parts[0]
-}
-
 // addComponentToConfig adds comp to the collector config. It supports receivers,
 // processors, exporters and extensions.
 func addComponentToConfig(conf *confmap.Conf, comp component) {
-	stringMapConf := conf.ToStringMap()
-
-	components, present := stringMapConf[comp.Type]
-	if present {
-		componentsMap, ok := components.(map[string]any)
-		if !ok {
-			if components == nil {
-				// components map is nil. It is defined but section is empty.
-				// need to create map manually
-
-				componentsMap = make(map[string]any)
-				stringMapConf[comp.Type] = componentsMap
-			} else {
-				return
-			}
-		}
-		componentsMap[comp.EnhancedName] = comp.Config
-	} else {
-		stringMapConf[comp.Type] = map[string]any{
-			comp.EnhancedName: comp.Config,
-		}
-	}
-
-	*conf = *confmap.NewFromStringMap(stringMapConf)
+	m := conf.ToStringMap()
+	_ = confmaputils.Set(m, comp.Type+"::"+comp.EnhancedName, comp.Config)
+	*conf = *confmap.NewFromStringMap(m)
 }
 
 // addComponentToPipeline adds comp into pipelineName. If pipelineName does not exist,
 // it creates it. It only supports receivers, processors and exporters.
 func addComponentToPipeline(conf *confmap.Conf, comp component, pipelineName string) {
-	stringMapConf := conf.ToStringMap()
-	service, ok := stringMapConf["service"]
-	if !ok {
-		return
-	}
-	serviceMap, ok := service.(map[string]any)
-	if !ok {
-		return
-	}
-	pipelines, ok := serviceMap["pipelines"]
-	if !ok {
-		return
-	}
-	pipelinesMap, ok := pipelines.(map[string]any)
-	if !ok {
-		return
-	}
-	_, ok = pipelinesMap[pipelineName]
-	if !ok {
-		pipelinesMap[pipelineName] = map[string]any{}
-	}
-	pipelineMap, ok := pipelinesMap[pipelineName].(map[string]any)
+	m := conf.ToStringMap()
+
+	pipelinesMap, ok := confmaputils.Get[confmaputils.ConfMap](m, "service::pipelines")
 	if !ok {
 		return
 	}
 
-	_, ok = pipelineMap[comp.Type]
+	if _, exists := pipelinesMap[pipelineName]; !exists {
+		pipelinesMap[pipelineName] = confmaputils.ConfMap{}
+	}
+	pipelineMap, ok := pipelinesMap[pipelineName].(confmaputils.ConfMap)
 	if !ok {
+		return
+	}
+
+	if _, exists := pipelineMap[comp.Type]; !exists {
 		pipelineMap[comp.Type] = []any{}
 	}
-	if pipelineOfTypeSlice, ok := pipelineMap[comp.Type].([]any); ok {
-		pipelineOfTypeSlice = append(pipelineOfTypeSlice, comp.EnhancedName)
-		pipelineMap[comp.Type] = pipelineOfTypeSlice
+	if existing, ok := pipelineMap[comp.Type].([]any); ok {
+		pipelineMap[comp.Type] = append(existing, comp.EnhancedName)
 	}
 
-	*conf = *confmap.NewFromStringMap(stringMapConf)
+	*conf = *confmap.NewFromStringMap(m)
 }
 
 // findComps finds and returns the matching components and their configs in a string conf map.
 // Component can be receivers, processors, connectors or exporters.
 func findComps(stringMapConf map[string]any, compName string, compType string) map[string]map[string]any {
-	comps, ok := stringMapConf[compType]
-	if !ok {
-		return nil
-	}
-	compsMap, ok := comps.(map[string]any)
+	compsMap, ok := confmaputils.Get[confmaputils.ConfMap](stringMapConf, compType)
 	if !ok {
 		return nil
 	}
 	cfgsByRecv := make(map[string]map[string]any)
 	for name, cfg := range compsMap {
-		if componentName(name) != compName {
+		if !confmaputils.IsComponentType(name, compName) {
 			continue
 		}
 		cfgMap, ok := cfg.(map[string]any)

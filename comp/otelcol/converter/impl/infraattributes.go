@@ -6,7 +6,10 @@
 // Package converterimpl provides the implementation of the otel-agent converter.
 package converterimpl
 
-import "go.opentelemetry.io/collector/confmap"
+import (
+	"github.com/DataDog/datadog-agent/pkg/util/confmaputils"
+	"go.opentelemetry.io/collector/confmap"
+)
 
 var (
 	// infraattributes
@@ -65,7 +68,7 @@ func addProcessorToPipelinesWithDDExporter(conf *confmap.Conf, comp component) {
 			if infraAttrsInPipeline {
 				break
 			}
-			if componentName(exporterString) != "datadog" {
+			if !confmaputils.IsComponentType(exporterString, "datadog") {
 				continue
 			}
 			ddExporterInPipeline = true
@@ -84,7 +87,7 @@ func addProcessorToPipelinesWithDDExporter(conf *confmap.Conf, comp component) {
 				if !ok {
 					return
 				}
-				if componentName(processorString) == comp.Name {
+				if confmaputils.IsComponentType(processorString, comp.Name) {
 					infraAttrsInPipeline = true
 				}
 

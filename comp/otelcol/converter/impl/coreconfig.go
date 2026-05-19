@@ -10,6 +10,7 @@ import (
 	"regexp"
 
 	"github.com/DataDog/datadog-agent/comp/core/config"
+	"github.com/DataDog/datadog-agent/pkg/util/confmaputils"
 	"go.opentelemetry.io/collector/confmap"
 )
 
@@ -37,7 +38,7 @@ func addEnv(conf *confmap.Conf, coreCfg config.Component) {
 		return
 	}
 	for extension := range extensionMap {
-		if componentName(extension) == "ddprofiling" {
+		if confmaputils.IsComponentType(extension, "ddprofiling") {
 			ddprofiling, ok := extensionMap[extension]
 			if !ok {
 				return
@@ -84,7 +85,7 @@ func addAPIKeySite(conf *confmap.Conf, coreCfg config.Component, compType string
 		return
 	}
 	for component := range componentMap {
-		if componentName(component) == compName {
+		if confmaputils.IsComponentType(component, compName) {
 			datadog, ok := componentMap[component]
 			if !ok {
 				return

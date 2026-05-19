@@ -7,6 +7,7 @@
 package converterimpl
 
 import (
+	"github.com/DataDog/datadog-agent/pkg/util/confmaputils"
 	"go.opentelemetry.io/collector/confmap"
 )
 
@@ -113,7 +114,7 @@ func extensionIsInServicePipeline(conf *confmap.Conf, comp component) bool {
 		if !ok {
 			return false
 		}
-		if componentName(extensionString) == comp.Name {
+		if confmaputils.IsComponentType(extensionString, comp.Name) {
 			return true
 		}
 	}

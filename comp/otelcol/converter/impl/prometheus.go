@@ -12,40 +12,13 @@ import (
 
 	"go.opentelemetry.io/collector/confmap"
 
+	"github.com/DataDog/datadog-agent/pkg/util/confmaputils"
 	"github.com/DataDog/datadog-agent/pkg/util/hostport"
 )
 
 var (
-	// prometheus
 	prometheusName         = "prometheus"
 	prometheusEnhancedName = prometheusName + "/" + ddAutoconfiguredSuffix
-	prometheusConfig       = map[string]any{
-		"config": map[string]any{
-			"scrape_configs": []any{
-				map[string]any{
-					"fallback_scrape_protocol":      "PrometheusText0.0.4",
-					"job_name":                      "datadog-agent",
-					"metric_name_validation_scheme": "legacy",
-					"metric_name_escaping_scheme":   "underscores",
-					"scrape_interval":               "60s",
-					"scrape_protocols":              []any{"PrometheusText0.0.4"},
-					"static_configs": []any{
-						map[string]any{
-							"targets": []any{"0.0.0.0:8888"},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	// component
-	prometheusReceiver = component{
-		Name:         prometheusName,
-		EnhancedName: prometheusEnhancedName,
-		Type:         "receivers",
-		Config:       prometheusConfig,
-	}
 )
 
 // addPrometheusReceiver ensures that each datadogexporter is configured with a prometheus receiver
@@ -68,7 +41,7 @@ func addPrometheusReceiver(conf *confmap.Conf, promServerAddr string) {
 
 	// find prometheus receivers which point to internal telemetry metrics. If present, check if it is defined
 	// in pipeline with DD exporter. If so, remove from datadog exporter map.
-	cfgsByRecv := findComps(stringMapConf, prometheusReceiver.Name, "receivers")
+	cfgsByRecv := findComps(stringMapConf, prometheusName, "receivers")
 	for name, cfg := range cfgsByRecv {
 		prometheusConfig, ok := cfg["config"]
 		if !ok {
@@ -135,47 +108,12 @@ func addPrometheusReceiver(conf *confmap.Conf, promServerAddr string) {
 		return
 	}
 
-	comp := prometheusReceiver
-	// update default prometheus config based on service telemetry address.
-	prometheusConfigMap, ok := comp.Config.(map[string]any)
-	if !ok {
-		return
+	comp := component{
+		Name:         prometheusName,
+		EnhancedName: prometheusEnhancedName,
+		Type:         "receivers",
+		Config:       confmaputils.PrometheusReceiverConfig("datadog-agent", promServerAddr),
 	}
-	config, ok := prometheusConfigMap["config"]
-	if !ok {
-		return
-	}
-	configMap, ok := config.(map[string]any)
-	if !ok {
-		return
-	}
-	scrapeConfig, ok := configMap["scrape_configs"]
-	if !ok {
-		return
-	}
-	scrapeConfigSlice, ok := scrapeConfig.([]any)
-	if !ok {
-		return
-	}
-	onlyScrapeConfig := scrapeConfigSlice[0]
-	onlyScrapeConfigMap, ok := onlyScrapeConfig.(map[string]any)
-	if !ok {
-		return
-	}
-	staticConfigs, ok := onlyScrapeConfigMap["static_configs"]
-	if !ok {
-		return
-	}
-	staticConfigsSlice, ok := staticConfigs.([]any)
-	if !ok {
-		return
-	}
-	onlyStaticConfig := staticConfigsSlice[0]
-	onlyStaticConfigMap, ok := onlyStaticConfig.(map[string]any)
-	if !ok {
-		return
-	}
-	onlyStaticConfigMap["targets"] = []any{promServerAddr}
 
 	addComponentToConfig(conf, comp)
 
@@ -203,18 +141,7 @@ func getProcessorInternalPipeline() component {
 		Type:         "processors",
 		Name:         name,
 		EnhancedName: name + "/" + ddAutoconfiguredSuffix,
-		Config: map[string]any{
-			"metrics": map[string]any{
-				"exclude": map[string]any{
-					"match_type": "regexp",
-					"metric_names": []any{
-						"^scrape_.*$",
-						"^up$",
-						"^promhttp_metric_handler_errors_total$",
-					},
-				},
-			},
-		},
+		Config:       confmaputils.FilterProcessorConfig(),
 	}
 }
 
@@ -252,7 +179,7 @@ func receiverInPipelineWithDatadogExporter(conf *confmap.Conf, receiverName stri
 		}
 		for _, exporter := range exportersSlice {
 			if exporterString, ok := exporter.(string); ok {
-				if componentName(exporterString) == "datadog" {
+				if confmaputils.IsComponentType(exporterString, "datadog") {
 					// datadog component is an exporter in this pipeline. Check if the prometheusReceiver is configured
 					receivers, ok := componentsMap["receivers"]
 					if !ok {
@@ -291,7 +218,7 @@ func getDatadogExporters(conf *confmap.Conf) map[string]any {
 		return datadogExporters
 	}
 	for exporterName, exporterConfig := range exportersMap {
-		if componentName(exporterName) == "datadog" {
+		if confmaputils.IsComponentType(exporterName, "datadog") {
 			datadogExporters[exporterName] = exporterConfig
 		}
 	}
