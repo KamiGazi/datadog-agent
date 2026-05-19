@@ -1,0 +1,791 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://raw.githubusercontent.com/DataDog/schema/main/agent/admission_controller.yaml.schema.json
+node_type: section
+title: Admission controller Configuration
+type: object
+visibility: public
+description: |-
+  Enter specific configurations for your admission controller.
+  The Datadog admission controller is a component of the Datadog Cluster Agent.
+  It has two main functionalities:
+  Inject environment variables (DD_AGENT_HOST and DD_ENTITY_ID) to configure DogStatsD and APM tracer libraries into your application containers.
+  Inject Datadog reserved tags (env, service, version) from application labels into the container environment variables.
+  Uncomment this parameter and the one below to enable it.
+  See https://docs.datadoghq.com/agent/cluster_agent/admission_controller/
+tags:
+- template_section:AdmissionController
+properties:
+  enabled:
+    node_type: setting
+    type: boolean
+    default: false
+    visibility: public
+    description: Set to true to enable the admission controller in the cluster-agent.
+    example: 'false'
+    tags:
+    - template_section:AdmissionController
+  validation:
+    node_type: section
+    type: object
+    visibility: public
+    description: The admission controller's validation configuration.
+    tags:
+    - template_section:AdmissionController
+    properties:
+      enabled:
+        node_type: setting
+        type: boolean
+        default: true
+        visibility: public
+        description: Set to true to enable validation webhooks controller in the cluster-agent.
+        example: 'true'
+        tags:
+        - template_section:AdmissionController
+  mutation:
+    node_type: section
+    type: object
+    visibility: public
+    description: The admission controller's mutation configuration.
+    tags:
+    - template_section:AdmissionController
+    properties:
+      enabled:
+        node_type: setting
+        type: boolean
+        default: true
+        visibility: public
+        description: Set to true to enable mutation webhooks controller in the cluster-agent.
+        example: 'true'
+        tags:
+        - template_section:AdmissionController
+  mutate_unlabelled:
+    node_type: setting
+    type: boolean
+    default: false
+    visibility: public
+    description: Enable injecting config without having the pod label admission.datadoghq.com/enabled="true".
+    example: 'false'
+    tags:
+    - template_section:AdmissionController
+  port:
+    node_type: setting
+    type: number
+    default: 8000
+    visibility: public
+    description: The admission controller server port.
+    example: '8000'
+    tags:
+    - golang_type:int
+    - template_section:AdmissionController
+  timeout_seconds:
+    node_type: setting
+    type: number
+    default: 10
+    visibility: public
+    description: The admission controller server timeout in seconds.
+    example: '10'
+    tags:
+    - golang_type:int
+    - template_section:AdmissionController
+  service_name:
+    node_type: setting
+    type: string
+    default: datadog-admission-controller
+    visibility: public
+    description: The name of the Kubernetes service that exposes the admission controller.
+    example: '"datadog-admission-controller"'
+    tags:
+    - template_section:AdmissionController
+  webhook_name:
+    node_type: setting
+    type: string
+    default: datadog-webhook
+    visibility: public
+    description: The name of the Kubernetes webhook object.
+    example: '"datadog-webhook"'
+    tags:
+    - template_section:AdmissionController
+  pod_owners_cache_validity:
+    node_type: setting
+    type: number
+    default: 10
+    visibility: public
+    description: The in-memory cache TTL for pod owners in minutes.
+    example: '10'
+    tags:
+    - golang_type:int
+    - template_section:AdmissionController
+  namespace_selector_fallback:
+    node_type: setting
+    type: boolean
+    default: false
+    visibility: public
+    description: |-
+      Use namespace selectors instead of object selectors to watch objects.
+      For Kubernetes versions from 1.10 to 1.14 (inclusive)
+    example: 'false'
+    tags:
+    - template_section:AdmissionController
+  certificate:
+    node_type: section
+    type: object
+    visibility: public
+    description: The webhook's certificate configuration.
+    tags:
+    - template_section:AdmissionController
+    properties:
+      validity_bound:
+        node_type: setting
+        type: number
+        default: 8760
+        visibility: public
+        description: The certificate's validity bound in hours, default 1 year (365*24).
+        example: '8760'
+        tags:
+        - golang_type:int
+        - template_section:AdmissionController
+      expiration_threshold:
+        node_type: setting
+        type: number
+        default: 720
+        visibility: public
+        description: The certificate's refresh threshold in hours, default 1 month
+          (30*24).
+        example: '720'
+        tags:
+        - golang_type:int
+        - template_section:AdmissionController
+      secret_name:
+        node_type: setting
+        type: string
+        default: webhook-certificate
+        visibility: public
+        description: Name of the Secret object containing the webhook certificate.
+        example: '"webhook-certificate"'
+        tags:
+        - template_section:AdmissionController
+  inject_config:
+    node_type: section
+    type: object
+    visibility: public
+    description: Configuration injection parameters.
+    tags:
+    - template_section:AdmissionController
+    properties:
+      enabled:
+        node_type: setting
+        type: boolean
+        default: true
+        visibility: public
+        description: Enable configuration injection (configure DogStatsD and APM tracer
+          libraries).
+        example: 'true'
+        tags:
+        - template_section:AdmissionController
+      endpoint:
+        node_type: setting
+        type: string
+        default: /injectconfig
+        visibility: public
+        description: Admission controller's endpoint responsible for handling configuration
+          injection requests.
+        example: '"/injectconfig"'
+        tags:
+        - template_section:AdmissionController
+      mode:
+        node_type: setting
+        type: string
+        default: hostip
+        visibility: public
+        description: The kind of configuration to be injected, it can be "hostip",
+          "service", or "socket".
+        example: '"hostip"'
+        tags:
+        - template_section:AdmissionController
+      local_service_name:
+        node_type: setting
+        type: string
+        default: datadog
+        visibility: public
+        description: Configure the local service name that exposes the Datadog Agent.
+          Only applicable in "service" mode.
+        example: '"datadog"'
+        tags:
+        - template_section:AdmissionController
+      socket_path:
+        node_type: setting
+        type: string
+        default: /var/run/datadog
+        visibility: public
+        description: Configure Datadog Agent's socket path. Only applicable in "socket"
+          mode.
+        example: '"/var/run/datadog"'
+        tags:
+        - template_section:AdmissionController
+      type_socket_volumes:
+        node_type: setting
+        type: boolean
+        default: false
+        visibility: public
+        description: |-
+          When enabled, injected volumes are of type "Socket". This means that
+          injected pods will not start until the Agent creates the dogstatsd and
+          trace-agent sockets. This ensures no lost traces or dogstatsd metrics but
+          can cause the pod to wait if the agent has issues creating the sockets.
+        example: 'false'
+        tags:
+        - template_section:AdmissionController
+  inject_tags:
+    node_type: section
+    type: object
+    visibility: public
+    description: Tags injection parameters.
+    tags:
+    - template_section:AdmissionController
+    properties:
+      enabled:
+        node_type: setting
+        type: boolean
+        default: true
+        visibility: public
+        description: Enable standard tags injection.
+        example: 'true'
+        tags:
+        - template_section:AdmissionController
+      endpoint:
+        node_type: setting
+        type: string
+        default: /injecttags
+        visibility: public
+        description: Admission controller's endpoint responsible for handling tags
+          injection requests.
+        example: '"/injecttags"'
+        tags:
+        - template_section:AdmissionController
+      pod_owners_cache_validity:
+        node_type: setting
+        type: number
+        default: 10
+        tags:
+        - golang_type:int
+  failure_policy:
+    node_type: setting
+    type: string
+    default: Ignore
+    visibility: public
+    description: |-
+      Set the failure policy for dynamic admission control.
+      The default of Ignore means that pods will still be admitted even if the webhook is unavailable to inject them.
+      Setting to Fail will require the admission controller to be present and pods to be injected before they are allowed to run.
+    example: '"Ignore"'
+    tags:
+    - template_section:AdmissionController
+  reinvocation_policy:
+    node_type: setting
+    type: string
+    default: IfNeeded
+    visibility: public
+    description: |-
+      Set the reinvocation policy for dynamic admission control.
+      See https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#reinvocation-policy
+    example: '"IfNeeded"'
+    tags:
+    - template_section:AdmissionController
+  add_aks_selectors:
+    node_type: setting
+    type: boolean
+    default: false
+    visibility: public
+    description: |-
+      Adds in the admission controller webhook the selectors that are required in AKS.
+      See https://docs.microsoft.com/en-us/azure/aks/faq#can-i-use-admission-controller-webhooks-on-aks
+    example: 'false'
+    tags:
+    - template_section:AdmissionController
+  auto_instrumentation:
+    node_type: section
+    type: object
+    visibility: public
+    description: Library injection parameters.
+    tags:
+    - template_section:AdmissionController
+    properties:
+      init_resources:
+        node_type: section
+        type: object
+        visibility: public
+        description: CPU and Memory resources of the init containers.
+        tags:
+        - template_section:AdmissionController
+        properties:
+          cpu:
+            node_type: setting
+            type: string
+            default: ''
+            visibility: public
+            description: Configures the CPU request that will be applied for the init
+              container's CPU request and limit.
+            example: '""'
+            tags:
+            - template_section:AdmissionController
+          memory:
+            node_type: setting
+            type: string
+            default: ''
+            visibility: public
+            description: Configures the memory request that will be applied for the
+              init container's memory request and limit.
+            example: '""'
+            tags:
+            - template_section:AdmissionController
+      init_security_context:
+        node_type: setting
+        type: string
+        default: ''
+        visibility: public
+        description: |-
+          Security context for the init containers in JSON format. Follows the Kubernetes security context spec,
+          https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#securitycontext-v1-core,
+          ignores unknown properties.
+
+          Env var example: DD_ADMISSION_CONTROLLER_AUTO_INSTRUMENTATION_INIT_SECURITY_CONTEXT='{"privileged": false}'
+        example: '''{"privileged": false}'''
+        tags:
+        - template_section:AdmissionController
+      asm:
+        node_type: section
+        type: object
+        properties:
+          enabled:
+            node_type: setting
+            type: boolean
+            default: false
+            env_vars:
+            - DD_ADMISSION_CONTROLLER_AUTO_INSTRUMENTATION_APPSEC_ENABLED
+            tags: []
+      asm_sca:
+        node_type: section
+        type: object
+        properties:
+          enabled:
+            node_type: setting
+            type: boolean
+            default: false
+            env_vars:
+            - DD_ADMISSION_CONTROLLER_AUTO_INSTRUMENTATION_APPSEC_SCA_ENABLED
+            tags: []
+      container_registry:
+        node_type: setting
+        type: string
+        default: ''
+      container_registry_allow_list:
+        node_type: setting
+        type: array
+        default: []
+        env_parser: comma_separated
+        items:
+          type: string
+      default_dd_registries:
+        node_type: setting
+        type: array
+        default:
+        - gcr.io/datadoghq
+        - docker.io/datadog
+        - public.ecr.aws/datadog
+        - datadoghq.azurecr.io
+        - us-docker.pkg.dev/datadoghq/gcr.io
+        - europe-docker.pkg.dev/datadoghq/eu.gcr.io
+        - asia-docker.pkg.dev/datadoghq/asia.gcr.io
+        - registry.datad0g.com
+        - registry.datadoghq.com
+        items:
+          type: string
+      enabled:
+        node_type: setting
+        type: boolean
+        default: true
+      endpoint:
+        node_type: setting
+        type: string
+        default: /injectlib
+      gradual_rollout:
+        node_type: section
+        type: object
+        properties:
+          cache_ttl:
+            node_type: setting
+            type: string
+            default: 1h
+          enabled:
+            node_type: setting
+            type: boolean
+            default: true
+      iast:
+        node_type: section
+        type: object
+        properties:
+          enabled:
+            node_type: setting
+            type: boolean
+            default: false
+            env_vars:
+            - DD_ADMISSION_CONTROLLER_AUTO_INSTRUMENTATION_IAST_ENABLED
+            tags: []
+      inject_auto_detected_libraries:
+        node_type: setting
+        type: boolean
+        default: true
+      patcher:
+        node_type: section
+        type: object
+        properties:
+          enabled:
+            node_type: setting
+            type: boolean
+            default: false
+          fallback_to_file_provider:
+            node_type: setting
+            type: boolean
+            default: false
+          file_provider_path:
+            node_type: setting
+            type: string
+            default: /etc/datadog-agent/patch/auto-instru.json
+      profiling:
+        node_type: section
+        type: object
+        properties:
+          enabled:
+            node_type: setting
+            type: string
+            default: ''
+            env_vars:
+            - DD_ADMISSION_CONTROLLER_AUTO_INSTRUMENTATION_PROFILING_ENABLED
+            tags: []
+  nccl_profiler:
+    node_type: section
+    type: object
+    visibility: public
+    description: |-
+      NCCL profiler injection. When enabled, the admission controller injects
+      an init container into pods labelled `admission.datadoghq.com/nccl-profiler.enabled: "true"`
+      to mount the NCCL profiler plugin and configure NCCL env vars so the
+      Agent's NCCL check can collect collective performance events over a UDS.
+    tags:
+    - template_section:AdmissionController
+    properties:
+      enabled:
+        node_type: setting
+        type: boolean
+        default: false
+        env_vars:
+        - DD_ADMISSION_CONTROLLER_NCCL_PROFILER_ENABLED
+        visibility: public
+        description: Enable the NCCL profiler injection webhook.
+        example: 'false'
+        tags:
+        - template_section:AdmissionController
+      injector_image:
+        node_type: setting
+        type: string
+        default: ''
+        env_vars:
+        - DD_ADMISSION_CONTROLLER_NCCL_PROFILER_INJECTOR_IMAGE
+        visibility: public
+        description: |-
+          Fully-qualified image reference for the NCCL profiler injector. The
+          webhook self-disables if this is empty when enabled is true.
+        example: '""'
+        tags:
+        - template_section:AdmissionController
+      mutate_unlabelled:
+        node_type: setting
+        type: boolean
+        default: false
+        visibility: public
+        description: |-
+          When true, the webhook injects into every pod that does not carry the
+          `admission.datadoghq.com/nccl-profiler.enabled: "false"` label, instead
+          of requiring `"true"` to opt in. Useful in clusters dedicated to ML
+          training. Either this or admission_controller.mutate_unlabelled enables
+          blanket mode. Note: when enabled, every pod's admission depends on the
+          injector image being reachable from the kubelet.
+        example: 'false'
+        tags:
+        - template_section:AdmissionController
+      init_resources:
+        node_type: section
+        type: object
+        visibility: public
+        description: CPU and memory resources applied to the injected init container.
+        tags:
+        - template_section:AdmissionController
+        properties:
+          cpu:
+            node_type: setting
+            type: string
+            default: ''
+            visibility: public
+            description: CPU request and limit for the init container.
+            example: '""'
+            tags:
+            - template_section:AdmissionController
+          memory:
+            node_type: setting
+            type: string
+            default: ''
+            visibility: public
+            description: Memory request and limit for the init container.
+            example: '""'
+            tags:
+            - template_section:AdmissionController
+      socket_dir:
+        node_type: setting
+        type: string
+        default: /var/run/datadog
+  agent_sidecar:
+    node_type: section
+    type: object
+    properties:
+      cluster_agent:
+        node_type: section
+        type: object
+        properties:
+          enabled:
+            node_type: setting
+            type: string
+            default: 'true'
+          tls_verification:
+            node_type: section
+            type: object
+            properties:
+              copy_ca_configmap:
+                node_type: setting
+                type: boolean
+                default: false
+              enabled:
+                node_type: setting
+                type: boolean
+                default: false
+      container_registry:
+        node_type: setting
+        type: string
+        default: ''
+      enabled:
+        node_type: setting
+        type: boolean
+        default: false
+      endpoint:
+        node_type: setting
+        type: string
+        default: /agentsidecar
+      image_name:
+        node_type: setting
+        type: string
+        default: agent
+      image_tag:
+        node_type: setting
+        type: string
+        default: latest
+      kubelet_api_logging:
+        node_type: section
+        type: object
+        properties:
+          enabled:
+            node_type: setting
+            type: boolean
+            default: false
+      profiles:
+        node_type: setting
+        type: string
+        default: '[]'
+      provider:
+        node_type: setting
+        type: string
+        default: ''
+      selectors:
+        node_type: setting
+        type: string
+        default: '[]'
+  appsec:
+    node_type: section
+    type: object
+    properties:
+      nginx:
+        node_type: section
+        type: object
+        properties:
+          init_image:
+            node_type: setting
+            type: string
+            default: datadog/ingress-nginx-injection
+          module_mount_path:
+            node_type: setting
+            type: string
+            default: /modules_mount
+      sidecar:
+        node_type: section
+        type: object
+        properties:
+          body_parsing_size_limit:
+            node_type: setting
+            type: string
+            default: ''
+          health_port:
+            node_type: setting
+            type: number
+            default: 8081
+            tags:
+            - golang_type:int
+          image:
+            node_type: setting
+            type: string
+            default: ghcr.io/datadog/dd-trace-go/service-extensions-callout
+          image_tag:
+            node_type: setting
+            type: string
+            default: latest
+          port:
+            node_type: setting
+            type: number
+            default: 8080
+            tags:
+            - golang_type:int
+          resources:
+            node_type: section
+            type: object
+            properties:
+              limits:
+                node_type: section
+                type: object
+                properties:
+                  cpu:
+                    node_type: setting
+                    type: string
+                    default: ''
+                  memory:
+                    node_type: setting
+                    type: string
+                    default: ''
+              requests:
+                node_type: section
+                type: object
+                properties:
+                  cpu:
+                    node_type: setting
+                    type: string
+                    default: 10m
+                  memory:
+                    node_type: setting
+                    type: string
+                    default: 128Mi
+  container_registry:
+    node_type: setting
+    type: string
+    default: gcr.io/datadoghq
+  cws_instrumentation:
+    node_type: section
+    type: object
+    properties:
+      command_endpoint:
+        node_type: setting
+        type: string
+        default: /inject-command-cws
+      container_registry:
+        node_type: setting
+        type: string
+        default: ''
+      enabled:
+        node_type: setting
+        type: boolean
+        default: false
+      exclude:
+        node_type: setting
+        type: array
+        default: []
+        items:
+          type: string
+      image_name:
+        node_type: setting
+        type: string
+        default: cws-instrumentation
+      image_tag:
+        node_type: setting
+        type: string
+        default: latest
+      include:
+        node_type: setting
+        type: array
+        default: []
+        items:
+          type: string
+      init_resources:
+        node_type: section
+        type: object
+        properties:
+          cpu:
+            node_type: setting
+            type: string
+            default: ''
+          memory:
+            node_type: setting
+            type: string
+            default: ''
+      mode:
+        node_type: setting
+        type: string
+        default: remote_copy
+      mutate_unlabelled:
+        node_type: setting
+        type: boolean
+        default: false
+      pod_endpoint:
+        node_type: setting
+        type: string
+        default: /inject-pod-cws
+      remote_copy:
+        node_type: section
+        type: object
+        properties:
+          directory:
+            node_type: setting
+            type: string
+            default: /tmp
+          mount_volume:
+            node_type: setting
+            type: boolean
+            default: false
+      timeout:
+        node_type: setting
+        type: number
+        default: 2
+        tags:
+        - golang_type:int
+  kubernetes_admission_events:
+    node_type: section
+    type: object
+    properties:
+      enabled:
+        node_type: setting
+        type: boolean
+        default: false
+  probe:
+    node_type: section
+    type: object
+    properties:
+      enabled:
+        node_type: setting
+        type: boolean
+        default: false
+      grace_period:
+        node_type: setting
+        type: number
+        default: 60
+        tags:
+        - golang_type:int
+      interval:
+        node_type: setting
+        type: number
+        default: 60
+        tags:
+        - golang_type:int

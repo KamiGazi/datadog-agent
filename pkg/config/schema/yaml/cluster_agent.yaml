@@ -1,0 +1,354 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://raw.githubusercontent.com/DataDog/schema/main/agent/cluster_agent.yaml.schema.json
+node_type: section
+title: Cluster Agent Configuration
+type: object
+visibility: public
+description: |-
+  Settings for the Cluster Agent.
+  See https://docs.datadoghq.com/agent/cluster_agent/
+tags:
+- template_section:ClusterAgent
+properties:
+  enabled:
+    node_type: setting
+    type: boolean
+    default: false
+    visibility: public
+    description: Set to true to enable the Cluster Agent.
+    example: 'false'
+    tags:
+    - template_section:ClusterAgent
+  auth_token:
+    node_type: setting
+    type: string
+    default: ''
+    visibility: public
+    description: Auth token used to make requests to the Kubernetes API server.
+    example: '""'
+    tags:
+    - template_section:ClusterAgent
+  url:
+    node_type: setting
+    type: string
+    default: ''
+    visibility: public
+    description: The Cluster Agent endpoint. There's no need to set it if "kubernetes_service_name"
+      is set.
+    example: '""'
+    tags:
+    - template_section:ClusterAgent
+  kubernetes_service_name:
+    node_type: setting
+    type: string
+    default: datadog-cluster-agent
+    visibility: public
+    description: Name of the Kubernetes service for the Cluster Agent.
+    example: '"datadog-cluster-agent"'
+    tags:
+    - template_section:ClusterAgent
+  max_leader_connections:
+    node_type: setting
+    type: number
+    default: 100
+    visibility: public
+    description: Maximum number of connections between a follower and a leader.
+    example: '100'
+    tags:
+    - golang_type:int
+    - template_section:ClusterAgent
+  client_reconnect_period_seconds:
+    node_type: setting
+    type: number
+    default: 1200
+    visibility: public
+    description: |-
+      Set the refersh period for Agent to Cluster Agent connection (new connection is created, old connection is closed).
+      Set to 0 to disable periodic reconnection.
+    example: '1200'
+    tags:
+    - golang_type:int
+    - template_section:ClusterAgent
+  tagging_fallback:
+    node_type: setting
+    type: boolean
+    default: false
+    visibility: public
+    description: Set to true to enabled fallback to local metamapper when the connection
+      with the Cluster Agent fails.
+    example: 'false'
+    tags:
+    - template_section:ClusterAgent
+  server:
+    node_type: section
+    type: object
+    visibility: public
+    description: Sets the connection timeouts
+    tags:
+    - template_section:ClusterAgent
+    properties:
+      read_timeout_seconds:
+        node_type: setting
+        type: number
+        default: 2
+        visibility: public
+        description: Read timeout in seconds.
+        example: '2'
+        tags:
+        - golang_type:int
+        - template_section:ClusterAgent
+      write_timeout_seconds:
+        node_type: setting
+        type: number
+        default: 2
+        visibility: public
+        description: Write timeout in seconds.
+        example: '2'
+        tags:
+        - golang_type:int
+        - template_section:ClusterAgent
+      idle_timeout_seconds:
+        node_type: setting
+        type: number
+        default: 60
+        visibility: public
+        description: Idle timeout in seconds.
+        example: '60'
+        tags:
+        - golang_type:int
+        - template_section:ClusterAgent
+  tracing:
+    node_type: section
+    type: object
+    visibility: public
+    description: |-
+      APM tracing for the Cluster Agent. When enabled, traces internal operations for
+      improved debugging. Traces appear in APM with service name "datadog-cluster-agent".
+      Covers: cluster check dispatching and rebalancing decisions.
+      To view traces: APM -> Services -> datadog-cluster-agent -> Traces
+    tags:
+    - template_section:ClusterAgent
+    properties:
+      enabled:
+        node_type: setting
+        type: boolean
+        default: false
+        visibility: public
+        description: Enable APM tracing for the Cluster Agent.
+        example: 'false'
+        tags:
+        - template_section:ClusterAgent
+      env:
+        node_type: setting
+        type: string
+        default: ''
+        visibility: public
+        description: The environment tag to apply to all traces emitted by the Cluster
+          Agent.
+        example: '""'
+        tags:
+        - template_section:ClusterAgent
+      sample_rate:
+        node_type: setting
+        type: number
+        default: 0.1
+        visibility: public
+        description: |-
+          Sample rate for traces emitted by the Cluster Agent (0.0 to 1.0).
+          Default is 0.1 (10%) for safety. Set to 1.0 to trace all operations.
+        example: '0.1'
+        tags:
+        - golang_type:float64
+        - template_section:ClusterAgent
+  allow_legacy_tls:
+    node_type: setting
+    type: boolean
+    default: false
+  appsec:
+    node_type: section
+    type: object
+    properties:
+      injector:
+        node_type: section
+        type: object
+        properties:
+          annotations:
+            node_type: setting
+            type: object
+            default: {}
+            additionalProperties:
+              type: string
+          base_backoff:
+            node_type: setting
+            type: string
+            default: 5m
+          enabled:
+            node_type: setting
+            type: boolean
+            default: false
+          istio:
+            node_type: section
+            type: object
+            properties:
+              namespace:
+                node_type: setting
+                type: string
+                default: istio-system
+          labels:
+            node_type: setting
+            type: object
+            default: {}
+            additionalProperties:
+              type: string
+          max_backoff:
+            node_type: setting
+            type: string
+            default: 1h
+          mode:
+            node_type: setting
+            type: string
+            default: sidecar
+          processor:
+            node_type: section
+            type: object
+            properties:
+              service:
+                node_type: section
+                type: object
+                properties:
+                  name:
+                    node_type: setting
+                    type: string
+                    default: ''
+                  namespace:
+                    node_type: setting
+                    type: string
+                    default: ''
+  cluster_tagger:
+    node_type: section
+    type: object
+    properties:
+      grpc_max_message_size:
+        node_type: setting
+        type: number
+        default: 4194304
+        tags:
+        - golang_type:int
+  cmd_port:
+    node_type: setting
+    type: number
+    default: 5005
+    tags:
+    - golang_type:int
+  collect_kubernetes_tags:
+    node_type: setting
+    type: boolean
+    default: false
+  isolation_segments_tags:
+    node_type: setting
+    type: boolean
+    default: false
+  kube_metadata_collection:
+    node_type: section
+    type: object
+    properties:
+      enabled:
+        node_type: setting
+        type: boolean
+        default: false
+      resource_annotations_exclude:
+        node_type: setting
+        type: array
+        default: []
+        items:
+          type: string
+      resources:
+        node_type: setting
+        type: array
+        default: []
+        items:
+          type: string
+  kubernetes_resources_collection:
+    node_type: section
+    type: object
+    properties:
+      deployment_annotations_exclude:
+        node_type: setting
+        type: array
+        default:
+        - ^kubectl\.kubernetes\.io\/last-applied-configuration$
+        - ^ad\.datadoghq\.com\/([[:alnum:]]+\.)?(checks|check_names|init_configs|instances)$
+        items:
+          type: string
+      pod_annotations_exclude:
+        node_type: setting
+        type: array
+        default:
+        - ^kubectl\.kubernetes\.io\/last-applied-configuration$
+        - ^ad\.datadoghq\.com\/([[:alnum:]]+\.)?(checks|check_names|init_configs|instances)$
+        items:
+          type: string
+  language_detection:
+    node_type: section
+    type: object
+    properties:
+      cleanup:
+        node_type: section
+        type: object
+        properties:
+          language_ttl:
+            node_type: setting
+            type: string
+            default: 30m
+          period:
+            node_type: setting
+            type: string
+            default: 10m
+      patcher:
+        node_type: section
+        type: object
+        properties:
+          base_backoff:
+            node_type: setting
+            type: string
+            default: 5m
+          enabled:
+            node_type: setting
+            type: boolean
+            default: true
+          max_backoff:
+            node_type: setting
+            type: string
+            default: 1h
+  mcp:
+    node_type: section
+    type: object
+    properties:
+      enabled:
+        node_type: setting
+        type: boolean
+        default: false
+      endpoint:
+        node_type: setting
+        type: string
+        default: /mcp
+  refresh_on_cache_miss:
+    node_type: setting
+    type: boolean
+    default: true
+  serve_nozzle_data:
+    node_type: setting
+    type: boolean
+    default: false
+  service_account_name:
+    node_type: setting
+    type: string
+    default: ''
+  sidecars_tags:
+    node_type: setting
+    type: boolean
+    default: false
+  token_name:
+    node_type: setting
+    type: string
+    default: datadogtoken
