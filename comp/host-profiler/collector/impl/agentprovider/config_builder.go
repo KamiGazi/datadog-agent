@@ -46,7 +46,7 @@ func buildExporters(conf confMap, agent configManager) []any {
 	const (
 		profilesEndpointFormat = "https://intake.profile.%s/v1development/profiles"
 		metricsEndpointFormat  = "https://otlp.%s/v1/metrics"
-		otlpHTTPNameFormat     = "otlphttp/%s_%d"
+		otlpHTTPNameFormat     = "otlp_http/%s_%d"
 		debugExporterName      = "debug"
 	)
 

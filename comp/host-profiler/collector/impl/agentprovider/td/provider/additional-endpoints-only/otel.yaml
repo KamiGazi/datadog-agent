@@ -1,5 +1,5 @@
 exporters:
-    otlphttp/datadoghq.eu_0:
+    otlp_http/datadoghq.eu_0:
         compression: zstd
         headers:
             dd-api-key: eu_key_1
@@ -57,7 +57,7 @@ service:
     pipelines:
         metrics:
             exporters:
-                - otlphttp/datadoghq.eu_0
+                - otlp_http/datadoghq.eu_0
             processors:
                 - filter
                 - cumulativetodelta
@@ -67,7 +67,7 @@ service:
                 - prometheus
         profiles:
             exporters:
-                - otlphttp/datadoghq.eu_0
+                - otlp_http/datadoghq.eu_0
             processors:
                 - infraattributes/default
                 - resource/dd-profiler-internal-metadata

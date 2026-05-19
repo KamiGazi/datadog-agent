@@ -1,5 +1,5 @@
 exporters:
-    otlphttp/datadoghq.com_0:
+    otlp_http/datadoghq.com_0:
         compression: zstd
         headers:
             dd-api-key: test_api_key_123
@@ -7,7 +7,7 @@ exporters:
             dd-evp-origin-version: 7.0.0-test
         metrics_endpoint: https://otlp.datadoghq.com/v1/metrics
         profiles_endpoint: https://intake.profile.datadoghq.com/v1development/profiles
-    otlphttp/us3.datadoghq.com_0:
+    otlp_http/us3.datadoghq.com_0:
         compression: zstd
         headers:
             dd-api-key: us3_api_key
@@ -67,8 +67,8 @@ service:
     pipelines:
         metrics:
             exporters:
-                - otlphttp/us3.datadoghq.com_0
-                - otlphttp/datadoghq.com_0
+                - otlp_http/us3.datadoghq.com_0
+                - otlp_http/datadoghq.com_0
             processors:
                 - filter
                 - cumulativetodelta
@@ -78,8 +78,8 @@ service:
                 - prometheus
         profiles:
             exporters:
-                - otlphttp/us3.datadoghq.com_0
-                - otlphttp/datadoghq.com_0
+                - otlp_http/us3.datadoghq.com_0
+                - otlp_http/datadoghq.com_0
             processors:
                 - infraattributes/default
                 - resource/dd-profiler-internal-metadata

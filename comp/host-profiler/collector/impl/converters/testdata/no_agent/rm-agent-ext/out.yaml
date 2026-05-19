@@ -1,5 +1,5 @@
 exporters:
-    otlphttp:
+    otlp_http:
         compression: zstd
         endpoint: http://localhost:4318
         headers:
@@ -47,7 +47,7 @@ service:
             processors: []
         profiles:
             exporters:
-                - otlphttp
+                - otlp_http
             processors:
                 - batch
                 - resourcedetection/default
