@@ -159,12 +159,11 @@ def flavor_gotags(flavor_name):
         select() yielding the per-platform build-tag list for the flavor.
     """
     tags = FLAVOR_UNIT_TEST_TAGS[flavor_name]
-    non_linux_only = _without(tags, LINUX_ONLY_TAGS)
-    windows = _without(non_linux_only, WINDOWS_EXCLUDE_TAGS) + WINDOWS_INCLUDE_TAGS
-    darwin = _without(non_linux_only, DARWIN_EXCLUDE_TAGS)
-    return select({
-        "@platforms//os:linux": tags,
-        "@platforms//os:windows": windows,
-        "@platforms//os:macos": darwin,
-        "//conditions:default": non_linux_only,
-    })
+    return select(
+        {
+            "@platforms//os:linux": tags,
+            "@platforms//os:windows": _without(tags, LINUX_ONLY_TAGS + WINDOWS_EXCLUDE_TAGS) + WINDOWS_INCLUDE_TAGS,
+            "@platforms//os:macos": _without(tags, LINUX_ONLY_TAGS + DARWIN_EXCLUDE_TAGS),
+        },
+        no_match_error = "flavor_gotags: only linux/macos/windows are supported",
+    )
