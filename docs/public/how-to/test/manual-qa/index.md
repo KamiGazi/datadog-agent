@@ -2,7 +2,7 @@
 
 The E2E framework can provision real cloud infrastructure for manual QA without
 running automated tests. Environments stay alive until you explicitly destroy
-them, giving you direct access (SSH, kubectl, RDP) to inspect the agent in a
+them (or our cleaner destroys it, every week), giving you direct access (SSH, kubectl, RDP) to inspect the agent in a
 realistic environment.
 
 ## Prerequisites

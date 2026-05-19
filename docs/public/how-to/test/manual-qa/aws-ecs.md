@@ -50,7 +50,7 @@ aws-vault exec sso-agent-sandbox-account-admin -- aws ecs list-tasks --cluster <
 ## Destroy
 
 ```bash
-dda inv aws.destroy-ecs --stack-name=<name>
+dda inv aws.destroy-ecs
 ```
 
 ## Limitations

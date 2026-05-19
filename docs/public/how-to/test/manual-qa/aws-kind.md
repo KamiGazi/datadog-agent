@@ -58,7 +58,7 @@ kubectl get pods -n datadog
 ## Destroy
 
 ```bash
-dda inv aws.destroy-kind --stack-name=<name>
+dda inv aws.destroy-kind
 ```
 
 ## Limitations

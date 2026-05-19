@@ -41,7 +41,7 @@ as a container; use `docker ps` / `docker logs` once connected.
 ## Destroy
 
 ```bash
-dda inv aws.destroy-docker --stack-name=<name>
+dda inv aws.destroy-docker
 ```
 
 ## Limitations

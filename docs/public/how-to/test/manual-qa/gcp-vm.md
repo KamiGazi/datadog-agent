@@ -50,7 +50,7 @@ SSH connection details are printed after the instance is ready.
 ## Destroy
 
 ```bash
-dda inv gcp.destroy-vm --stack-name=<name>
+dda inv gcp.destroy-vm
 ```
 
 ## Limitations

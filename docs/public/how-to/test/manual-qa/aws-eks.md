@@ -67,7 +67,7 @@ kubectl get nodes
 ## Destroy
 
 ```bash
-dda inv aws.destroy-eks --stack-name=<name>
+dda inv aws.destroy-eks
 ```
 
 ## Limitations

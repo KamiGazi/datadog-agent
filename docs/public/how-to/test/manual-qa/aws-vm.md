@@ -9,8 +9,6 @@ scenario for testing agent behavior on a host.
 dda inv aws.create-vm
 ```
 
-The task prints SSH connection details when the instance is ready.
-
 ### Key options
 
 | Flag | Default | Description |
@@ -47,6 +45,8 @@ dda inv aws.create-vm --stack-name=test-b
 
 ## Connect
 
+The task prints SSH connection details when the instance is ready.
+
 ```bash
 # Print connection details again
 dda inv aws.show-vm --stack-name=<name>
@@ -62,7 +62,7 @@ dda inv aws.rdp-vm          --stack-name=<name>
 ## Destroy
 
 ```bash
-dda inv aws.destroy-vm --stack-name=<name>
+dda inv aws.destroy-vm [--stack-name=<name>]
 ```
 
 ## Limitations

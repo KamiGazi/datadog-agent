@@ -53,7 +53,7 @@ task outputs RDP connection information.
 ## Destroy
 
 ```bash
-dda inv az.destroy-vm --stack-name=<name>
+dda inv az.destroy-vm
 ```
 
 ## Limitations
