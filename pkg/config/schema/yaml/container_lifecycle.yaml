@@ -1,0 +1,122 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://raw.githubusercontent.com/DataDog/schema/main/agent/container_lifecycle.yaml.schema.json
+node_type: section
+type: object
+properties:
+  additional_endpoints:
+    node_type: setting
+    tags:
+    - TODO:fix-no-default
+    - TODO:fix-missing-type
+  batch_max_concurrent_send:
+    node_type: setting
+    type: number
+    default: 0
+    tags:
+    - golang_type:int
+  batch_max_content_size:
+    node_type: setting
+    type: number
+    default: 5000000
+    tags:
+    - golang_type:int
+  batch_max_size:
+    node_type: setting
+    type: number
+    default: 1000
+    tags:
+    - golang_type:int
+  batch_wait:
+    node_type: setting
+    type: number
+    default: 5
+    tags:
+    - golang_type:float64
+  compression_kind:
+    node_type: setting
+    type: string
+    default: zstd
+  compression_level:
+    node_type: setting
+    type: number
+    default: 6
+    tags:
+    - golang_type:int
+  connection_reset_interval:
+    node_type: setting
+    type: number
+    default: 0
+    tags:
+    - golang_type:int
+  dd_url:
+    node_type: setting
+    tags:
+    - TODO:fix-no-default
+    - TODO:fix-missing-type
+  dev_mode_no_ssl:
+    node_type: setting
+    type: boolean
+    default: false
+    tags:
+    - no-env
+  enabled:
+    node_type: setting
+    type: boolean
+    default: true
+  input_chan_size:
+    node_type: setting
+    type: number
+    default: 100
+    tags:
+    - golang_type:int
+  logs_dd_url:
+    node_type: setting
+    tags:
+    - TODO:fix-no-default
+    - TODO:fix-missing-type
+  logs_no_ssl:
+    node_type: setting
+    type: boolean
+    default: false
+  sender_backoff_base:
+    node_type: setting
+    type: number
+    default: 1
+    tags:
+    - golang_type:float64
+  sender_backoff_factor:
+    node_type: setting
+    type: number
+    default: 2
+    tags:
+    - golang_type:float64
+  sender_backoff_max:
+    node_type: setting
+    type: number
+    default: 120
+    tags:
+    - golang_type:float64
+  sender_recovery_interval:
+    node_type: setting
+    type: number
+    default: 2
+    tags:
+    - golang_type:int
+  sender_recovery_reset:
+    node_type: setting
+    type: boolean
+    default: false
+  use_compression:
+    node_type: setting
+    type: boolean
+    default: true
+  use_v2_api:
+    node_type: setting
+    type: boolean
+    default: true
+  zstd_compression_level:
+    node_type: setting
+    type: number
+    default: 1
+    tags:
+    - golang_type:int

@@ -1,0 +1,121 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://raw.githubusercontent.com/DataDog/schema/main/agent/external_metrics_provider.yaml.schema.json
+node_type: section
+type: object
+properties:
+  api_key:
+    node_type: setting
+    type: string
+    default: ''
+  app_key:
+    node_type: setting
+    type: string
+    default: ''
+  batch_window:
+    node_type: setting
+    type: number
+    default: 10
+    tags:
+    - golang_type:int
+  bucket_size:
+    node_type: setting
+    type: number
+    default: 300
+    tags:
+    - golang_type:int
+  chunk_size:
+    node_type: setting
+    type: number
+    default: 35
+    tags:
+    - golang_type:int
+  config:
+    node_type: setting
+    type: object
+    default: {}
+    additionalProperties:
+      type: string
+  enable_datadogmetric_autogen:
+    node_type: setting
+    type: boolean
+    default: true
+  enabled:
+    node_type: setting
+    type: boolean
+    default: false
+  endpoint:
+    node_type: setting
+    type: string
+    default: ''
+  endpoints:
+    node_type: setting
+    type: array
+    default: []
+    tags:
+    - no-env
+  local_copy_refresh_rate:
+    node_type: setting
+    type: number
+    default: 30
+    tags:
+    - golang_type:int
+  max_age:
+    node_type: setting
+    type: number
+    default: 120
+    tags:
+    - golang_type:int
+  max_parallel_queries:
+    node_type: setting
+    type: number
+    default: 10
+    tags:
+    - golang_type:int
+  max_time_window:
+    node_type: setting
+    type: number
+    default: 86400
+    tags:
+    - golang_type:int
+  num_workers:
+    node_type: setting
+    type: number
+    default: 2
+    tags:
+    - golang_type:int
+  port:
+    node_type: setting
+    type: number
+    default: 8443
+    tags:
+    - golang_type:int
+  query_validity_period:
+    node_type: setting
+    type: number
+    default: 30
+    tags:
+    - golang_type:int
+  refresh_period:
+    node_type: setting
+    type: number
+    default: 30
+    tags:
+    - golang_type:int
+  rollup:
+    node_type: setting
+    type: number
+    default: 30
+    tags:
+    - golang_type:int
+  split_batches_with_backoff:
+    node_type: setting
+    type: boolean
+    default: false
+  use_datadogmetric_crd:
+    node_type: setting
+    type: boolean
+    default: false
+  wpa_controller:
+    node_type: setting
+    type: boolean
+    default: false

@@ -1,0 +1,770 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://raw.githubusercontent.com/DataDog/schema/main/agent/logs_config.yaml.schema.json
+node_type: section
+type: object
+visibility: public
+description: |-
+  Enter specific configurations for your Log collection.
+  Uncomment this parameter and the one below to enable them.
+  See https://docs.datadoghq.com/agent/logs/
+tags:
+- template_section:LogsAgent
+properties:
+  container_collect_all:
+    node_type: setting
+    type: boolean
+    default: false
+    visibility: public
+    description: Enable container log collection for all the containers (see ac_exclude
+      to filter out containers)
+    example: 'false'
+    tags:
+    - template_section:LogsAgent
+  use_container_timestamp:
+    node_type: setting
+    type: boolean
+    default: false
+    visibility: public
+    description: |-
+      Use the `time` field from container log files (when available) as the log timestamp instead of ingestion time.
+
+      This affects logs collected from container runtimes that provide per-log-line timestamps (for example Docker JSON logs).
+    example: 'false'
+    tags:
+    - template_section:LogsAgent
+  logs_dd_url:
+    node_type: setting
+    visibility: public
+    description: |-
+      Define the endpoint and port to hit when using a proxy for logs.
+      As of agent version 7.70.0, proxy paths are supported. To forward logs to a
+      specific proxy path, the URL scheme must be specified: https://proxy.example.com:443/logs
+    example: <ENDPOINT>:<PORT>
+    tags:
+    - TODO:fix-no-default
+    - TODO:fix-missing-type
+    - template_section:LogsAgent
+  logs_no_ssl:
+    node_type: setting
+    type: boolean
+    default: false
+    visibility: public
+    description: |-
+      Disable the SSL encryption. This parameter should only be used when logs are
+      forwarded locally to a proxy. It is highly recommended to then handle the SSL encryption
+      on the proxy side.
+    example: 'false'
+    tags:
+    - template_section:LogsAgent
+  processing_rules:
+    node_type: setting
+    visibility: public
+    description: |-
+      Global processing rules that are applied to all logs. The available rules are
+      "exclude_at_match", "include_at_match" and "mask_sequences". More information in Datadog documentation:
+      https://docs.datadoghq.com/agent/logs/advanced_log_collection/#global-processing-rules
+    example: |2-
+
+        - type: <RULE_TYPE>
+          name: <RULE_NAME>
+          pattern: <RULE_PATTERN>
+    tags:
+    - TODO:fix-no-default
+    - TODO:fix-missing-type
+    - template_section:LogsAgent
+  auto_multi_line_detection:
+    node_type: setting
+    type: boolean
+    default: false
+    visibility: public
+    description: |-
+      Enable automatic aggregation of multi-line logs for common log patterns.
+      More information can be found in Datadog documentation:
+      https://docs.datadoghq.com/agent/logs/auto_multiline_detection/?tab=configurationfile
+    example: 'true'
+    tags:
+    - template_section:LogsAgent
+  force_use_http:
+    node_type: setting
+    type: boolean
+    default: false
+    visibility: public
+    description: |-
+      Set this parameter to `true` to always send logs via HTTP(S) protocol and never fall back to
+      raw TCP forwarding (recommended).
+
+      By default, the Agent sends logs in HTTPS batches if HTTPS connectivity can
+      be established at Agent startup, and falls back to TCP otherwise. This parameter
+      can be used to override this fallback behavior. It is recommended, but not the default, to
+      maintain compatibility with previous Agent versions.
+
+      Note, the logs are forwarded via HTTPS (encrypted) by default. Please use `logs_no_ssl` if you
+      need unencrypted HTTP instead.
+    example: 'true'
+    tags:
+    - template_section:LogsAgent
+  http_protocol:
+    node_type: setting
+    type: string
+    default: auto
+    visibility: public
+    description: The transport type to use for sending logs. Possible values are "auto"
+      or "http1".
+    example: '"auto"'
+    tags:
+    - template_section:LogsAgent
+  http_timeout:
+    node_type: setting
+    type: number
+    default: 10
+    visibility: public
+    description: The HTTP timeout to use for sending logs, in seconds.
+    example: '10'
+    tags:
+    - golang_type:int
+    - template_section:LogsAgent
+  force_use_tcp:
+    node_type: setting
+    type: boolean
+    default: false
+    visibility: public
+    description: |-
+      By default, logs are sent via HTTP protocol if possible, set this parameter
+      to `true` to always send logs via TCP. If `force_use_http` is set to `true`, this parameter
+      is ignored.
+    example: 'true'
+    tags:
+    - template_section:LogsAgent
+  use_compression:
+    node_type: setting
+    type: boolean
+    default: true
+    visibility: public
+    description: |-
+      This parameter is available when sending logs via HTTP protocol. If enabled, the Agent
+      compresses logs before sending them.
+    example: 'true'
+    tags:
+    - template_section:LogsAgent
+  compression_level:
+    node_type: setting
+    type: number
+    default: 6
+    visibility: public
+    description: |-
+      The compression_level parameter accepts values from 0 (no compression)
+      to 9 (maximum compression but higher resource usage). Only takes effect if
+      `use_compression` is set to `true`.
+    example: '6'
+    tags:
+    - golang_type:int
+    - template_section:LogsAgent
+  batch_wait:
+    node_type: setting
+    type: number
+    default: 5
+    visibility: public
+    description: The maximum time (in seconds) the Datadog Agent waits to fill each
+      batch of logs before sending.
+    example: '5'
+    tags:
+    - golang_type:float64
+    - template_section:LogsAgent
+  close_timeout:
+    node_type: setting
+    type: number
+    default: 60
+    visibility: public
+    description: The maximum number of seconds the Agent spends reading from a file
+      after it has been rotated.
+    example: '60'
+    tags:
+    - golang_type:int
+    - template_section:LogsAgent
+  open_files_limit:
+    node_type: setting
+    type: number
+    visibility: public
+    description: |-
+      The maximum number of files that can be tailed in parallel.
+      Note: the default for Mac OS is 200. The default for
+      all other systems is 500.
+    tags:
+    - golang_type:int
+    - template_section:LogsAgent
+    platform_default:
+      darwin: 200
+      other: 500
+  file_wildcard_selection_mode:
+    node_type: setting
+    type: string
+    default: by_name
+    visibility: public
+    description: |-
+      The strategy used to prioritize wildcard matches if they exceed the open file limit.
+
+      Choices are `by_name` and `by_modification_time`.
+
+      `by_name` means that each log source is considered and the matching files are ordered
+      in reverse name order. While there are less than `logs_config.open_files_limit` files
+      being tailed, this process repeats, collecting from each configured source.
+
+      `by_modification_time` takes all log sources and first adds any log sources that
+      point to a specific file. Next, it finds matches for all wildcard sources.
+      This resulting list is ordered by which files have been most recently modified
+      and the top `logs_config.open_files_limit` most recently modified files are
+      chosen for tailing.
+
+      WARNING: `by_modification_time` is less performant than `by_name` and will trigger
+      more disk I/O at the configured wildcard log paths.
+    example: '"by_name"'
+    tags:
+    - template_section:LogsAgent
+  max_message_size_bytes:
+    node_type: setting
+    type: number
+    default: 900000
+    visibility: public
+    description: |-
+      The maximum size of single log message in bytes. Lines that are longer
+      than this limit are split into multiple line where each long line that is
+      split has `...TRUNCATED...` added as a suffix and each line that was created
+      from a split of a previous line has `...TRUNCATED...` added as a prefix.
+
+      Note: Datadog's ingest API truncates any logs greater than 1 MB by discarding the
+      remainder. See https://docs.datadoghq.com/api/latest/logs/ for details.
+    example: '900000'
+    tags:
+    - golang_type:int
+    - template_section:LogsAgent
+  integrations_logs_files_max_size:
+    node_type: setting
+    type: number
+    default: 100
+    visibility: public
+    description: The max size in MB that an integration logs file is allowed to use
+    example: '100'
+    tags:
+    - golang_type:int
+    - template_section:LogsAgent
+  integrations_logs_total_usage:
+    node_type: setting
+    type: number
+    default: 100
+    visibility: public
+    description: The total combined usage all integrations logs files can use
+    example: '100'
+    tags:
+    - golang_type:int
+    - template_section:LogsAgent
+  k8s_container_use_kubelet_api:
+    node_type: setting
+    type: boolean
+    default: false
+    visibility: public
+    description: Enable container log collection via the kubelet API, typically used
+      for EKS Fargate
+    example: 'false'
+    tags:
+    - template_section:LogsAgent
+  streaming:
+    node_type: section
+    type: object
+    visibility: public
+    description: This section allows you to configure streaming logs via remote config.
+    tags:
+    - template_section:LogsAgent
+    properties:
+      streamlogs_log_file:
+        node_type: setting
+        type: string
+        default: ${log_path}/streamlogs_info/streamlogs.log
+        visibility: public
+        description: |-
+          Path to the file containing the streamlogs log file.
+          Default paths:
+            * Windows: c:\\programdata\\datadog\\logs\\streamlogs_info\\streamlogs.log
+            * Darwin: /opt/datadog-agent/logs/streamlogs_info/streamlogs.log
+            * Linux: /var/log/datadog/streamlogs_info/streamlogs.log
+        tags:
+        - template_section:LogsAgent
+  add_logsource_tag:
+    node_type: setting
+    type: boolean
+    default: false
+  additional_endpoints:
+    node_type: setting
+    tags:
+    - TODO:fix-no-default
+    - TODO:fix-missing-type
+  aggregation_timeout:
+    node_type: setting
+    type: number
+    default: 1000
+    tags:
+    - golang_type:int
+  api_key:
+    node_type: setting
+    tags:
+    - TODO:fix-no-default
+    - TODO:fix-missing-type
+  atomic_registry_write:
+    node_type: setting
+    type: boolean
+    default: true
+  auditor_ttl:
+    node_type: setting
+    type: number
+    default: 23
+    tags:
+    - golang_type:int
+  auto_multi_line:
+    node_type: section
+    type: object
+    properties:
+      enable_datetime_detection:
+        node_type: setting
+        type: boolean
+        default: true
+      enable_json_aggregation:
+        node_type: setting
+        type: boolean
+        default: true
+      enable_json_detection:
+        node_type: setting
+        type: boolean
+        default: true
+      pattern_table_match_threshold:
+        node_type: setting
+        type: number
+        default: 0.75
+        tags:
+        - golang_type:float64
+      pattern_table_max_size:
+        node_type: setting
+        type: number
+        default: 20
+        tags:
+        - golang_type:int
+      tag_aggregated_json:
+        node_type: setting
+        type: boolean
+        default: false
+      timestamp_detector_match_threshold:
+        node_type: setting
+        type: number
+        default: 0.5
+        tags:
+        - golang_type:float64
+      tokenizer_max_input_bytes:
+        node_type: setting
+        type: number
+        default: 60
+        tags:
+        - golang_type:int
+  auto_multi_line_default_match_threshold:
+    node_type: setting
+    type: number
+    default: 0.48
+    tags:
+    - golang_type:float64
+  auto_multi_line_default_match_timeout:
+    node_type: setting
+    type: number
+    default: 30
+    tags:
+    - golang_type:int
+  auto_multi_line_default_sample_size:
+    node_type: setting
+    type: number
+    default: 500
+    tags:
+    - golang_type:int
+  auto_multi_line_detection_custom_samples:
+    node_type: setting
+    type: array
+    default: []
+    items:
+      type: object
+  auto_multi_line_detection_tagging:
+    node_type: setting
+    type: boolean
+    default: true
+  auto_multi_line_extra_patterns:
+    node_type: setting
+    type: array
+    default: []
+    items:
+      type: string
+  batch_max_concurrent_send:
+    node_type: setting
+    type: number
+    default: 0
+    tags:
+    - golang_type:int
+  batch_max_content_size:
+    node_type: setting
+    type: number
+    default: 5000000
+    tags:
+    - golang_type:int
+  batch_max_size:
+    node_type: setting
+    type: number
+    default: 1000
+    tags:
+    - golang_type:int
+  compression_kind:
+    node_type: setting
+    type: string
+    default: zstd
+  connection_reset_interval:
+    node_type: setting
+    type: number
+    default: 0
+    tags:
+    - golang_type:int
+  container_runtime_waiting_timeout:
+    node_type: setting
+    type: string
+    default: 3s
+  dd_port:
+    node_type: setting
+    type: number
+    default: 10516
+    tags:
+    - golang_type:int
+  dd_url:
+    node_type: setting
+    tags:
+    - TODO:fix-no-default
+    - TODO:fix-missing-type
+  dd_url_443:
+    node_type: setting
+    type: string
+    default: agent-443-intake.logs.datadoghq.com
+  delegated_auth:
+    node_type: section
+    type: object
+    properties:
+      aws:
+        node_type: section
+        type: object
+        properties:
+          region:
+            node_type: setting
+            type: string
+            default: ''
+      org_uuid:
+        node_type: setting
+        type: string
+        default: ''
+      provider:
+        node_type: setting
+        type: string
+        default: ''
+      refresh_interval_mins:
+        node_type: setting
+        type: number
+        default: 60
+        tags:
+        - golang_type:int
+  dev_mode_no_ssl:
+    node_type: setting
+    type: boolean
+    default: false
+    tags:
+    - no-env
+  dev_mode_use_proto:
+    node_type: setting
+    type: boolean
+    default: true
+  disable_distributed_senders:
+    node_type: setting
+    type: boolean
+    default: false
+  docker_client_read_timeout:
+    node_type: setting
+    type: number
+    default: 30
+    tags:
+    - golang_type:int
+  docker_container_force_use_file:
+    node_type: setting
+    type: boolean
+    default: false
+  docker_container_use_file:
+    node_type: setting
+    type: boolean
+    default: true
+  docker_path_override:
+    node_type: setting
+    type: string
+    default: ''
+  enable_recursive_glob:
+    node_type: setting
+    type: boolean
+    default: false
+  expected_tags_duration:
+    node_type: setting
+    type: number
+    default: 0s
+    format: duration
+    tags:
+    - golang_type:duration
+  experimental_adaptive_sampling:
+    node_type: section
+    type: object
+    properties:
+      burst_size:
+        node_type: setting
+        type: number
+        default: 1000
+        tags:
+        - golang_type:float64
+      enabled:
+        node_type: setting
+        type: boolean
+        default: false
+      exclude:
+        node_type: setting
+        type: array
+        default: []
+        items:
+          type: object
+      include:
+        node_type: setting
+        type: array
+        default: []
+        items:
+          type: object
+      match_threshold:
+        node_type: setting
+        type: number
+        default: 0.9
+        tags:
+        - golang_type:float64
+      max_patterns:
+        node_type: setting
+        type: number
+        default: 1000
+        tags:
+        - golang_type:int
+      protect_important_logs:
+        node_type: setting
+        type: boolean
+        default: true
+      rate_limit:
+        node_type: setting
+        type: number
+        default: 1
+        tags:
+        - golang_type:float64
+      tokenizer_max_input_bytes:
+        node_type: setting
+        type: number
+        default: 2048
+        tags:
+        - golang_type:int
+  experimental_auto_multi_line_detection:
+    node_type: setting
+    type: boolean
+    default: false
+  file_scan_period:
+    node_type: setting
+    type: number
+    default: 1
+    tags:
+    - golang_type:float64
+  fingerprint_config:
+    node_type: section
+    type: object
+    properties:
+      count:
+        node_type: setting
+        type: number
+        default: 0
+        tags:
+        - golang_type:int
+      count_to_skip:
+        node_type: setting
+        type: number
+        default: 0
+        tags:
+        - golang_type:int
+      fingerprint_strategy:
+        node_type: setting
+        type: string
+        default: disabled
+      max_bytes:
+        node_type: setting
+        type: number
+        default: 100000
+        tags:
+        - golang_type:int
+  force_auto_multi_line_detection_v1:
+    node_type: setting
+    type: boolean
+    default: false
+  frame_size:
+    node_type: setting
+    type: number
+    default: 9000
+    tags:
+    - golang_type:int
+  http_connectivity_retry_interval_max:
+    node_type: setting
+    type: string
+    default: 1h
+  input_chan_size:
+    node_type: setting
+    type: number
+    default: 100
+    tags:
+    - golang_type:int
+  integrations_logs_disk_ratio:
+    node_type: setting
+    type: number
+    default: 0.8
+    tags:
+    - golang_type:float64
+  k8s_container_use_file:
+    node_type: setting
+    type: boolean
+    default: false
+  kubelet_api_client_read_timeout:
+    node_type: setting
+    type: string
+    default: 30s
+  message_channel_size:
+    node_type: setting
+    type: number
+    default: 100
+    tags:
+    - golang_type:int
+  payload_channel_size:
+    node_type: setting
+    type: number
+    default: 10
+    tags:
+    - golang_type:int
+  pipeline_failover:
+    node_type: section
+    type: object
+    properties:
+      enabled:
+        node_type: setting
+        type: boolean
+        default: false
+      router_channel_size:
+        node_type: setting
+        type: number
+        default: 5
+        tags:
+        - golang_type:int
+  pipelines:
+    node_type: setting
+    type: number
+    default: 4
+    tags:
+    - golang_type:int
+  process_exclude_agent:
+    node_type: setting
+    type: boolean
+    default: false
+  run_path:
+    node_type: setting
+    type: string
+    default: ${run_path}
+  sender_backoff_base:
+    node_type: setting
+    type: number
+    default: 1
+    tags:
+    - golang_type:float64
+  sender_backoff_factor:
+    node_type: setting
+    type: number
+    default: 2
+    tags:
+    - golang_type:float64
+  sender_backoff_max:
+    node_type: setting
+    type: number
+    default: 120
+    tags:
+    - golang_type:float64
+  sender_recovery_interval:
+    node_type: setting
+    type: number
+    default: 2
+    tags:
+    - golang_type:int
+  sender_recovery_reset:
+    node_type: setting
+    type: boolean
+    default: false
+  socks5_proxy_address:
+    node_type: setting
+    type: string
+    default: ''
+  stop_grace_period:
+    node_type: setting
+    type: number
+    default: 30
+    tags:
+    - golang_type:int
+  tag_multi_line_logs:
+    node_type: setting
+    type: boolean
+    default: true
+  tag_truncated_logs:
+    node_type: setting
+    type: boolean
+    default: true
+  tagger_warmup_duration:
+    node_type: setting
+    type: number
+    default: 0
+    tags:
+    - golang_type:int
+  use_http:
+    node_type: setting
+    type: boolean
+    default: false
+  use_podman_logs:
+    node_type: setting
+    type: boolean
+    default: false
+  use_port_443:
+    node_type: setting
+    type: boolean
+    default: false
+  use_sourcehost_tag:
+    node_type: setting
+    type: boolean
+    default: true
+  use_tcp:
+    node_type: setting
+    type: boolean
+    default: false
+  use_v2_api:
+    node_type: setting
+    type: boolean
+    default: true
+  validate_pod_container_id:
+    node_type: setting
+    type: boolean
+    default: true
+  windows_open_file_timeout:
+    node_type: setting
+    type: number
+    default: 5
+    tags:
+    - golang_type:int
+  zstd_compression_level:
+    node_type: setting
+    type: number
+    default: 1
+    tags:
+    - golang_type:int

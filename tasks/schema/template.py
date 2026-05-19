@@ -5,7 +5,6 @@ Config template generation tasks.
 import os
 import textwrap
 
-import yaml
 from invoke import task
 from invoke.exceptions import Exit
 
@@ -389,8 +388,9 @@ def _render(build_type, os_target, previous_path, name, node, indent_level):
 
 
 def generate_template(schema_file, dest, build_type, os_target):
-    with open(schema_file) as f:
-        schema = yaml.safe_load(f)
+    from tasks.schema.merge_schema import resolve_schema
+
+    schema = resolve_schema(schema_file)
 
     config_template = ""
     child_nodes = _filter_hidden_nodes(schema.get("properties", {}), os_target)
