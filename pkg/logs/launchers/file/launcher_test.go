@@ -1695,7 +1695,7 @@ func TestLauncher_IgnoreOlder_ReplaceSourceOnStaleFile(t *testing.T) {
 	testDir := t.TempDir()
 	now := time.Now()
 
-	filePath := fmt.Sprintf("%s/app.log", testDir)
+	filePath := testDir + "/app.log"
 	f, err := os.Create(filePath)
 	assert.NoError(t, err)
 	f.Close()
