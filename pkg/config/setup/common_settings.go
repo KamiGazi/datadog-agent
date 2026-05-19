@@ -2007,6 +2007,12 @@ func vector(config pkgconfigmodel.Setup) {
 func bindVectorOptions(config pkgconfigmodel.Setup, datatype string) {
 	config.BindEnvAndSetDefault(fmt.Sprintf("observability_pipelines_worker.%s.enabled", datatype), false)
 	config.BindEnvAndSetDefault(fmt.Sprintf("observability_pipelines_worker.%s.url", datatype), "")
+	// dual_ship controls whether logs are sent to BOTH Datadog and OPW simultaneously.
+	// When false (default), OPW replaces the primary Datadog endpoint (legacy behaviour).
+	// When true, Datadog remains the primary endpoint and OPW is added as an additional
+	// reliable endpoint — equivalent to the user manually composing additional_endpoints
+	// with the OPW URL.
+	config.BindEnvAndSetDefault(fmt.Sprintf("observability_pipelines_worker.%s.dual_ship", datatype), false)
 
 	config.BindEnvAndSetDefault(fmt.Sprintf("vector.%s.enabled", datatype), false)
 	config.BindEnvAndSetDefault(fmt.Sprintf("vector.%s.url", datatype), "")
