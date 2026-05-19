@@ -1,19 +1,12 @@
 # Flavor unit-test tag sets for the Datadog Agent, mirroring tasks/build_tags.py.
 #
-# FLAVOR_UNIT_TEST_TAGS maps each AgentFlavor name to the tag set used when
-# running unit tests for that flavor:
+# Use flavor_gotags(flavor_name) to get a gotags-ready value for a go_test
+# rule; it handles the platform-specific select() automatically.
 #
-#   build_tags[flavor]["unit-tests"].union(COMMON_TAGS)
-#
-# Use flavor_gotags(flavor_name) to get a gotags-ready value for a go_test rule.
-# It handles the platform-specific select() automatically.
-#
-# To verify this file is in sync with tasks/build_tags.py:
+# To verify this file stays in sync with tasks/build_tags.py:
 #   bazel test //bazel/flavors:verify_flavor_tags
 
-# LINUX_ONLY_TAGS mirrors LINUX_ONLY_TAGS from tasks/build_tags.py.
-# dda inv test never passes these tags on non-Linux platforms.
-# Prefer flavor_gotags() over consulting this list directly.
+# Tags compute_build_tags_for_flavor() drops on non-Linux platforms.
 LINUX_ONLY_TAGS = [
     "crio",
     "jetson",
@@ -26,23 +19,29 @@ LINUX_ONLY_TAGS = [
     "trivy",
 ]
 
-# Tags compute_build_tags_for_flavor() adds when targeting Windows.
-# Mirrors `if platform == "win32": include.union([...])` in tasks/build_tags.py.
+# Tags added on top of a flavor's set when targeting Windows.
 WINDOWS_INCLUDE_TAGS = ["wmi"]
 
-# Tags compute_build_tags_for_flavor() drops when targeting Windows.
-# Mirrors WINDOWS_EXCLUDE_TAGS in tasks/build_tags.py.
+# Tags dropped from a flavor's set when targeting Windows.
 WINDOWS_EXCLUDE_TAGS = ["requirefips"]
 
-# Tags compute_build_tags_for_flavor() drops when targeting macOS.
-# Mirrors DARWIN_EXCLUDED_TAGS in tasks/build_tags.py.
+# Tags dropped from a flavor's set when targeting macOS.
 DARWIN_EXCLUDE_TAGS = ["containerd", "cri", "docker"]
 
-# FLAVOR_UNIT_TEST_TAGS maps each AgentFlavor name to its unit-test tag set.
-# Each list includes COMMON_TAGS and the "test" tag.
-# Tags from UNIT_TEST_EXCLUDE_TAGS (datadog.no_waf, pcap) are absent.
-# Tags are sorted alphabetically.
-FLAVOR_UNIT_TEST_TAGS = {
+# Tags added unconditionally to every flavor's tag set.
+COMMON_TAGS = [
+    "grpcnotrace",
+    "no_dynamic_plugins",
+    "retrynotrace",
+    "trivy_no_javadb",
+]
+
+# Tag added on top of a flavor's set when running unit tests.
+UNIT_TEST_TAGS = ["test"]
+
+# Per-flavor tags, with COMMON_TAGS and UNIT_TEST_TAGS factored out (composed
+# back below). Keep each list sorted alphabetically.
+_FLAVOR_SPECIFIC_TAGS = {
     "base": [
         "cel",
         "clusterchecks",
@@ -54,27 +53,22 @@ FLAVOR_UNIT_TEST_TAGS = {
         "ec2",
         "etcd",
         "fargateprocess",
-        "grpcnotrace",
         "jetson",
         "jmx",
         "kubeapiserver",
         "kubelet",
         "ncm",
         "netcgo",
-        "no_dynamic_plugins",
         "nvml",
         "oracle",
         "orchestrator",
         "otlp",
         "podman",
         "python",
-        "retrynotrace",
         "sharedlibrarycheck",
         "systemd",
         "systemprobechecks",
-        "test",
         "trivy",
-        "trivy_no_javadb",
         "zk",
         "zlib",
         "zstd",
@@ -90,14 +84,12 @@ FLAVOR_UNIT_TEST_TAGS = {
         "etcd",
         "fargateprocess",
         "goexperiment.systemcrypto",
-        "grpcnotrace",
         "jetson",
         "jmx",
         "kubeapiserver",
         "kubelet",
         "ncm",
         "netcgo",
-        "no_dynamic_plugins",
         "nvml",
         "oracle",
         "orchestrator",
@@ -105,13 +97,10 @@ FLAVOR_UNIT_TEST_TAGS = {
         "podman",
         "python",
         "requirefips",
-        "retrynotrace",
         "sharedlibrarycheck",
         "systemd",
         "systemprobechecks",
-        "test",
         "trivy",
-        "trivy_no_javadb",
         "zk",
         "zlib",
         "zstd",
@@ -120,61 +109,45 @@ FLAVOR_UNIT_TEST_TAGS = {
         "bundle_installer",
         "consul",
         "etcd",
-        "grpcnotrace",
         "jmx",
         "ncm",
         "netcgo",
-        "no_dynamic_plugins",
         "otlp",
         "python",
-        "retrynotrace",
         "sharedlibrarycheck",
         "systemprobechecks",
-        "test",
-        "trivy_no_javadb",
         "zk",
         "zlib",
         "zstd",
     ],
     "iot": [
-        "grpcnotrace",
         "jetson",
-        "no_dynamic_plugins",
-        "retrynotrace",
         "systemd",
-        "test",
-        "trivy_no_javadb",
         "zlib",
         "zstd",
     ],
     "dogstatsd": [
         "containerd",
         "docker",
-        "grpcnotrace",
         "kubelet",
-        "no_dynamic_plugins",
         "podman",
-        "retrynotrace",
-        "test",
-        "trivy_no_javadb",
         "zlib",
         "zstd",
     ],
 }
 
+FLAVOR_UNIT_TEST_TAGS = {
+    flavor: _FLAVOR_SPECIFIC_TAGS[flavor] + COMMON_TAGS + UNIT_TEST_TAGS
+    for flavor in _FLAVOR_SPECIFIC_TAGS
+}
+
 def flavor_gotags(flavor_name):
-    """Returns the gotags value for a go_test rule for the given flavor.
+    """Returns the platform-aware gotags select() for a go_test rule.
 
-    Each platform branch matches what compute_build_tags_for_flavor() in
-    tasks/build_tags.py produces for that platform: LINUX_ONLY_TAGS are
-    dropped off-Linux, Windows additionally adds WINDOWS_INCLUDE_TAGS and
-    drops WINDOWS_EXCLUDE_TAGS, macOS drops DARWIN_EXCLUDE_TAGS.
-
-    Args:
-        flavor_name: the flavor name, must be a key of FLAVOR_UNIT_TEST_TAGS.
-
-    Returns:
-        A select() yielding the per-platform build-tag list for the flavor.
+    Mirrors compute_build_tags_for_flavor() in tasks/build_tags.py:
+    LINUX_ONLY_TAGS are dropped off-Linux, Windows additionally adds
+    WINDOWS_INCLUDE_TAGS and drops WINDOWS_EXCLUDE_TAGS, macOS drops
+    DARWIN_EXCLUDE_TAGS.
     """
     tags = FLAVOR_UNIT_TEST_TAGS[flavor_name]
     non_linux_only = [t for t in tags if t not in LINUX_ONLY_TAGS]
