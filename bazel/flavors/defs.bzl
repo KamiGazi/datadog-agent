@@ -141,6 +141,9 @@ FLAVOR_UNIT_TEST_TAGS = {
     for flavor in _FLAVOR_SPECIFIC_TAGS
 }
 
+def _without(tags, excluded):
+    return [t for t in tags if t not in excluded]
+
 def flavor_gotags(flavor_name):
     """Returns the platform-aware gotags select() for a go_test rule.
 
@@ -156,9 +159,9 @@ def flavor_gotags(flavor_name):
         select() yielding the per-platform build-tag list for the flavor.
     """
     tags = FLAVOR_UNIT_TEST_TAGS[flavor_name]
-    non_linux_only = [t for t in tags if t not in LINUX_ONLY_TAGS]
-    windows = [t for t in non_linux_only if t not in WINDOWS_EXCLUDE_TAGS] + WINDOWS_INCLUDE_TAGS
-    darwin = [t for t in non_linux_only if t not in DARWIN_EXCLUDE_TAGS]
+    non_linux_only = _without(tags, LINUX_ONLY_TAGS)
+    windows = _without(non_linux_only, WINDOWS_EXCLUDE_TAGS) + WINDOWS_INCLUDE_TAGS
+    darwin = _without(non_linux_only, DARWIN_EXCLUDE_TAGS)
     return select({
         "@platforms//os:linux": tags,
         "@platforms//os:windows": windows,
