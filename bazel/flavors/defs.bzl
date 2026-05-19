@@ -148,6 +148,12 @@ def flavor_gotags(flavor_name):
     LINUX_ONLY_TAGS are dropped off-Linux, Windows additionally adds
     WINDOWS_INCLUDE_TAGS and drops WINDOWS_EXCLUDE_TAGS, macOS drops
     DARWIN_EXCLUDE_TAGS.
+
+    Args:
+        flavor_name: key of FLAVOR_UNIT_TEST_TAGS.
+
+    Returns:
+        select() yielding the per-platform build-tag list for the flavor.
     """
     tags = FLAVOR_UNIT_TEST_TAGS[flavor_name]
     non_linux_only = [t for t in tags if t not in LINUX_ONLY_TAGS]
