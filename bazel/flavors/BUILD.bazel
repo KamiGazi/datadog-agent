@@ -1,19 +1,1 @@
-load("@rules_python//python:py_test.bzl", "py_test")
-
 package(default_visibility = ["//visibility:public"])
-
-py_test(
-    name = "verify_flavor_tags",
-    srcs = ["verify_flavor_tags.py"],
-    args = ["$(rlocationpath //bazel/rules/dd_agent_go_test/dump_tags)"],
-    data = [
-        "defs.bzl",
-        "//bazel/rules/dd_agent_go_test/dump_tags",
-        "//tasks:build_tags.py",
-        "//tasks:flavor.py",
-    ],
-    deps = [
-        "@py_dev_requirements//invoke",
-        "@rules_python//python/runfiles",
-    ],
-)

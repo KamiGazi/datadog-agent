@@ -20,7 +20,7 @@ copy_file(
 go_library(
     name = "gazelle_extension",
     srcs = [
-        "tags.go",
+        "@dd_build_tags_codegen//:tags.go",
         ":gazelle_extension_src",
     ],
     importpath = "github.com/DataDog/datadog-agent/bazel/rules/dd_agent_go_test",
