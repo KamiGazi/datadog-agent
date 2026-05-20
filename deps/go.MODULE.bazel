@@ -478,6 +478,15 @@ go_deps.module_override(
     path = "github.com/favadi/protoc-go-inject-tag",
 )
 
+# Swap `golang.org/x/tools/imports` for `go/format` so `msgp` no longer execs `go` at runtime: Bazel build actions
+# cannot expose `go` on `$PATH` with an absolute path, and `imports.Process` produces the same output as `format.Source`
+# on the well-formed code msgp emits.
+go_deps.module_override(
+    patch_strip = 1,
+    patches = ["//bazel/rules/go_msgp:use-go-format.patch"],
+    path = "github.com/tinylib/msgp",
+)
+
 use_repo_rule("//bazel/rules/go_fast:repo.bzl", "go_fast")(name = "go_fast")
 
 use_repo_rule("//bazel/rules/go_sdk_overrides:repo.bzl", "go_sdk_overrides")(name = "go_sdk_overrides")

@@ -1,4 +1,5 @@
 load("@rules_go//go:def.bzl", "go_library", "go_test")
+load("//bazel/rules/go_msgp:defs.bzl", "go_msgp")
 load("//bazel/rules/write_pb_go:defs.bzl", "write_pb_go")
 
 write_pb_go(
@@ -38,6 +39,12 @@ write_pb_go(
             "workloadmeta.pb.go",
         ],
     },
+)
+
+go_msgp(
+    name = "remoteconfig_gen",
+    src = "remoteconfig.pb.go",
+    out = "remoteconfig_gen.go",
 )
 
 go_library(

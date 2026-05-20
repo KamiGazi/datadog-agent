@@ -1,0 +1,88 @@
+diff --git a/printer/print.go b/printer/print.go
+index 0000000..0000000 100644
+--- a/printer/print.go
++++ b/printer/print.go
+@@ -8,11 +8,12 @@ import (
+ 	"math"
+ 	"os"
+ 	"path/filepath"
++	"sort"
+ 	"strings"
+
+ 	"github.com/tinylib/msgp/gen"
+ 	"github.com/tinylib/msgp/parse"
+-	"golang.org/x/tools/imports"
++	gofmt "go/format"
+ )
+
+ var Logf func(s string, v ...any)
+@@ -56,7 +57,7 @@ func generate(file string, f *parse.FileSet, mode gen.Method) (*bytes.Buffer, *b
+ }
+
+ func format(file string, data []byte) error {
+-	out, err := imports.Process(file, data, nil)
++	out, err := gofmt.Source(data)
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -90,17 +91,7 @@ func generate(file string, f *parse.FileSet, mode gen.Method) (*bytes.Buffer, *b
+ 	outbuf := bytes.NewBuffer(make([]byte, 0, 4096))
+ 	writePkgHeader(outbuf, f.Package)
+
+-	myImports := []string{"github.com/tinylib/msgp/msgp"}
+-	for _, imp := range f.Imports {
+-		if imp.Name != nil {
+-			// have an alias, include it.
+-			myImports = append(myImports, imp.Name.Name+` `+imp.Path.Value)
+-		} else {
+-			myImports = append(myImports, imp.Path.Value)
+-		}
+-	}
+-	dedup := dedupImports(myImports)
+-	writeImportHeader(outbuf, dedup...)
++	writeImportHeader(outbuf, "github.com/tinylib/msgp/msgp")
+
+ 	writeLimitConstants(outbuf, file, f)
+
+@@ -130,8 +121,23 @@ func dedupImports(imp []string) []string {
+ }
+
+ func writeImportHeader(b *bytes.Buffer, imports ...string) {
+-	b.WriteString("import (\n")
++	var stdlib, thirdParty []string
+ 	for _, im := range imports {
++		path := im
++		if im[len(im)-1] == '"' {
++			if i := strings.Index(im, `"`); i >= 0 {
++				path = im[i+1 : len(im)-1]
++			}
++		}
++		if strings.Contains(path, ".") {
++			thirdParty = append(thirdParty, im)
++		} else {
++			stdlib = append(stdlib, im)
++		}
++	}
++	sort.Strings(stdlib)
++	sort.Strings(thirdParty)
++	emit := func(im string) {
+ 		if im[len(im)-1] == '"' {
+ 			// support aliased imports
+ 			fmt.Fprintf(b, "\t%s\n", im)
+@@ -139,6 +145,16 @@ func writeImportHeader(b *bytes.Buffer, imports ...string) {
+ 			fmt.Fprintf(b, "\t%q\n", im)
+ 		}
+ 	}
++	b.WriteString("import (\n")
++	for _, im := range stdlib {
++		emit(im)
++	}
++	if len(stdlib) > 0 && len(thirdParty) > 0 {
++		b.WriteString("\n")
++	}
++	for _, im := range thirdParty {
++		emit(im)
++	}
+ 	b.WriteString(")\n\n")
+ }
+
