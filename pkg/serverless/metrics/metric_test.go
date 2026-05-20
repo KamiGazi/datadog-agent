@@ -8,6 +8,7 @@
 package metrics
 
 import (
+	"context"
 	"net"
 	"net/http"
 	"os"
@@ -130,12 +131,13 @@ func (f *countingForwarder) SubmitSketchSeries(_ transaction.BytesPayloads, _ ht
 	return nil
 }
 
-// TestFlushOnStopDeliversSample asserts that a sample submitted via AddEnhancedMetric
-// immediately before ForceFlushToSerializer is reliably delivered to the serializer.
-// It runs 100 iterations to catch the ~50% race the deleted TestWaitForPendingSamplesThenFlush
-// was designed to detect: the timeSamplerWorker's select can pick flushChan over samplesChan,
-// causing a flush before the sample is enqueued.
-func TestFlushOnStopDeliversSample(t *testing.T) {
+// TestStopDrainsBeforeFlush asserts that ServerlessMetricAgent.Stop(ctx) reliably
+// drains the timeSamplerWorker's samplesChan, so a sample submitted via
+// AddEnhancedMetric immediately before ForceFlushToSerializer is delivered to the
+// serializer. Without the Stop(ctx) synchronization, the worker's select can pick
+// flushChan over samplesChan and flush before the sample is enqueued — a race that
+// drops ~50% of the samples in practice. 100 iterations exercise that race.
+func TestStopDrainsBeforeFlush(t *testing.T) {
 	mockConfig := configmock.New(t)
 	pkgconfigsetup.LoadDatadog(mockConfig, secretsmock.New(t), delegatedauthmock.New(t), nil)
 
@@ -160,17 +162,19 @@ func TestFlushOnStopDeliversSample(t *testing.T) {
 		demux := aggregator.InitAndStartAgentDemultiplexerForTest(deps, opts, "")
 
 		agent := New(demux, Tags{})
-		// Use a fixed past timestamp so the sample falls in a completed bucket
-		// relative to the flush time (time.Now()), ensuring flushBefore removes it.
 		agent.AddEnhancedMetric("test.metric", 1.0, pkgmetrics.MetricSourceServerless, 1000.0)
-		// Yield so the timeSamplerWorker goroutine can drain samplesChan before
-		// ForceFlushToSerializer sends to flushChan. Without this yield the Go
-		// scheduler may pick flushChan first (the race this test exercises).
-		runtime.Gosched()
+
+		// Stop(ctx) must drain the worker's samplesChan before returning so the
+		// ForceFlushToSerializer below reliably observes the sample. Without it,
+		// the worker's select can pick flushChan first and drop the sample.
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		require.NoError(t, agent.Stop(ctx))
+		cancel()
+
 		demux.ForceFlushToSerializer(time.Now(), true)
 		demux.Stop(false)
 	}
 
 	require.Equal(t, int64(iterations), cf.sketchCount.Load(),
-		"every AddEnhancedMetric call must produce exactly one sketch flush")
+		"every AddEnhancedMetric followed by Stop must produce exactly one sketch flush")
 }

@@ -774,3 +774,46 @@ func (d *AgentDemultiplexer) GetDefaultSender() (sender.Sender, error) {
 
 	return d.senders.GetDefaultSender()
 }
+
+// WaitForPendingSamples blocks until every sample enqueued via
+// AggregateSample / AggregateSamples has been consumed by a
+// timeSamplerWorker, or ctx is done. It is the metrics analogue of
+// pkg/trace/agent.Agent.WaitForStopped: a shutdown synchronization
+// primitive for callers that need their final samples drained before
+// the demultiplexer's flush runs.
+//
+// Correctness relies on timeSamplerWorker.run()'s loop body fully
+// incorporating a dequeued batch into the sampler (sampler.sample +
+// metricSamplePool.PutBatch) before the next select iteration. Because
+// flushChan is unbuffered and only received in that next iteration,
+// observing len(samplesChan)==0 implies the dequeued sample is already
+// visible to any subsequent flush. If timeSamplerWorker.run() ever moves
+// to double-buffering or async sample handling, this barrier must be
+// revisited.
+func (d *AgentDemultiplexer) WaitForPendingSamples(ctx context.Context) error {
+	const tick = 1 * time.Millisecond
+	t := time.NewTicker(tick)
+	defer t.Stop()
+	for {
+		if d.pendingSampleCount() == 0 {
+			return nil
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-t.C:
+		}
+	}
+}
+
+// pendingSampleCount returns the total number of sample batches still
+// buffered in the per-shard time-sampler worker channels.
+func (d *AgentDemultiplexer) pendingSampleCount() int {
+	d.m.RLock()
+	defer d.m.RUnlock()
+	n := 0
+	for _, w := range d.statsd.workers {
+		n += len(w.samplesChan)
+	}
+	return n
+}

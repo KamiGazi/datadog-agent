@@ -8,6 +8,7 @@
 package aggregator
 
 import (
+	"context"
 	"fmt"
 	"slices"
 	"strings"
@@ -551,6 +552,82 @@ type DemultiplexerAgentTestDeps struct {
 	Tagger          tagger.Component
 	HaAgent         haagent.Component
 	Telemetry       telemetry.Component
+}
+
+// TestWaitForPendingSamplesReturnsAfterDrain verifies that
+// WaitForPendingSamples returns nil once all per-shard timeSamplerWorker
+// channels have been consumed. We seed the channel directly and then
+// simulate a worker pickup by reading from it from a goroutine.
+func TestWaitForPendingSamplesReturnsAfterDrain(t *testing.T) {
+	require := require.New(t)
+
+	opts := demuxTestOptions()
+	deps := createDemultiplexerAgentTestDeps(t)
+	// initAgentDemultiplexer (not InitAndStart): no worker goroutine runs,
+	// so anything we enqueue stays buffered until we read it.
+	demux := initAgentDemultiplexer(deps.Log, NewForwarderTest(deps.Log), deps.OrchestratorFwd, opts, deps.EventPlatform, deps.HaAgent, deps.Compressor, deps.Tagger, deps.FilterList, "")
+
+	demux.AggregateSample(metrics.MetricSample{
+		Name:      "test.metric",
+		Value:     1,
+		Mtype:     metrics.GaugeType,
+		Timestamp: 1657099120.0,
+	})
+	require.Equal(1, demux.pendingSampleCount(), "sample should be buffered in worker channel")
+
+	// Drain the sample asynchronously, mimicking the worker picking it up.
+	go func() {
+		time.Sleep(5 * time.Millisecond)
+		<-demux.statsd.workers[0].samplesChan
+	}()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	require.NoError(demux.WaitForPendingSamples(ctx))
+	require.Equal(0, demux.pendingSampleCount())
+}
+
+// TestWaitForPendingSamplesReturnsCtxErrOnTimeout verifies that
+// WaitForPendingSamples respects ctx cancellation when samples are
+// never drained.
+func TestWaitForPendingSamplesReturnsCtxErrOnTimeout(t *testing.T) {
+	require := require.New(t)
+
+	opts := demuxTestOptions()
+	deps := createDemultiplexerAgentTestDeps(t)
+	demux := initAgentDemultiplexer(deps.Log, NewForwarderTest(deps.Log), deps.OrchestratorFwd, opts, deps.EventPlatform, deps.HaAgent, deps.Compressor, deps.Tagger, deps.FilterList, "")
+
+	demux.AggregateSample(metrics.MetricSample{
+		Name:      "stuck.metric",
+		Value:     1,
+		Mtype:     metrics.GaugeType,
+		Timestamp: 1657099120.0,
+	})
+	require.Equal(1, demux.pendingSampleCount())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
+	defer cancel()
+	err := demux.WaitForPendingSamples(ctx)
+	require.ErrorIs(err, context.DeadlineExceeded)
+	require.Equal(1, demux.pendingSampleCount(), "sample must still be buffered")
+}
+
+// TestWaitForPendingSamplesReturnsImmediatelyWhenEmpty verifies the
+// no-pending-samples fast path.
+func TestWaitForPendingSamplesReturnsImmediatelyWhenEmpty(t *testing.T) {
+	require := require.New(t)
+
+	opts := demuxTestOptions()
+	deps := createDemultiplexerAgentTestDeps(t)
+	demux := initAgentDemultiplexer(deps.Log, NewForwarderTest(deps.Log), deps.OrchestratorFwd, opts, deps.EventPlatform, deps.HaAgent, deps.Compressor, deps.Tagger, deps.FilterList, "")
+
+	require.Equal(0, demux.pendingSampleCount())
+
+	// Cancelled context: should still return nil because pending count is 0
+	// and the function checks pending count before consulting ctx.
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	require.NoError(demux.WaitForPendingSamples(ctx))
 }
 
 func createDemultiplexerAgentTestDeps(t *testing.T) DemultiplexerAgentTestDeps {

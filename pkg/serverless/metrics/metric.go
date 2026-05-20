@@ -7,6 +7,7 @@
 package metrics
 
 import (
+	"context"
 	"time"
 
 	"github.com/DataDog/datadog-agent/pkg/aggregator"
@@ -35,6 +36,23 @@ type ServerlessMetricAgent struct {
 // New constructs a ServerlessMetricAgent.
 func New(demux aggregator.Demultiplexer, tags Tags) *ServerlessMetricAgent {
 	return &ServerlessMetricAgent{Demux: demux, tags: tags}
+}
+
+// Stop waits for the demultiplexer to drain any samples enqueued via
+// Add*Metric so they aren't lost when the surrounding Fx OnStop hook
+// subsequently invokes AgentDemultiplexer.Stop. Mirrors
+// serverlessTraceAgent.Stop's WaitForStopped call. No-op when the agent,
+// its demultiplexer, or the underlying *aggregator.AgentDemultiplexer
+// type assertion is unavailable.
+func (c *ServerlessMetricAgent) Stop(ctx context.Context) error {
+	if c == nil || c.Demux == nil {
+		return nil
+	}
+	agentDemux, ok := c.Demux.(*aggregator.AgentDemultiplexer)
+	if !ok {
+		return nil
+	}
+	return agentDemux.WaitForPendingSamples(ctx)
 }
 
 // AddLegacyEnhancedMetric reports a metric value to the intake with all tags.

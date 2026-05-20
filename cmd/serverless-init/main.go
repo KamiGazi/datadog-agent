@@ -97,6 +97,20 @@ const (
 	// flushLogsAgent. Strict ctx; cancels in-progress sends on overrun.
 	logsFlushTimeout = 2 * time.Second
 
+	// metricsDrainTimeout bounds the wait for in-flight enhanced metric
+	// samples (cloudService.Shutdown enqueues *.task.ended / *.task.duration
+	// via AddEnhancedMetric → Demux.AggregateSample, which is asynchronous)
+	// to be picked up by the time-sampler workers before Fx OnStop fires
+	// demux.Stop(true). Without this, fast-exit shutdowns can race the
+	// worker drain and drop the final task-ended metrics.
+	//
+	// The drain itself is microseconds in practice (at most a handful of
+	// samples queued, processed in a tight loop); the timeout is sized
+	// just to bound pathological cases (e.g. hung worker) without eating
+	// into the slack the other bounds have against the 10s Cloud Run
+	// grace window.
+	metricsDrainTimeout = 100 * time.Millisecond
+
 	// metricsAggregatorStopTimeoutSeconds bounds the demux Stop: forces a
 	// final flush of the metrics pipeline, including incomplete dogstatsd
 	// buckets, into the serializer and through the forwarder. Set via the
@@ -115,8 +129,9 @@ const (
 	metricsFlushInterval = 3 * time.Second
 
 	// shutdownBudgetWatchdog fires a debug log if total shutdown elapsed time
-	// exceeds this. Sum of the four phase budgets is 9 s; this gives a tiny
-	// buffer before Cloud Run's 10 s SIGTERM-to-SIGKILL grace window expires.
+	// exceeds this. Sum of the five phase budgets is 9.1 s (trace 3 + logs 2
+	// + drain 0.1 + demux 2 + forwarder 2); this leaves ~400 ms of slack
+	// before Cloud Run's 10 s SIGTERM-to-SIGKILL grace window expires.
 	shutdownBudgetWatchdog = 9*time.Second + 500*time.Millisecond
 )
 
@@ -299,16 +314,28 @@ func run(
 	//      by traceStopTimeout (3 s).
 	//   4. logs agent flushes any buffered records — bounded by
 	//      logsFlushTimeout (2 s).
-	//   5. run() returns; Fx OnStop fires demux.Stop(true) which performs the
+	//   5. metricAgent.Stop waits for the time-sampler workers to drain
+	//      every sample enqueued during steps 2-4 — bounded by
+	//      metricsDrainTimeout (500 ms). Placed last so any background
+	//      emitter (OTLP, autodiscovery, trace stats) that ships a sample
+	//      during the earlier phases still lands in the aggregator before
+	//      step 6's flush.
+	//   6. run() returns; Fx OnStop fires demux.Stop(true) which performs the
 	//      final metric flush (incomplete buckets included via
 	//      dogstatsd_flush_incomplete_buckets) — bounded by
 	//      metricsAggregatorStopTimeoutSeconds (2 s) — then drains the
 	//      forwarder — bounded by metricsForwarderStopTimeoutSeconds (2 s).
-	//
-	// IMPORTANT: by convention, no new metric samples should be enqueued past
-	// step 2. Steps 3-5 may run concurrently with a periodic flush tick;
-	// although Stop(true) drains anything still buffered, samples added
-	// after step 2 race with the budget rather than producing useful data.
+	defer func() {
+		// Best-effort: a timeout here means we're shedding the final
+		// task-ended / duration metrics, so log it for observability —
+		// matches the trace agent's analogous warning at Stop overrun.
+		// Shutdown continues regardless.
+		drainCtx, cancel := context.WithTimeout(context.Background(), metricsDrainTimeout)
+		if err := metricAgent.Stop(drainCtx); err != nil {
+			log.Warnf("metric agent drain timed out, final samples may be dropped: %v", err)
+		}
+		cancel()
+	}()
 	defer flushLogsAgent(logConfig.FlushTimeout, logsAgent)
 	defer tracingCtx.TraceAgent.Stop()
 	defer func() {
