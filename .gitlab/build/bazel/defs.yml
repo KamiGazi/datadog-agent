@@ -48,6 +48,8 @@
   extends: .bazel:defs
   variables:
     XDG_CACHE_HOME: "$RUNNER_TEMP_PROJECT_DIR"
+  before_script:
+    - !reference [.install_python_dependencies]
 
 .bazel:defs:cache:persistent:
   extends: .bazel:defs
