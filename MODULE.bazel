@@ -31,6 +31,12 @@ release_json = use_repo_rule("//bazel/repo:release_json.bzl", "release_json")
 
 release_json(name = "dd_release_json")
 
+# Generate build-tag data from tasks/build_tags.py for Bazel-side consumers
+# (currently the gazelle build_tags list in the root BUILD.bazel).
+build_tags_codegen = use_repo_rule("//bazel/repo:build_tags_codegen.bzl", "build_tags_codegen")
+
+build_tags_codegen(name = "dd_build_tags_codegen")
+
 # Instead of the canonical rules_license, we use the version from supply-chain.
 # This allows mixing both old and new license rules during the multi-year
 # migration between the two styles. The rules_license overlay will never be
