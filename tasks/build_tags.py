@@ -7,6 +7,7 @@ Utilities to manage build tags
 # so we only need to check that we don't run this code with old Python versions.
 from __future__ import annotations
 
+import json
 import os
 import sys
 
@@ -79,6 +80,27 @@ ALL_TAGS = {
     "cws_instrumentation_injector_only",  # used for building cws-instrumentation with only the injector code
     "remove_all_sd",  # remove all discovery provider from prometheusreceiver components
 }.union(COMMON_TAGS)
+
+# Tags Gazelle needs to see in addition to ALL_TAGS so it can analyse test-only
+# files gated by them. Kept separate because they're test-only and don't belong
+# in ALL_TAGS (which is also used to validate user-provided tag lists).
+GAZELLE_EXTRA_TAGS = {
+    "e2ecoverage",
+    "e2eunit",
+    "functionaltests",
+    "manualtest",
+    "private_runner_experimental",
+}
+
+# Tags in ALL_TAGS that we deliberately keep out of Gazelle's set, typically
+# because they require cgo/native deps that Gazelle's static analysis can't
+# resolve cleanly.
+GAZELLE_OMIT_TAGS = {"pcap", "remove_all_sd"}
+
+# Build tags Gazelle considers when analysing tag-gated .go files. Consumed by
+# the //bazel/repo:build_tags_codegen.bzl repo rule which writes it into a
+# generated .bzl file loaded by the root BUILD.bazel.
+GAZELLE_BUILD_TAGS = (ALL_TAGS - GAZELLE_OMIT_TAGS) | GAZELLE_EXTRA_TAGS
 
 ### Tag inclusion lists
 
@@ -589,3 +611,40 @@ def compute_config_build_tags(
     build_exclude = [] if build_exclude is None else build_exclude.split(",")
     use_tags = get_build_tags(build_include, build_exclude)
     return use_tags
+
+
+def _build_tags_codegen_payload() -> dict[str, object]:
+    """Structured view of the tag data consumed by the Bazel codegen repo rule.
+
+    All list values are sorted and deduplicated so the generated .bzl / .go
+    files are byte-stable.
+    """
+    return {
+        "common_tags": sorted(COMMON_TAGS),
+        "unit_test_tags": sorted(UNIT_TEST_TAGS),
+        "linux_only_tags": sorted(LINUX_ONLY_TAGS),
+        "windows_included_tags": sorted(WINDOWS_INCLUDED_TAGS),
+        "windows_excluded_tags": sorted(WINDOWS_EXCLUDED_TAGS),
+        "darwin_excluded_tags": sorted(DARWIN_EXCLUDED_TAGS),
+        "flavor_specific_tags": {
+            flavor.name: sorted(build_tags[flavor]["unit-tests"] - COMMON_TAGS - UNIT_TEST_TAGS)
+            for flavor in AgentFlavor
+            if "unit-tests" in build_tags.get(flavor, {})
+        },
+        "gazelle_build_tags": sorted(GAZELLE_BUILD_TAGS),
+    }
+
+
+@task
+def codegen_to_json(_, output=""):
+    """Emit build-tag data as JSON; consumed by //bazel/repo:build_tags_codegen.bzl.
+
+    Writes to --output= path if provided (so callers can sidestep stdout noise
+    from dda/rich's console init on Windows), otherwise prints to stdout.
+    """
+    text = json.dumps(_build_tags_codegen_payload(), indent=2, sort_keys=True)
+    if output:
+        with open(output, "w") as f:
+            f.write(text)
+    else:
+        print(text)
