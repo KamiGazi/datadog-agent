@@ -240,6 +240,9 @@ var defaultProfiles = `
         - name: logs.http_connectivity_retry_attempt
           preserve_tags:
             - status
+        - name: logs.http_connectivity_failure_cause
+          preserve_tags:
+            - failure_cause
         - name: logs.restart_attempt
           preserve_tags:
             - status
