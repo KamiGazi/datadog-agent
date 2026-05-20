@@ -178,3 +178,48 @@ func TestStopDrainsBeforeFlush(t *testing.T) {
 	require.Equal(t, int64(iterations), cf.sketchCount.Load(),
 		"every AddEnhancedMetric followed by Stop must produce exactly one sketch flush")
 }
+
+// wrappedDemux mirrors the demultiplexerimpl.demultiplexer wrapper struct that
+// Fx actually supplies to ServerlessMetricAgent: the AggregatorDemultiplexer
+// interface holds a struct that embeds *aggregator.AgentDemultiplexer rather
+// than the pointer itself. A concrete *aggregator.AgentDemultiplexer type
+// assertion would silently fail on this value, causing Stop to no-op in
+// production — the regression this test guards against.
+type wrappedDemux struct {
+	*aggregator.AgentDemultiplexer
+}
+
+func TestStopDrainsThroughWrappedDemux(t *testing.T) {
+	mockConfig := configmock.New(t)
+	pkgconfigsetup.LoadDatadog(mockConfig, secretsmock.New(t), delegatedauthmock.New(t), nil)
+
+	cf := newCountingForwarder()
+
+	deps := fxutil.Test[aggregator.TestDeps](t,
+		fx.Provide(func() secrets.Component { return secretsmock.New(t) }),
+		fx.Provide(func() defaultforwarder.Component { return cf }),
+		core.MockBundle(),
+		hostnameimpl.MockModule(),
+		haagentmock.Module(),
+		logscompression.MockModule(),
+		metricscompression.MockModule(),
+		filterlistmock.MockModule(),
+	)
+
+	opts := aggregator.DefaultAgentDemultiplexerOptions()
+	opts.FlushInterval = time.Hour
+	opts.DontStartForwarders = true
+	demux := aggregator.InitAndStartAgentDemultiplexerForTest(deps, opts, "")
+	defer demux.Stop(false)
+
+	agent := New(wrappedDemux{AgentDemultiplexer: demux}, Tags{})
+	agent.AddEnhancedMetric("test.metric", 1.0, pkgmetrics.MetricSourceServerless, 1000.0)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	require.NoError(t, agent.Stop(ctx))
+
+	demux.ForceFlushToSerializer(time.Now(), true)
+	require.Equal(t, int64(1), cf.sketchCount.Load(),
+		"Stop must drain pending samples even when Demux is a wrapper embedding *AgentDemultiplexer")
+}

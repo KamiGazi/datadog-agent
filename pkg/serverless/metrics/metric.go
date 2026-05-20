@@ -41,18 +41,23 @@ func New(demux aggregator.Demultiplexer, tags Tags) *ServerlessMetricAgent {
 // Stop waits for the demultiplexer to drain any samples enqueued via
 // Add*Metric so they aren't lost when the surrounding Fx OnStop hook
 // subsequently invokes AgentDemultiplexer.Stop. Mirrors
-// serverlessTraceAgent.Stop's WaitForStopped call. No-op when the agent,
-// its demultiplexer, or the underlying *aggregator.AgentDemultiplexer
-// type assertion is unavailable.
+// serverlessTraceAgent.Stop's WaitForStopped call. No-op when the agent
+// or its demultiplexer is nil, or the demultiplexer does not expose
+// WaitForPendingSamples. The interface assertion (rather than a
+// concrete *aggregator.AgentDemultiplexer assertion) is required because
+// Fx provides a wrapper struct embedding *AgentDemultiplexer; embedded
+// method promotion lets the wrapper satisfy this interface.
 func (c *ServerlessMetricAgent) Stop(ctx context.Context) error {
 	if c == nil || c.Demux == nil {
 		return nil
 	}
-	agentDemux, ok := c.Demux.(*aggregator.AgentDemultiplexer)
+	waiter, ok := c.Demux.(interface {
+		WaitForPendingSamples(context.Context) error
+	})
 	if !ok {
 		return nil
 	}
-	return agentDemux.WaitForPendingSamples(ctx)
+	return waiter.WaitForPendingSamples(ctx)
 }
 
 // AddLegacyEnhancedMetric reports a metric value to the intake with all tags.
