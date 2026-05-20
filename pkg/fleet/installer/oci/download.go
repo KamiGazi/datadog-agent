@@ -382,11 +382,11 @@ func (d *DownloadedPackage) ExtractLayers(ctx context.Context, mediaType types.M
 	defer func() { span.Finish(err) }()
 	span.SetTag("media.type", string(mediaType))
 	span.SetTag("package.name", d.Name)
-	totalRetries := 0
+	totalAttempts := 0
 	totalCompressedSize := int64(0)
 	layerCount := 0
 	defer func() {
-		span.SetTag("network_retries", totalRetries)
+		span.SetTag("network_attempts", totalAttempts)
 		span.SetTag("layer_size", totalCompressedSize)
 		span.SetTag("layer_count", layerCount)
 	}()
@@ -419,8 +419,8 @@ func (d *DownloadedPackage) ExtractLayers(ctx context.Context, mediaType types.M
 		if err != nil {
 			return fmt.Errorf("could not get layer: %w", err)
 		}
-		retries, err := extractLayer(ctx, d.Name, layerManifest, layer, dir)
-		totalRetries += retries
+		attempts, err := extractLayer(ctx, d.Name, layerManifest, layer, dir)
+		totalAttempts += attempts
 		if err != nil {
 			return fmt.Errorf("could not extract layer: %w", err)
 		}
@@ -432,7 +432,8 @@ func (d *DownloadedPackage) ExtractLayers(ctx context.Context, mediaType types.M
 }
 
 // extractLayer extracts a single layer to dir, with retries on transient network errors.
-func extractLayer(ctx context.Context, pkgName string, layerManifest oci.Descriptor, layer oci.Layer, dir string) (retries int, err error) {
+// Returns the total number of attempts made (1 if it succeeded on the first try).
+func extractLayer(ctx context.Context, pkgName string, layerManifest oci.Descriptor, layer oci.Layer, dir string) (attempts int, err error) {
 	span, _ := telemetry.StartSpanFromContext(ctx, "oci.extract_layer")
 	defer func() { span.Finish(err) }()
 	span.SetTag("package.name", pkgName)
@@ -445,9 +446,9 @@ func extractLayer(ctx context.Context, pkgName string, layerManifest oci.Descrip
 	span.SetTag("media.type", string(layerManifest.MediaType))
 	span.SetTag("layer.digest", layerManifest.Digest.String())
 	span.SetTag("layer.size", layerManifest.Size)
-	defer func() { span.SetTag("network_retries", retries) }()
+	defer func() { span.SetTag("network_attempts", attempts) }()
 
-	retries, err = withNetworkRetries(
+	attempts, err = withNetworkRetries(
 		func() error {
 			var err error
 			defer func() {
@@ -478,7 +479,7 @@ func extractLayer(ctx context.Context, pkgName string, layerManifest oci.Descrip
 			return nil
 		},
 	)
-	return retries, err
+	return attempts, err
 }
 
 // WriteOCILayout writes the image as an OCI layout to the given directory.
@@ -486,11 +487,11 @@ func (d *DownloadedPackage) WriteOCILayout(ctx context.Context, dir string) (err
 	span, _ := telemetry.StartSpanFromContext(ctx, "oci.write_layout")
 	defer func() { span.Finish(err) }()
 	span.SetTag("package.name", d.Name)
-	retries := 0
-	defer func() { span.SetTag("network_retries", retries) }()
+	attempts := 0
+	defer func() { span.SetTag("network_attempts", attempts) }()
 
 	var layoutPath layout.Path
-	retries, err = withNetworkRetries(
+	attempts, err = withNetworkRetries(
 		func() error {
 			layoutPath, err = layout.Write(dir, empty.Index)
 			if err != nil {
@@ -520,17 +521,16 @@ func PackageURL(env *env.Env, pkg string, version string) string {
 }
 
 // withNetworkRetries calls f and retries it on transient network errors.
-// It returns the number of retries that were performed (0 if f succeeded on the first try)
-// alongside the final error.
-func withNetworkRetries(f func() error) (int, error) {
-	var err error
-	for i := 0; i < networkRetries; i++ {
+// It returns the total number of attempts made (1 if f succeeded on the first try,
+// up to networkRetries if all attempts failed) alongside the final error.
+func withNetworkRetries(f func() error) (attempts int, err error) {
+	for attempts = 1; attempts <= networkRetries; attempts++ {
 		err = f()
 		if err == nil {
-			return i, nil
+			return attempts, nil
 		}
 		if !isRetryableNetworkError(err) {
-			return i, err
+			return attempts, err
 		}
 		log.Warnf("retrying after network error: %s", err)
 		time.Sleep(time.Second)
