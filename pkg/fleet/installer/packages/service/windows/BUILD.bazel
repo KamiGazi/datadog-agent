@@ -42,3 +42,34 @@ go_test(
         "//conditions:default": [],
     }),
 )
+
+go_test(
+    name = "impl_test",
+    srcs = ["impl_test.go"],
+    embed = [":windows"],
+    gotags = ["test"],
+    deps = select({
+        "@rules_go//go/platform:windows": [
+            "@com_github_stretchr_testify//assert",
+            "@com_github_stretchr_testify//mock",
+            "@org_golang_x_sys//windows",
+            "@org_golang_x_sys//windows/svc",
+        ],
+        "//conditions:default": [],
+    }),
+)
+
+go_test(
+    name = "system_api_test",
+    srcs = ["system_api_test.go"],
+    embed = [":windows"],
+    gotags = ["test"],
+    deps = select({
+        "@rules_go//go/platform:windows": [
+            "@com_github_stretchr_testify//mock",
+            "@org_golang_x_sys//windows",
+            "@org_golang_x_sys//windows/svc",
+        ],
+        "//conditions:default": [],
+    }),
+)
