@@ -45,15 +45,15 @@ func NewRollbackConfigHandler(client ipc.HTTPClient) *RollbackConfigHandler {
 
 // RollbackConfigInputs defines the inputs for the rollbackConfig action
 type RollbackConfigInputs struct {
-	// ConfigUUID is the identifier of the stored config snapshot to roll back to.
-	ConfigUUID string `json:"config_uuid"`
-	// DeviceID identifies the device to roll back
-	DeviceID string `json:"device_id"`
+	// ConfigVersion is the identifier of the stored config snapshot to roll back to.
+	ConfigVersion string `json:"configVersion"`
+	// DeviceID identifies the device to roll back.
+	DeviceID string `json:"deviceID"`
 	// ConfigHash is the hashed value of the config; the operation will abort if
 	// this doesn't match what we have in storage.
-	ConfigHash string `json:"config_hash"`
-	// PushType should be "running" or "both"
-	PushType ncmtypes.PushType `json:"push_type"`
+	ConfigHash string `json:"hash"`
+	// PushType is the type of push to perform.
+	PushType ncmtypes.PushType `json:"pushType"`
 }
 
 // Run executes the rollbackConfig action
@@ -70,7 +70,7 @@ func (h *RollbackConfigHandler) Run(
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse rollbackConfig inputs: %w", err)
 	}
-	if inputs.ConfigUUID == "" {
+	if inputs.ConfigVersion == "" {
 		return nil, errors.New("rollbackConfig: config_uuid input is required")
 	}
 
@@ -80,10 +80,10 @@ func (h *RollbackConfigHandler) Run(
 	}
 
 	res, err := endpoint.DoGet(ipchttp.WithContext(ctx), ipchttp.WithValues(url.Values{
-		"uuid": {inputs.ConfigUUID},
+		"uuid": {inputs.ConfigVersion},
 	}))
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve stored config %q from agent: %w", inputs.ConfigUUID, err)
+		return nil, fmt.Errorf("failed to retrieve stored config %q from agent: %w", inputs.ConfigVersion, err)
 	}
 
 	var storedConfig storedConfigResponse
@@ -92,12 +92,12 @@ func (h *RollbackConfigHandler) Run(
 	}
 
 	if storedConfig.DeviceID != inputs.DeviceID {
-		return nil, fmt.Errorf("input mismatch: config %q is not for device %q", inputs.ConfigUUID, inputs.DeviceID)
+		return nil, fmt.Errorf("input mismatch: config %q is not for device %q", inputs.ConfigVersion, inputs.DeviceID)
 	}
 
 	expectedHash := ncmstore.HashConfig(storedConfig.RawConfig)
 	if expectedHash != inputs.ConfigHash {
-		return nil, fmt.Errorf("hash mismatch for config %q", inputs.ConfigUUID)
+		return nil, fmt.Errorf("hash mismatch for config %q", inputs.ConfigVersion)
 	}
 
 	ncmConf, err := ncmconfig.GetNCMContextFromCoreCheck(ctx, h.ipcClient)
