@@ -6,7 +6,12 @@
 // Package remote provides interfaces for remote device communications (SSH/Telnet) to retrieve configurations
 package remote
 
-import "github.com/DataDog/datadog-agent/pkg/networkconfigmanagement/profile"
+import (
+	"context"
+
+	"github.com/DataDog/datadog-agent/pkg/networkconfigmanagement/profile"
+	"github.com/DataDog/datadog-agent/pkg/networkconfigmanagement/types"
+)
 
 // Client defines the interface for a remote client that can create sessions to execute commands on a device
 type Client interface {
@@ -14,6 +19,7 @@ type Client interface {
 	NewSession() (Session, error)
 	RetrieveRunningConfig() ([]byte, error)
 	RetrieveStartupConfig() ([]byte, error)
+	PushConfig(context.Context, string, types.PushType) error
 	SetProfile(p *profile.NCMProfile)
 	Close() error
 }

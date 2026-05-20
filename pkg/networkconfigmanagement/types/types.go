@@ -16,6 +16,20 @@ const (
 	STARTUP ConfigType = "startup"
 )
 
+type PushType string
+
+const (
+	// PushRunning writes the running configuration without altering the
+	// startup config
+	PushRunning PushType = "running"
+	// PushStartup writes the startup configuration without changing the
+	// running config; many devices won't implement this because it's not a
+	// common request.
+	PushStartup PushType = "startup"
+	// PushBoth writes both the running and startup configuration.
+	PushBoth PushType = "both"
+)
+
 // ConfigSource represents where the config was retrieved from (in the case of the integration, it's always via CLI commands)
 type ConfigSource string
 

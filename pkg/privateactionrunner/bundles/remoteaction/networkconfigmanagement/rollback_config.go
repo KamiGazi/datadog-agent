@@ -26,11 +26,11 @@ import (
 // storedConfigResponse mirrors the GetConfigResponse struct returned by the agent's
 // /agent/ncm/config IPC endpoint.
 type storedConfigResponse struct {
-	ConfigUUID string `json:"config_uuid"`
-	DeviceID   string `json:"device_id"`
-	ConfigType string `json:"config_type"`
-	CapturedAt int64  `json:"captured_at"`
-	RawConfig  string `json:"raw_config"`
+	ConfigUUID string              `json:"config_uuid"`
+	DeviceID   string              `json:"device_id"`
+	ConfigType ncmtypes.ConfigType `json:"config_type"`
+	CapturedAt int64               `json:"captured_at"`
+	RawConfig  string              `json:"raw_config"`
 }
 
 // RollbackConfigHandler handles the rollbackConfig action for network config management
@@ -52,8 +52,8 @@ type RollbackConfigInputs struct {
 	// ConfigHash is the hashed value of the config; the operation will abort if
 	// this doesn't match what we have in storage.
 	ConfigHash string `json:"config_hash"`
-	// Type should be "running" or "both"
-	ConfigType ncmtypes.ConfigType `json:"config_type"`
+	// PushType should be "running" or "both"
+	PushType ncmtypes.PushType `json:"push_type"`
 }
 
 // Run executes the rollbackConfig action
@@ -79,7 +79,7 @@ func (h *RollbackConfigHandler) Run(
 		return nil, fmt.Errorf("failed to create NCM config IPC endpoint: %w", err)
 	}
 
-	res, err := endpoint.DoGet(ipchttp.WithValues(url.Values{
+	res, err := endpoint.DoGet(ipchttp.WithContext(ctx), ipchttp.WithValues(url.Values{
 		"uuid": {inputs.ConfigUUID},
 	}))
 	if err != nil {
@@ -100,7 +100,7 @@ func (h *RollbackConfigHandler) Run(
 		return nil, fmt.Errorf("hash mismatch for config %q", inputs.ConfigUUID)
 	}
 
-	ncmConf, err := ncmconfig.GetNCMContextFromCoreCheck(h.ipcClient)
+	ncmConf, err := ncmconfig.GetNCMContextFromCoreCheck(ctx, h.ipcClient)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve NCM config from agent: %w", err)
 	}
@@ -119,7 +119,7 @@ func (h *RollbackConfigHandler) Run(
 		return nil, fmt.Errorf("%v: %w", inputs.DeviceID, err)
 	}
 
-	err = client.PushConfig(storedConfig.RawConfig, inputs.ConfigType)
+	err = client.PushConfig(ctx, storedConfig.RawConfig, inputs.PushType)
 	if err != nil {
 		return nil, fmt.Errorf("cannot push config to device %q: %w", inputs.DeviceID, err)
 	}

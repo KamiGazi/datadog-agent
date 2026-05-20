@@ -6,6 +6,7 @@
 package remote
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -202,7 +203,7 @@ func (s *SSHSession) CombinedOutput(cmd string) ([]byte, error) {
 	return s.session.CombinedOutput(cmd)
 }
 
-func (c *SSHClient) PushConfig(_ string, _ types.ConfigType) error {
+func (c *SSHClient) PushConfig(_ context.Context, _ string, _ types.PushType) error {
 	return errors.New("not implemented")
 }
 
