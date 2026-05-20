@@ -27,12 +27,17 @@ import (
 
 	iexec "github.com/DataDog/datadog-agent/pkg/fleet/installer/exec"
 	"github.com/DataDog/datadog-agent/pkg/fleet/installer/oci"
+	"github.com/DataDog/datadog-agent/pkg/fleet/installer/telemetry"
 
 	"golang.org/x/sys/windows/registry"
 )
 
-func install(ctx context.Context, env *env.Env, url string, experiment bool) error {
-	err := paths.SetupInstallerDataDir()
+func install(ctx context.Context, env *env.Env, url string, experiment bool) (err error) {
+	span, ctx := telemetry.StartSpanFromContext(ctx, "bootstrap.install")
+	defer func() { span.Finish(err) }()
+	span.SetTag("url", url)
+	span.SetTag("experiment", experiment)
+	err = paths.SetupInstallerDataDir()
 	if err != nil {
 		return fmt.Errorf("failed to create installer data directory: %w", err)
 	}
@@ -59,7 +64,9 @@ func install(ctx context.Context, env *env.Env, url string, experiment bool) err
 }
 
 // downloadInstaller downloads the installer package from the registry and returns the path to the executable.
-func downloadInstaller(ctx context.Context, env *env.Env, url string, tmpDir string) (*iexec.InstallerExec, error) {
+func downloadInstaller(ctx context.Context, env *env.Env, url string, tmpDir string) (_ *iexec.InstallerExec, err error) {
+	span, ctx := telemetry.StartSpanFromContext(ctx, "bootstrap.download_installer")
+	defer func() { span.Finish(err) }()
 	downloader := oci.NewDownloader(env, env.HTTPClient())
 	downloadedPackage, err := downloader.Download(ctx, url)
 	if err != nil {
@@ -81,7 +88,7 @@ func downloadInstaller(ctx context.Context, env *env.Env, url string, tmpDir str
 
 	// Production flow: try OCI layer, fallback to MSI extraction for older packages
 	installerBinPath := filepath.Join(tmpDir, "datadog-installer.exe")
-	err = downloadedPackage.ExtractLayers(oci.DatadogPackageInstallerLayerMediaType, installerBinPath) // Returns nil if the layer doesn't exist
+	err = downloadedPackage.ExtractLayers(ctx, oci.DatadogPackageInstallerLayerMediaType, installerBinPath) // Returns nil if the layer doesn't exist
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract layers: %w", err)
 	}
@@ -100,7 +107,7 @@ func downloadInstallerTestMode(ctx context.Context, env *env.Env, pkg *oci.Downl
 	case "OCI":
 		// Force OCI path - fail if installer layer is missing
 		installerBinPath := filepath.Join(tmpDir, "datadog-installer.exe")
-		err := pkg.ExtractLayers(oci.DatadogPackageInstallerLayerMediaType, installerBinPath)
+		err := pkg.ExtractLayers(ctx, oci.DatadogPackageInstallerLayerMediaType, installerBinPath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to extract installer layer: %w", err)
 		}
@@ -140,7 +147,9 @@ func getInstallerBootstrapMode() string {
 //
 // Should only be called for versions earlier than 7.70. This downloads the layer containing the MSI and then
 // uses MSI admin install to extract `datadog-installer.exe` from the MSI.
-func downloadInstallerOld(ctx context.Context, env *env.Env, url string, tmpDir string) (*iexec.InstallerExec, error) {
+func downloadInstallerOld(ctx context.Context, env *env.Env, url string, tmpDir string) (_ *iexec.InstallerExec, err error) {
+	span, ctx := telemetry.StartSpanFromContext(ctx, "bootstrap.download_installer_msi_fallback")
+	defer func() { span.Finish(err) }()
 	downloader := oci.NewDownloader(env, env.HTTPClient())
 	downloadedPackage, err := downloader.Download(ctx, url)
 	if err != nil {
@@ -158,12 +167,12 @@ func downloadInstallerOld(ctx context.Context, env *env.Env, url string, tmpDir 
 		return nil, fmt.Errorf("failed to create temporary directory: %w", err)
 	}
 	defer os.RemoveAll(layoutTmpDir)
-	err = downloadedPackage.WriteOCILayout(layoutTmpDir)
+	err = downloadedPackage.WriteOCILayout(ctx, layoutTmpDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to write OCI layout: %w", err)
 	}
 
-	err = downloadedPackage.ExtractLayers(oci.DatadogPackageLayerMediaType, tmpDir)
+	err = downloadedPackage.ExtractLayers(ctx, oci.DatadogPackageLayerMediaType, tmpDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract layers: %w", err)
 	}
