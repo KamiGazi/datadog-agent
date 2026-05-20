@@ -14,7 +14,6 @@ import (
 	"github.com/DataDog/datadog-agent/test/e2e-framework/scenarios/aws/fakeintake"
 	"github.com/DataDog/datadog-agent/test/e2e-framework/testing/utils/e2e/client/agentclientparams"
 	"github.com/DataDog/datadog-agent/test/e2e-framework/testing/utils/optional"
-	"github.com/DataDog/datadog-agent/test/fakeintake/server/rcstore"
 )
 
 const (
@@ -31,8 +30,6 @@ type Params struct {
 	fakeintakeOptions  []fakeintake.Option
 	installDocker      bool
 	installUpdater     bool
-	wireRCToAgent      bool   // when true, the agent is configured to use fakeintake's RC backend
-	rcRootJSON         string // TUF root JSON matching the fakeintake signing key
 }
 
 func newParams() *Params {
@@ -175,32 +172,6 @@ func WithUpdater() Option {
 func WithDocker() Option {
 	return func(params *Params) error {
 		params.installDocker = true
-		return nil
-	}
-}
-
-// WithFakeIntakeRCWiredToAgent enables fakeintake's Remote Config backend (using
-// DefaultRCSigningKeySeed) and configures the agent to use it. The TUF root JSON is
-// computed from the seed at provision time so the agent config is fully static.
-func WithFakeIntakeRCWiredToAgent() Option {
-	return func(params *Params) error {
-		seed := fakeintake.DefaultRCSigningKeySeed
-		priv, err := rcstore.KeyFromHexSeed(seed)
-		if err != nil {
-			return fmt.Errorf("rc signing key: %w", err)
-		}
-		pubHex := rcstore.PublicKeyHex(priv)
-		keyID, err := rcstore.ComputeKeyID(pubHex)
-		if err != nil {
-			return fmt.Errorf("rc key id: %w", err)
-		}
-		rootJSON, err := rcstore.BuildRootJSON(priv, keyID, pubHex)
-		if err != nil {
-			return fmt.Errorf("rc root json: %w", err)
-		}
-		params.wireRCToAgent = true
-		params.rcRootJSON = string(rootJSON)
-		params.fakeintakeOptions = append(params.fakeintakeOptions, fakeintake.WithRemoteConfig())
 		return nil
 	}
 }

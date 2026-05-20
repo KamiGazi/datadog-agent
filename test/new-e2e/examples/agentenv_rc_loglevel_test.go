@@ -8,14 +8,16 @@ package examples
 // This example shows how to use fakeintake's Remote Config backend to change
 // the agent's log level at runtime.
 //
+// Remote Config is wired automatically: every awshost.Provisioner() run
+// starts fakeintake with a fixed TUF signing key and configures the agent to
+// point at fakeintake's RC endpoint — no extra provisioner options needed.
+//
 // Flow:
-//  1. Provisioner starts fakeintake with a fixed TUF signing key and wires the
-//     agent's remote_configuration settings to point at it.
-//  2. At default (info) log level the agent produces no DEBUG lines.
-//  3. Two AGENT_CONFIG payloads are pushed via the fakeintake RC API:
+//  1. Agent starts at the default (info) log level — no DEBUG lines in the log.
+//  2. Two AGENT_CONFIG payloads are pushed via the fakeintake RC API:
 //     - a named layer that sets log_level to "debug"
 //     - a configuration_order that activates the layer
-//  4. The agent polls fakeintake (every 5 s), receives the signed config, and
+//  3. The agent polls fakeintake (every 5 s), receives the signed config, and
 //     starts writing DEBUG lines to its log file.
 
 import (
@@ -26,7 +28,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	scenec2 "github.com/DataDog/datadog-agent/test/e2e-framework/scenarios/aws/ec2"
 	"github.com/DataDog/datadog-agent/test/e2e-framework/testing/e2e"
 	"github.com/DataDog/datadog-agent/test/e2e-framework/testing/environments"
 	awshost "github.com/DataDog/datadog-agent/test/e2e-framework/testing/provisioners/aws/host"
@@ -41,16 +42,9 @@ type rcLogLevelExampleSuite struct {
 //
 //	dda inv new-e2e-tests.run --targets=./examples/... -run TestRCLogLevelExampleSuite
 func TestRCLogLevelExampleSuite(t *testing.T) {
+	// RC is wired automatically — no special provisioner option is required.
 	e2e.Run(t, &rcLogLevelExampleSuite{},
-		e2e.WithProvisioner(
-			awshost.Provisioner(
-				awshost.WithRunOptions(
-					// WithFakeIntakeRCWiredToAgent enables fakeintake's RC backend and
-					// configures the agent to use it — one option does both.
-					scenec2.WithFakeIntakeRCWiredToAgent(),
-				),
-			),
-		),
+		e2e.WithProvisioner(awshost.Provisioner()),
 	)
 }
 

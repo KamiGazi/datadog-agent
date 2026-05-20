@@ -8,6 +8,7 @@ package runner
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"maps"
 
 	commonconfig "github.com/DataDog/datadog-agent/test/e2e-framework/common/config"
@@ -109,6 +110,7 @@ func SetConfigMapFromStore(store parameters.Store, cm ConfigMap, paramName param
 		return err
 	}
 
+	fmt.Println("Setting config map from store", paramName, configMapKey, val, secret)
 	cm[configMapKey] = auto.ConfigValue{
 		Value:  val,
 		Secret: secret,

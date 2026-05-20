@@ -7,12 +7,6 @@ package fakeintake
 
 import "github.com/DataDog/datadog-agent/test/e2e-framework/common"
 
-// DefaultRCSigningKeySeed is the default ed25519 seed used by fakeintake when
-// WithRemoteConfig() is passed without an explicit seed. It is a fixed test-only
-// key — never use it in production. All E2E tests share this seed so the TUF
-// root JSON is deterministic and can be baked into the agent config at provision time.
-const DefaultRCSigningKeySeed = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
-
 type Params struct {
 	LoadBalancerEnabled bool
 	ImageURL            string
@@ -20,7 +14,6 @@ type Params struct {
 	Memory              int
 	DDDevForwarding     bool
 	RetentionPeriod     string
-	RCSigningKeySeed    string // hex-encoded 32-byte ed25519 seed; empty disables fixed-key RC
 }
 
 type Option = func(*Params) error
@@ -29,7 +22,7 @@ type Option = func(*Params) error
 func NewParams(options ...Option) (*Params, error) {
 	params := &Params{
 		LoadBalancerEnabled: false,
-		ImageURL:            "public.ecr.aws/datadog/fakeintake:latest",
+		ImageURL:            "datadog/fakeintake:ve8453bb7",
 		CPU:                 512,
 		Memory:              1024,
 		DDDevForwarding:     true,
@@ -88,25 +81,6 @@ func WithoutDDDevForwarding() Option {
 func WithRetentionPeriod(retentionPeriod string) Option {
 	return func(p *Params) error {
 		p.RetentionPeriod = retentionPeriod
-		return nil
-	}
-}
-
-// WithRemoteConfig enables fakeintake's Remote Config backend using the default
-// fixed signing key seed (DefaultRCSigningKeySeed). The root JSON is deterministic
-// so the agent's config_root / director_root can be set at provision time.
-func WithRemoteConfig() Option {
-	return func(p *Params) error {
-		p.RCSigningKeySeed = DefaultRCSigningKeySeed
-		return nil
-	}
-}
-
-// WithRemoteConfigSigningKeySeed enables fakeintake's Remote Config backend with a
-// specific hex-encoded 32-byte ed25519 seed instead of the default one.
-func WithRemoteConfigSigningKeySeed(hexSeed string) Option {
-	return func(p *Params) error {
-		p.RCSigningKeySeed = hexSeed
 		return nil
 	}
 }

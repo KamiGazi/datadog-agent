@@ -11,6 +11,12 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
+// DefaultRCSigningKeySeed is the fixed ed25519 seed shared by every fakeintake
+// instance. It is a test-only key — never use it in production. A single
+// well-known seed makes the TUF root JSON deterministic so it can be computed
+// at provision time without any runtime key negotiation.
+const DefaultRCSigningKeySeed = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
+
 type FakeintakeOutput struct { // nolint:revive, We want to keep the name as <Component>Output
 	components.JSONImporter
 
