@@ -109,11 +109,21 @@ def _impl(rctx):
 
     # The codegen task writes JSON to a file rather than stdout so we don't
     # have to parse around dda/rich's console init noise on Windows.
+    #
+    # DDA_NO_DYNAMIC_DEPS=1 makes dda skip its `uv sync` step and just use
+    # the venv the surrounding shell has already provisioned. Without it,
+    # the sync runs on every fetch and on arches without prebuilt wheels
+    # (e.g. armhf) tries to rebuild lxml from source and fails. Caller
+    # responsibility: ensure `dda inv ...` was run at least once before
+    # bazel touches this repo (CI's outer omnibus step covers this; local
+    # dev does too as soon as you've done anything with dda).
+    env = {"DDA_NO_DYNAMIC_DEPS": "1"}
     out_file = rctx.path("payload.json")
     result = rctx.execute(
         ["dda", "inv", "codegen-to-json", "--output=" + str(out_file)],
         working_directory = str(rctx.workspace_root),
         quiet = True,
+        environment = env,
     )
     if result.return_code != 0:
         fail("dda inv codegen-to-json failed (rc=%d):\nstdout=%s\nstderr=%s" %
