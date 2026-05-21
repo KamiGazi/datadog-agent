@@ -59,6 +59,10 @@ type Params struct {
 	PulumiDependsOn []pulumi.ResourceOption
 	// FIPS is true if FIPS image is needed.
 	FIPS bool
+
+	// intakeURL is stored by withIntakeHostname so that WithV3MetricsEnabled
+	// can inject V3 endpoint config after fakeintake wiring.
+	intakeURL pulumi.StringInput
 }
 
 type Option = func(*Params) error
@@ -171,6 +175,7 @@ func WithFakeintake(fakeintake *fakeintake.Fakeintake) func(*Params) error {
 
 func withIntakeHostname(url pulumi.StringInput, shouldSkipSSLValidation pulumi.BoolInput) func(*Params) error {
 	return func(p *Params) error {
+		p.intakeURL = url
 		envVars := pulumi.Map{
 			"DD_DD_URL":                                  pulumi.Sprintf("%s", url),
 			"DD_PROCESS_CONFIG_PROCESS_DD_URL":           pulumi.Sprintf("%s", url),
@@ -181,6 +186,30 @@ func withIntakeHostname(url pulumi.StringInput, shouldSkipSSLValidation pulumi.B
 			"DD_LOGS_CONFIG_LOGS_DD_URL":                 pulumi.Sprintf("%s", url),
 			"DD_LOGS_CONFIG_LOGS_NO_SSL":                 shouldSkipSSLValidation,
 			"DD_SERVICE_DISCOVERY_FORWARDER_LOGS_DD_URL": pulumi.Sprintf("%s", url),
+		}
+		for key, value := range envVars {
+			if err := WithAgentServiceEnvVariable(key, value)(p); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
+// WithV3MetricsEnabled opts the Agent into the V3 metrics intake API for its primary
+// fakeintake endpoint. It adds serializer_experimental_use_v3_api series/sketches
+// endpoints pointing at the same URL used for DD_DD_URL, so the serializer sends
+// to /api/intake/metrics/v3/series instead of /api/v2/series.
+//
+// Must be called after WithFakeintake or WithIntake so the intake URL is known.
+func WithV3MetricsEnabled() func(*Params) error {
+	return func(p *Params) error {
+		if p.intakeURL == nil {
+			return fmt.Errorf("WithV3MetricsEnabled must be called after WithFakeintake or WithIntake")
+		}
+		envVars := pulumi.Map{
+			"DD_SERIALIZER_EXPERIMENTAL_USE_V3_API_SERIES_ENDPOINTS":   pulumi.Sprintf("%s", p.intakeURL),
+			"DD_SERIALIZER_EXPERIMENTAL_USE_V3_API_SKETCHES_ENDPOINTS": pulumi.Sprintf("%s", p.intakeURL),
 		}
 		for key, value := range envVars {
 			if err := WithAgentServiceEnvVariable(key, value)(p); err != nil {
