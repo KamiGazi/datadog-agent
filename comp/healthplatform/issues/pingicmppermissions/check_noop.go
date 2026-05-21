@@ -8,10 +8,10 @@
 package pingicmppermissions
 
 import (
-	"github.com/DataDog/agent-payload/v5/healthplatform"
+	storedef "github.com/DataDog/datadog-agent/comp/healthplatform/store/def"
 )
 
 // Check is a no-op on non-Linux platforms.
-func Check() (*healthplatform.IssueReport, error) {
+func Check() ([]storedef.IssueReport, error) {
 	return nil, nil
 }

@@ -12,6 +12,7 @@ package pingicmppermissions
 import (
 	"github.com/DataDog/datadog-agent/comp/core/config"
 	"github.com/DataDog/datadog-agent/comp/healthplatform/issues"
+	storedef "github.com/DataDog/datadog-agent/comp/healthplatform/store/def"
 )
 
 func init() {
@@ -19,14 +20,11 @@ func init() {
 }
 
 const (
-	// IssueID is the unique identifier for ping ICMP permission issues
+	// IssueType is the template type identifier for ping ICMP permission issues
+	IssueType = "ping-icmp-permissions"
+
+	// IssueID is the unique instance id used when reporting this issue
 	IssueID = "ping-icmp-permissions"
-
-	// CheckID is the unique identifier for the built-in health check
-	CheckID = "ping-icmp-socket"
-
-	// CheckName is the human-readable name for the health check
-	CheckName = "Ping ICMP Socket Permissions"
 )
 
 // pingICMPPermissionsModule implements issues.Module
@@ -35,15 +33,15 @@ type pingICMPPermissionsModule struct {
 }
 
 // NewModule creates a new ping ICMP permissions issue module
-func NewModule(config.Component) issues.Module {
+func NewModule(_ config.Component) issues.Module {
 	return &pingICMPPermissionsModule{
 		template: NewPingICMPPermissionsIssue(),
 	}
 }
 
-// IssueID returns the unique identifier for this issue type
-func (m *pingICMPPermissionsModule) IssueID() string {
-	return IssueID
+// IssueType returns the template type identifier for this issue type
+func (m *pingICMPPermissionsModule) IssueType() string {
+	return IssueType
 }
 
 // IssueTemplate returns the template for building complete issues
@@ -51,13 +49,17 @@ func (m *pingICMPPermissionsModule) IssueTemplate() issues.IssueTemplate {
 	return m.template
 }
 
-// BuiltInHealthCheck returns the built-in health check configuration.
-// Once is true so the check runs only once at agent startup.
-func (m *pingICMPPermissionsModule) BuiltInHealthCheck() *issues.BuiltInHealthCheck {
-	return &issues.BuiltInHealthCheck{
-		ID:      CheckID,
-		Name:    CheckName,
-		CheckFn: Check,
-		Once:    true,
+// BuiltInPeriodicHealthCheck returns nil — ICMP permission checks run once at startup, not periodically.
+func (m *pingICMPPermissionsModule) BuiltInPeriodicHealthCheck() *issues.BuiltInPeriodicHealthCheck {
+	return nil
+}
+
+// BuiltInStartupHealthCheck runs the ICMP socket permission check once at agent startup.
+func (m *pingICMPPermissionsModule) BuiltInStartupHealthCheck() *issues.BuiltInStartupHealthCheck {
+	return &issues.BuiltInStartupHealthCheck{
+		Source: "ping",
+		Fn: func() ([]storedef.IssueReport, error) {
+			return Check()
+		},
 	}
 }

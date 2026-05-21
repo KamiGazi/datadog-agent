@@ -11,21 +11,22 @@ import (
 	"errors"
 	"syscall"
 
-	"github.com/DataDog/agent-payload/v5/healthplatform"
+	storedef "github.com/DataDog/datadog-agent/comp/healthplatform/store/def"
 )
 
 // Check attempts to create a raw ICMP socket to verify the agent has the required NET_RAW capability.
 // Returns an IssueReport if the socket creation fails due to a permission error, nil otherwise.
-func Check() (*healthplatform.IssueReport, error) {
+func Check() ([]storedef.IssueReport, error) {
 	fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_RAW, syscall.IPPROTO_ICMP)
 	if err != nil {
 		if errors.Is(err, syscall.EPERM) || errors.Is(err, syscall.EACCES) {
-			return &healthplatform.IssueReport{
-				IssueId: IssueID,
-				Context: map[string]string{
-					"error": err.Error(),
+			return []storedef.IssueReport{
+				{
+					IssueID: IssueID,
+					Context: map[string]string{
+						"error": err.Error(),
+					},
 				},
-				Tags: []string{"ping", "icmp", "permissions", "net_raw"},
 			}, nil
 		}
 		return nil, err
