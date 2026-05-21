@@ -16,8 +16,8 @@ import (
 	"github.com/DataDog/datadog-agent/cmd/serverless-init/exitcode"
 	serverlessInitLog "github.com/DataDog/datadog-agent/cmd/serverless-init/log"
 	"github.com/DataDog/datadog-agent/cmd/serverless-init/mode"
-	"github.com/DataDog/datadog-agent/comp/aggregator/demultiplexer"
-	"github.com/DataDog/datadog-agent/comp/aggregator/demultiplexer/demultiplexerimpl"
+	demultiplexer "github.com/DataDog/datadog-agent/comp/aggregator/demultiplexer/def"
+	demultiplexerimpl "github.com/DataDog/datadog-agent/comp/aggregator/demultiplexer/impl"
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery"
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/autodiscoveryimpl"
 	coreconfig "github.com/DataDog/datadog-agent/comp/core/config"
@@ -330,7 +330,7 @@ func run(
 	_ defaultforwarder.Component,
 	_ demultiplexer.Component,
 	demux aggregator.Demultiplexer,
-	_ dogstatsdServer.Component,
+	dsdServer dogstatsdServer.Component,
 	cloudService cloudservice.CloudService,
 	tagConfig tagConfiguration,
 	metricTags metrics.Tags,
@@ -350,13 +350,16 @@ func run(
 	//      by traceStopTimeout (3 s).
 	//   4. logs agent flushes any buffered records — bounded by
 	//      logsFlushTimeout (2 s).
-	//   5. metricAgent.Stop waits for the time-sampler workers to drain
-	//      every sample enqueued during steps 2-4 — bounded by
+	//   5. dogstatsd ServerlessFlush drains custom DogStatsD samples sitting
+	//      in the worker batchers into the aggregator so they're not lost
+	//      when the server stops accepting traffic.
+	//   6. metricAgent.Stop waits for the time-sampler workers to drain
+	//      every sample enqueued during steps 2-5 — bounded by
 	//      metricsDrainTimeout (500 ms). Placed last so any background
 	//      emitter (OTLP, autodiscovery, trace stats) that ships a sample
 	//      during the earlier phases still lands in the aggregator before
-	//      step 6's flush.
-	//   6. run() returns; Fx OnStop fires demux.Stop(true) which performs the
+	//      step 7's flush.
+	//   7. run() returns; Fx OnStop fires demux.Stop(true) which performs the
 	//      final metric flush (incomplete buckets included via
 	//      dogstatsd_flush_incomplete_buckets) — bounded by
 	//      metricsAggregatorStopTimeoutSeconds (2 s) — then drains the
@@ -372,6 +375,7 @@ func run(
 		}
 		cancel()
 	}()
+	defer dsdServer.ServerlessFlush(0)
 	defer flushLogsAgent(logConfig.FlushTimeout, logsAgent)
 	defer tracingCtx.TraceAgent.Stop()
 	defer func() {
