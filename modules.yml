@@ -37,10 +37,6 @@ modules:
     used_by_otel: true
   comp/core/hostname/hostnameinterface:
     used_by_otel: true
-  comp/core/hostname/hostnameinterface/def:
-    used_by_otel: true
-  comp/core/hostname/hostnameinterface/mock:
-    used_by_otel: true
   comp/core/ipc/def:
     used_by_otel: true
   comp/core/ipc/httphelpers:
