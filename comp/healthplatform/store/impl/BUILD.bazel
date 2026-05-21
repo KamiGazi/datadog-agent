@@ -36,7 +36,7 @@ go_test(
     gotags = ["test"],
     deps = [
         "//comp/core/flare/builder",
-        "//comp/core/hostname/hostnameinterface",
+        "//comp/core/hostname/hostnameinterface/def",
         "//comp/core/log/mock",
         "//comp/core/telemetry/mock",
         "//comp/healthplatform/issueregistry/def",
