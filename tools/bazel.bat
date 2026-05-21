@@ -9,7 +9,10 @@ exit /b 2
 :bazelisk_ok
 
 :: Ensure `XDG_CACHE_HOME` denotes a directory
-if not defined DOTNET_RUNNING_IN_CONTAINER >nul 2>&1 sc query CExecSvc && set DOTNET_RUNNING_IN_CONTAINER=1
+>&2 echo [debug] DOTNET_RUNNING_IN_CONTAINER pre=[!DOTNET_RUNNING_IN_CONTAINER!]
+if not defined DOTNET_RUNNING_IN_CONTAINER sc query CExecSvc 1>&2 && set DOTNET_RUNNING_IN_CONTAINER=1
+>&2 echo [debug] sc query CExecSvc errorlevel=!errorlevel!
+>&2 echo [debug] DOTNET_RUNNING_IN_CONTAINER post=[!DOTNET_RUNNING_IN_CONTAINER!]
 if not exist "%XDG_CACHE_HOME%" (
   if defined CI (
     >&2 echo 🔴 XDG_CACHE_HOME ^(!XDG_CACHE_HOME!^) must denote a directory in CI!
@@ -66,6 +69,8 @@ if not exist "!more_than_260_chars!" (
 
 set "args=%*"
 if defined args if defined extra_args call :insert_extra_args
+>&2 echo [debug] startup_options=!startup_options!
+>&2 echo [debug] args=!args!
 "%BAZEL_REAL%" !startup_options! !args!
 exit /b !errorlevel!
 
