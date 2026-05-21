@@ -66,6 +66,7 @@ import (
 const (
 	fakeintakeIDHeader           = "Fakeintake-ID"
 	metricsEndpoint              = "/api/v2/series"
+	metricsV3Endpoint            = "/api/intake/metrics/v3/series"
 	sketchesEndpoint             = "/api/beta/sketches"
 	intakeEndpoint               = "/intake/"
 	checkRunsEndpoint            = "/api/v1/check_run"
@@ -130,6 +131,7 @@ type Client struct {
 	getBackoffDelay   time.Duration
 
 	metricAggregator               aggregator.MetricAggregator
+	metricAggregatorV3             aggregator.MetricAggregatorV3
 	sketchAggregator               aggregator.SketchAggregator
 	checkRunAggregator             aggregator.CheckRunAggregator
 	eventAggregator                aggregator.EventAggregator
@@ -164,6 +166,7 @@ func NewClient(fakeIntakeURL string, opts ...Option) *Client {
 		getBackoffDelay:                5 * time.Second,
 		fakeIntakeURL:                  strings.TrimSuffix(fakeIntakeURL, "/"),
 		metricAggregator:               aggregator.NewMetricAggregator(),
+		metricAggregatorV3:             aggregator.NewMetricAggregatorV3(),
 		sketchAggregator:               aggregator.NewSketchAggregator(),
 		checkRunAggregator:             aggregator.NewCheckRunAggregator(),
 		eventAggregator:                aggregator.NewEventAggregator(),
@@ -395,6 +398,24 @@ func (c *Client) FilterSketches(name string, options ...MatchOpt[*aggregator.Ske
 		return nil, err
 	}
 	return filterPayload(c.sketchAggregator.GetPayloadsByName(name), options...)
+}
+
+// FilterMetricsV3 fetches fakeintake on `/api/intake/metrics/v3/series` and returns
+// series matching `name` and any [MatchOpt](#MatchOpt) options. Use this to assert
+// that the agent is sending metrics via the V3 intake API.
+func (c *Client) FilterMetricsV3(name string, options ...MatchOpt[*aggregator.MetricSeriesV3]) ([]*aggregator.MetricSeriesV3, error) {
+	if err := c.getMetricsV3(); err != nil {
+		return nil, err
+	}
+	return filterPayload(c.metricAggregatorV3.GetPayloadsByName(name), options...)
+}
+
+func (c *Client) getMetricsV3() error {
+	payloads, err := c.getFakePayloads(metricsV3Endpoint)
+	if err != nil {
+		return err
+	}
+	return c.metricAggregatorV3.UnmarshallPayloads(payloads)
 }
 
 // FilterCheckRuns fetches fakeintake on `/api/v1/check_run` endpoint and returns
@@ -710,6 +731,7 @@ func (c *Client) FlushServerAndResetAggregators() error {
 	c.checkRunAggregator.Reset()
 	c.connectionAggregator.Reset()
 	c.metricAggregator.Reset()
+	c.metricAggregatorV3.Reset()
 	c.sketchAggregator.Reset()
 	c.logAggregator.Reset()
 	c.apmStatsAggregator.Reset()

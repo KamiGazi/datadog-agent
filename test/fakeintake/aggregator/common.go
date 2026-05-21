@@ -24,7 +24,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/DataDog/zstd"
+	"github.com/klauspost/compress/zstd"
 
 	"github.com/DataDog/datadog-agent/test/fakeintake/api"
 )
@@ -154,6 +154,10 @@ func (agg *Aggregator[P]) getNamesUnsorted() []string {
 }
 
 func inflate(payload []byte, encoding string) (inflated []byte, err error) {
+	if encoding == encodingZstd {
+		return inflateZstd(payload)
+	}
+
 	rc, err := getReadCloserForEncoding(payload, encoding)
 	if err != nil {
 		return nil, err
@@ -166,14 +170,23 @@ func inflate(payload []byte, encoding string) (inflated []byte, err error) {
 	return inflated, nil
 }
 
+func inflateZstd(payload []byte) ([]byte, error) {
+	// Metrics V3 payloads concatenate independently compressed protobuf
+	// headers and columns, so zstd decoding must consume all frames.
+	decoder, err := zstd.NewReader(nil)
+	if err != nil {
+		return nil, err
+	}
+	defer decoder.Close()
+	return decoder.DecodeAll(payload, nil)
+}
+
 func getReadCloserForEncoding(payload []byte, encoding string) (rc io.ReadCloser, err error) {
 	switch encoding {
 	case encodingGzip:
 		rc, err = gzip.NewReader(bytes.NewReader(payload))
 	case encodingDeflate:
 		rc, err = zlib.NewReader(bytes.NewReader(payload))
-	case encodingZstd:
-		rc = zstd.NewReader(bytes.NewReader(payload))
 	default:
 		rc = io.NopCloser(bytes.NewReader(payload))
 	}
