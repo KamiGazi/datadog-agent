@@ -10,7 +10,6 @@ import (
 	"context"
 
 	"github.com/DataDog/datadog-agent/pkg/networkconfigmanagement/profile"
-	"github.com/DataDog/datadog-agent/pkg/networkconfigmanagement/types"
 )
 
 // Client defines the interface for a remote client that can create sessions to execute commands on a device
@@ -19,7 +18,7 @@ type Client interface {
 	NewSession() (Session, error)
 	RetrieveRunningConfig() ([]byte, error)
 	RetrieveStartupConfig() ([]byte, error)
-	PushConfig(context.Context, string, types.PushType) error
+	PushConfig(ctx context.Context, config string) error
 	SetProfile(p *profile.NCMProfile)
 	Close() error
 }

@@ -52,8 +52,6 @@ type RollbackConfigInputs struct {
 	// ConfigHash is the hashed value of the config; the operation will abort if
 	// this doesn't match what we have in storage.
 	ConfigHash string `json:"hash"`
-	// PushType is the type of push to perform.
-	PushType ncmtypes.PushType `json:"pushType"`
 }
 
 // Run executes the rollbackConfig action
@@ -119,7 +117,7 @@ func (h *RollbackConfigHandler) Run(
 		return nil, fmt.Errorf("%v: %w", inputs.DeviceID, err)
 	}
 
-	err = client.PushConfig(ctx, storedConfig.RawConfig, inputs.PushType)
+	err = client.PushConfig(ctx, storedConfig.RawConfig)
 	if err != nil {
 		return nil, fmt.Errorf("cannot push config to device %q: %w", inputs.DeviceID, err)
 	}

@@ -18,7 +18,6 @@ import (
 	"golang.org/x/crypto/ssh/knownhosts"
 
 	"github.com/DataDog/datadog-agent/pkg/networkconfigmanagement/profile"
-	"github.com/DataDog/datadog-agent/pkg/networkconfigmanagement/types"
 
 	ncmconfig "github.com/DataDog/datadog-agent/pkg/networkconfigmanagement/config"
 	"github.com/DataDog/datadog-agent/pkg/util/log"
@@ -203,7 +202,7 @@ func (s *SSHSession) CombinedOutput(cmd string) ([]byte, error) {
 	return s.session.CombinedOutput(cmd)
 }
 
-func (c *SSHClient) PushConfig(_ context.Context, _ string, _ types.PushType) error {
+func (c *SSHClient) PushConfig(_ context.Context, _ string) error {
 	return errors.New("not implemented")
 }
 
