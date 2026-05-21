@@ -129,9 +129,13 @@ const (
 	metricsFlushInterval = 3 * time.Second
 
 	// shutdownBudgetWatchdog fires a debug log if total shutdown elapsed time
-	// exceeds this. Sum of the five phase budgets is 9.1 s (trace 3 + logs 2
-	// + drain 0.1 + demux 2 + forwarder 2); this leaves ~400 ms of slack
-	// before Cloud Run's 10 s SIGTERM-to-SIGKILL grace window expires.
+	// exceeds this. Six shutdown phases run under explicit or inherited
+	// bounds: trace (3 s) + logs (2 s) + dogstatsd ServerlessFlush (no
+	// explicit timeout — shares the demux budget below since it calls
+	// aggregator.ForceFlushToSerializer which is itself bounded by
+	// aggregator_stop_timeout) + metric drain (0.1 s) + demux Stop
+	// (2 s) + forwarder purge (2 s) ≈ 9.1 s total. This leaves ~400 ms of
+	// slack before Cloud Run's 10 s SIGTERM-to-SIGKILL grace window expires.
 	shutdownBudgetWatchdog = 9*time.Second + 500*time.Millisecond
 )
 
@@ -355,7 +359,7 @@ func run(
 	//      when the server stops accepting traffic.
 	//   6. metricAgent.Stop waits for the time-sampler workers to drain
 	//      every sample enqueued during steps 2-5 — bounded by
-	//      metricsDrainTimeout (500 ms). Placed last so any background
+	//      metricsDrainTimeout (100 ms). Placed last so any background
 	//      emitter (OTLP, autodiscovery, trace stats) that ships a sample
 	//      during the earlier phases still lands in the aggregator before
 	//      step 7's flush.

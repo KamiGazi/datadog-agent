@@ -126,7 +126,6 @@ type dsdServer struct {
 
 	packetsIn               chan packets.Packets
 	captureChan             chan packets.Packets
-	serverlessFlushChan     chan bool
 	sharedPacketPool        *packets.Pool
 	sharedPacketPoolManager *packets.PoolManager[packets.Packet]
 	sharedFloat64List       *float64ListPool
@@ -295,7 +294,6 @@ func newServerCompat(cfg model.ReaderWriter, log log.Component, hostname hostnam
 		demultiplexer:           demux,
 		listeners:               nil,
 		stopChan:                make(chan bool),
-		serverlessFlushChan:     make(chan bool),
 		health:                  nil,
 		histToDist:              histToDist,
 		histToDistPrefix:        histToDistPrefix,
@@ -610,22 +608,19 @@ func (s *dsdServer) forwarder(fcon net.Conn) {
 func (s *dsdServer) ServerlessFlush(sketchesBucketDelay time.Duration) {
 	s.log.Debug("Received a Flush trigger")
 
-	// If the server isn't running, no workers are consuming serverlessFlushChan;
-	// sending on the unbuffered channel would deadlock. Skip the worker fan-out
-	// but still force a final aggregator flush in case samples were enqueued by
-	// other paths.
+	// Snapshot the workers under the start/stop lock so we don't race with
+	// Start/Stop. If the server isn't running there are no workers and nothing
+	// to flush at the worker level — fall through to the aggregator flush.
 	s.startedMtx.RLock()
-	running := s.IsRunning()
-	workerCount := len(s.workers)
+	workers := make([]*worker, len(s.workers))
+	copy(workers, s.workers)
 	s.startedMtx.RUnlock()
 
-	if running {
-		// Make all workers flush their aggregated data (in the batchers) into
-		// the time samplers. Each worker receives once on serverlessFlushChan,
-		// so we send N times to fan out to every worker.
-		for i := 0; i < workerCount; i++ {
-			s.serverlessFlushChan <- true
-		}
+	// Fan out to each worker's dedicated flushChan. Each worker receives once
+	// on its own channel and runs batcher.flush() exactly once, draining every
+	// worker's batched samples into the time sampler.
+	for _, w := range workers {
+		w.flushChan <- struct{}{}
 	}
 
 	start := time.Now()
