@@ -136,9 +136,11 @@ const (
 	// not by aggregator_stop_timeout, which only governs demux Stop) +
 	// metric drain (0.1 s) + demux Stop (2 s) + forwarder purge (2 s). The
 	// timed phases sum to ≈9.1 s, leaving ~400 ms of slack before Cloud
-	// Run's 10 s SIGTERM-to-SIGKILL grace window expires; the unbounded
-	// ServerlessFlush phase will burn into that slack if the serializer is
-	// slow.
+	// Run's 10 s SIGTERM-to-SIGKILL grace window expires — assuming
+	// ServerlessFlush completes quickly, which it does in practice because
+	// the worker batchers are small and the aggregator flush it triggers
+	// goes through the same serializer/forwarder path that is later bounded
+	// by aggregator_stop_timeout during demux Stop.
 	shutdownBudgetWatchdog = 9*time.Second + 500*time.Millisecond
 )
 
@@ -359,7 +361,11 @@ func run(
 	//      logsFlushTimeout (2 s).
 	//   5. dogstatsd ServerlessFlush drains custom DogStatsD samples sitting
 	//      in the worker batchers into the aggregator so they're not lost
-	//      when the server stops accepting traffic.
+	//      when the server stops accepting traffic. Note: this drains the
+	//      worker batchers only — it does NOT drain the listener→worker
+	//      packetsIn queue, so UDP packets that arrive after the last
+	//      worker run (or during/after ServerlessFlush itself) may still
+	//      be dropped when Fx OnStop tears the server down in step 7.
 	//   6. metricAgent.Stop waits for the time-sampler workers to drain
 	//      every sample enqueued during steps 2-5 — bounded by
 	//      metricsDrainTimeout (100 ms). Placed last so any background

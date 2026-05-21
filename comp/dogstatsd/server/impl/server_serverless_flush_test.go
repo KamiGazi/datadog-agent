@@ -70,13 +70,21 @@ func TestServerlessFlushFansOutToAllWorkers(t *testing.T) {
 	requireStart(t, s)
 	require.Len(t, s.workers, workerCount, "expected the configured number of workers")
 
-	// Append one sample directly to each worker's batcher. The batcher is
-	// not safe for concurrent use, so we mutate it before the worker has
-	// any traffic to handle, then ServerlessFlush triggers each worker to
-	// run batcher.flush() on its own goroutine.
+	// Workers are parked on select with no packetsIn traffic, so direct
+	// batcher writes from this test goroutine are safe. The unbuffered
+	// flushChan send/recv inside ServerlessFlush provides happens-before
+	// with the subsequent batcher.flush() that runs on the worker goroutine.
+	//
+	// Each worker gets a uniquely-named sample so the assertion can verify
+	// EVERY worker drained, not just total count — a regression where one
+	// fast worker double-fires while a peer never flushes would still match
+	// the total count but would miss one of the unique names.
+	expectedNames := make(map[string]struct{}, workerCount)
 	for i, w := range s.workers {
+		name := "serverless.flush.test.worker." + strconv.Itoa(i)
+		expectedNames[name] = struct{}{}
 		w.batcher.appendSample(metrics.MetricSample{
-			Name:       "test.serverless.flush." + strconv.Itoa(i),
+			Name:       name,
 			Value:      float64(i + 1),
 			Mtype:      metrics.GaugeType,
 			SampleRate: 1,
@@ -85,7 +93,15 @@ func TestServerlessFlushFansOutToAllWorkers(t *testing.T) {
 
 	s.ServerlessFlush(0)
 
-	// Each worker should have pushed exactly one sample to the demultiplexer.
+	// Wait for at least workerCount samples, then verify each unique
+	// per-worker name appears at least once — proves every worker's
+	// batcher.flush() actually ran.
 	samples, _ := deps.Demultiplexer.WaitForNumberOfSamples(workerCount, 0, 2*time.Second)
-	assert.Len(t, samples, workerCount, "every worker's batcher must be drained — fan-out regression")
+	gotNames := make(map[string]struct{}, len(samples))
+	for _, sample := range samples {
+		gotNames[sample.Name] = struct{}{}
+	}
+	for name := range expectedNames {
+		assert.Contains(t, gotNames, name, "expected sample from each worker — fan-out regression: missing %s", name)
+	}
 }

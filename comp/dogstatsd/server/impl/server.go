@@ -622,6 +622,9 @@ func (s *dsdServer) ServerlessFlush(sketchesBucketDelay time.Duration) {
 	// guards against a racing Stop closing the worker loop between our snapshot
 	// and the unbuffered send: if the server is stopping, workers exit on
 	// <-stopChan and would never receive on flushChan, so we abandon the send.
+	// Once stopChan is closed, every subsequent iteration of this loop hits the
+	// stopChan case immediately (receives on a closed channel are always ready),
+	// so all remaining workers are abandoned without blocking.
 	for _, w := range workers {
 		select {
 		case w.flushChan <- struct{}{}:
