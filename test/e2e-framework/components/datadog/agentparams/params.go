@@ -60,6 +60,12 @@ type Params struct {
 	// parameters like the MSI flags.
 	AdditionalInstallParameters []string
 	SkipAPIKeyInConfig          bool
+
+	// intakeScheme, intakeHostname, intakePort are stored by withIntakeHostname so that
+	// WithV3MetricsEnabled (applied after fakeintake wiring) can inject V3 endpoints config.
+	intakeScheme   pulumi.StringInput
+	intakeHostname pulumi.StringInput
+	intakePort     pulumi.IntInput
 }
 
 type Option = func(*Params) error
@@ -268,6 +274,11 @@ func WithPulumiResourceOptions(resources ...pulumi.ResourceOption) func(*Params)
 
 func withIntakeHostname(scheme pulumi.StringInput, hostname pulumi.StringInput, port pulumi.IntInput) func(*Params) error {
 	return func(p *Params) error {
+		// Store so that WithV3MetricsEnabled (applied after) can build V3 endpoints config.
+		p.intakeScheme = scheme
+		p.intakeHostname = hostname
+		p.intakePort = port
+
 		extraConfig := pulumi.Sprintf(`dd_url: %[3]s://%[1]s:%[2]d
 logs_config.logs_dd_url: %[1]s:%[2]d
 logs_config.logs_no_ssl: true
@@ -335,6 +346,30 @@ func WithFakeintake(fakeintake *fakeintake.Fakeintake) func(*Params) error {
 	return func(p *Params) error {
 		p.ResourceOptions = append(p.ResourceOptions, pulumi.DependsOn([]pulumi.Resource{fakeintake}))
 		return withIntakeHostname(fakeintake.Scheme, fakeintake.Host, fakeintake.Port)(p)
+	}
+}
+
+// WithV3MetricsEnabled opts the agent into the V3 metrics intake API for its primary fakeintake
+// endpoint. It adds serializer_experimental_use_v3_api.series/sketches.endpoints pointing at the
+// same URL used for dd_url, so the serializer sends to /api/intake/metrics/v3/series instead of
+// /api/v2/series.
+//
+// Must be called after WithFakeintake (or WithIntakeHostname) so the intake URL is known.
+func WithV3MetricsEnabled() func(*Params) error {
+	return func(p *Params) error {
+		if p.intakeHostname == nil || p.intakePort == nil || p.intakeScheme == nil {
+			return fmt.Errorf("WithV3MetricsEnabled must be called after WithFakeintake or WithIntakeHostname")
+		}
+		v3Config := pulumi.Sprintf(`serializer_experimental_use_v3_api:
+  series:
+    endpoints:
+      - %[3]s://%[1]s:%[2]d
+  sketches:
+    endpoints:
+      - %[3]s://%[1]s:%[2]d
+`, p.intakeHostname, p.intakePort, p.intakeScheme)
+		p.ExtraAgentConfig = append(p.ExtraAgentConfig, v3Config)
+		return nil
 	}
 }
 
