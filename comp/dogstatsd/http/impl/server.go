@@ -13,7 +13,7 @@ import (
 	"net/http"
 
 	"github.com/DataDog/datadog-agent/comp/core/config"
-	hostname "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
+	hostnameinterface "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
 	tagger "github.com/DataDog/datadog-agent/comp/core/tagger/def"
 	"github.com/DataDog/datadog-agent/pkg/metrics"
@@ -23,7 +23,7 @@ type server struct {
 	config   config.Component
 	log      log.Component
 	tagger   tagger.Component
-	hostname hostname.Component
+	hostname hostnameinterface.Component
 	out      serializer
 
 	http *http.Server

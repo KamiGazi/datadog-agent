@@ -8,7 +8,7 @@ package httpimpl
 import (
 	demultiplexer "github.com/DataDog/datadog-agent/comp/aggregator/demultiplexer/def"
 	"github.com/DataDog/datadog-agent/comp/core/config"
-	hostname "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
+	hostnameinterface "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
 	tagger "github.com/DataDog/datadog-agent/comp/core/tagger/def"
 	comp "github.com/DataDog/datadog-agent/comp/def"
@@ -21,7 +21,7 @@ type Requires struct {
 	Log      log.Component
 	Config   config.Component
 	Tagger   tagger.Component
-	Hostname hostname.Component
+	Hostname hostnameinterface.Component
 	Demux    demultiplexer.Component
 }
 

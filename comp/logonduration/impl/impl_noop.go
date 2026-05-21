@@ -10,7 +10,7 @@ package logondurationimpl
 
 import (
 	configcomp "github.com/DataDog/datadog-agent/comp/core/config"
-	hostname "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
+	hostnameinterface "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
 	logcomp "github.com/DataDog/datadog-agent/comp/core/log/def"
 	sysprobeconfig "github.com/DataDog/datadog-agent/comp/core/sysprobeconfig/def"
 	compdef "github.com/DataDog/datadog-agent/comp/def"
@@ -25,7 +25,7 @@ type Requires struct {
 	SysprobeConfig sysprobeconfig.Component
 	Log            logcomp.Component
 	EventPlatform  eventplatform.Component
-	Hostname       hostname.Component
+	Hostname       hostnameinterface.Component
 }
 
 // Provides defines what this component provides

@@ -10,7 +10,7 @@ package collectorimpl
 
 import (
 	"github.com/DataDog/datadog-agent/comp/core/config"
-	hostname "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
+	hostnameinterface "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
 	ipc "github.com/DataDog/datadog-agent/comp/core/ipc/def"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
 	tagger "github.com/DataDog/datadog-agent/comp/core/tagger/def"
@@ -61,7 +61,7 @@ type ExtraFactories interface {
 // extraFactoriesWithAgentCore is a struct that implements the ExtraFactories interface when the Agent Core is available.
 type extraFactoriesWithAgentCore struct {
 	tagger     tagger.Component
-	hostname   hostname.Component
+	hostname   hostnameinterface.Component
 	ipcComp    ipc.Component
 	traceAgent traceagent.Component
 	log        log.Component
@@ -79,7 +79,7 @@ const (
 // NewExtraFactoriesWithAgentCore creates a new ExtraFactories instance when the Agent Core is available.
 func NewExtraFactoriesWithAgentCore(
 	tagger tagger.Component,
-	hostname hostname.Component, ipcComp ipc.Component,
+	hostname hostnameinterface.Component, ipcComp ipc.Component,
 	traceAgent traceagent.Component,
 	log log.Component,
 	config config.Component,

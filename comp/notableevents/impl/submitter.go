@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	hostname "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
+	hostnameinterface "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
 	"github.com/DataDog/datadog-agent/comp/forwarder/eventplatform"
 	"github.com/DataDog/datadog-agent/pkg/logs/message"
 	"github.com/DataDog/datadog-agent/pkg/util/log"
@@ -33,14 +33,14 @@ type eventPayload struct {
 type submitter struct {
 	// in
 	eventPlatformForwarder eventplatform.Forwarder
-	hostname               hostname.Component
+	hostname               hostnameinterface.Component
 	inChan                 <-chan eventPayload
 	// internal
 	wg sync.WaitGroup
 }
 
 // newSubmitter creates a new submitter instance
-func newSubmitter(forwarder eventplatform.Forwarder, inChan <-chan eventPayload, hostname hostname.Component) *submitter {
+func newSubmitter(forwarder eventplatform.Forwarder, inChan <-chan eventPayload, hostname hostnameinterface.Component) *submitter {
 	return &submitter{
 		eventPlatformForwarder: forwarder,
 		hostname:               hostname,

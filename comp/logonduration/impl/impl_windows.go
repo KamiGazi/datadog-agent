@@ -16,7 +16,7 @@ import (
 	"github.com/shirou/gopsutil/v4/host"
 
 	configcomp "github.com/DataDog/datadog-agent/comp/core/config"
-	hostname "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
+	hostnameinterface "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
 	logcomp "github.com/DataDog/datadog-agent/comp/core/log/def"
 	compdef "github.com/DataDog/datadog-agent/comp/def"
 	"github.com/DataDog/datadog-agent/comp/forwarder/eventplatform"
@@ -30,12 +30,12 @@ type Requires struct {
 	Config        configcomp.Component
 	Log           logcomp.Component
 	EventPlatform eventplatform.Component
-	Hostname      hostname.Component
+	Hostname      hostnameinterface.Component
 }
 
 type logonDurationComponent struct {
 	config                 configcomp.Component
-	hostname               hostname.Component
+	hostname               hostnameinterface.Component
 	eventPlatformForwarder eventplatform.Forwarder
 	wg                     sync.WaitGroup
 	ctxCancel              context.CancelFunc

@@ -18,7 +18,7 @@ import (
 	"github.com/shirou/gopsutil/v4/host"
 
 	configcomp "github.com/DataDog/datadog-agent/comp/core/config"
-	hostname "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
+	hostnameinterface "github.com/DataDog/datadog-agent/comp/core/hostname/hostnameinterface/def"
 	logcomp "github.com/DataDog/datadog-agent/comp/core/log/def"
 	sysprobeconfig "github.com/DataDog/datadog-agent/comp/core/sysprobeconfig/def"
 	compdef "github.com/DataDog/datadog-agent/comp/def"
@@ -37,7 +37,7 @@ type Requires struct {
 	SysprobeConfig sysprobeconfig.Component
 	Log            logcomp.Component
 	EventPlatform  eventplatform.Component
-	Hostname       hostname.Component
+	Hostname       hostnameinterface.Component
 }
 
 // sysProbeClient is an interface for system probe used for dependency injection and testing.
@@ -83,7 +83,7 @@ func (w *sysProbeClientWrapper) GetLoginTimestamps(ctx context.Context) (logondu
 type logonDurationComponent struct {
 	config                 configcomp.Component
 	sysprobeConfig         sysprobeconfig.Component
-	hostname               hostname.Component
+	hostname               hostnameinterface.Component
 	eventPlatformForwarder eventplatform.Forwarder
 	sysProbeClient         sysProbeClient
 	wg                     sync.WaitGroup
