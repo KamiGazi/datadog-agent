@@ -110,7 +110,6 @@ func SetConfigMapFromStore(store parameters.Store, cm ConfigMap, paramName param
 		return err
 	}
 
-	fmt.Println("Setting config map from store", paramName, configMapKey, val, secret)
 	cm[configMapKey] = auto.ConfigValue{
 		Value:  val,
 		Secret: secret,
