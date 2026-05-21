@@ -142,7 +142,7 @@ var modeConf mode.Conf
 // These must be applied before fxutil.OneShot so that they win over any values
 // loaded from env vars or datadog.yaml (SourceAgentRuntime has higher priority
 // than SourceEnvVar/SourceFile).
-func preloadEarly(metricAgentTags []string) {
+func preloadEarly() {
 	// Serverless containers don't persist across restarts, so disk-spill of
 	// undelivered transactions has no value. Disable it explicitly even though
 	// the default is already 0 — keeps behavior deterministic under user
@@ -175,10 +175,6 @@ func preloadEarly(metricAgentTags []string) {
 	// localhost in serverless. Avoids noisy error logs.
 	pkgconfigsetup.Datadog().Set("apm_config.receiver_socket", "", model.SourceAgentRuntime)
 
-	// Pass the serverless metric-agent tags to the DogStatsD server via the
-	// standard config key. newServerCompat reads this at construction time.
-	pkgconfigsetup.Datadog().Set("dogstatsd_tags", metricAgentTags, model.SourceAgentRuntime)
-
 	// Every serverless-init environment (Cloud Run services and jobs, Container
 	// Apps, App Service, local) can terminate before the current bucket closes,
 	// so the final ForceFlushToSerializer call on Stop needs to include
@@ -191,35 +187,75 @@ func preloadEarly(metricAgentTags []string) {
 
 func main() {
 
+	preloadEarly()
+
 	modeConf = mode.DetectMode()
 	setEnvWithoutOverride(modeConf.EnvDefaults)
 
-	// Detect the cloud service and compute tags before Fx starts so that
-	// dogstatsd_tags is in place when the DogStatsD server is constructed.
-	cloudService := cloudservice.GetCloudServiceType()
-	log.Debugf("Detected cloud service: %s", cloudService.GetOrigin())
-	tagConfig := configureTags(cloudService)
-	metricAgentTags := serverlessTag.MapToArray(serverlessInitTag.MakeMetricAgentTags(tagConfig.Tags))
-
-	preloadEarly(metricAgentTags)
-
 	// Load the config file early so that yaml-configured values (e.g.
-	// api_key) are visible to the api_key check below. setup() calls
+	// api_key, dogstatsd_tags, tags, extra_tags) are visible to the tag
+	// computation, the merge, and the api_key check below. setup() calls
 	// LoadDatadog again with the real Fx-injected components; that is
 	// intentional — the second call resolves secrets and applies any
 	// delegated-auth overrides. The noop implementations used here are
 	// consistent with the pattern in cmd/agent/common/import.go.
+	//
+	// Caveat: because this early load uses noop secrets, ENC[...] secret
+	// references inside yaml-configured `tags` / `extra_tags` are NOT
+	// resolved here. The second LoadDatadog in setup() resolves them, but
+	// metricTags below is already snapshotted from this pre-secrets view.
+	// Not addressed here; would require either deferring tag snapshotting
+	// until after the second load or wiring a real secret resolver into
+	// this early load.
 	if err := pkgconfigsetup.LoadDatadog(pkgconfigsetup.Datadog(), &secretnooptypes.SecretNoop{}, &delegatedauthnooptypes.DelegatedAuthNoop{}, nil); err != nil {
 		log.Debugf("early config load error (non-fatal): %v", err)
 	}
 
-	// Fast-fail: if no API key is configured (via env var or yaml), the
-	// dogstatsd server has no useful work — every sample it ingests would be
-	// dropped by the forwarder with an HTTP error (the one-shot forwarder
-	// Errorf still fires once even with use_dogstatsd=false, which is
-	// expected). Skip its lifecycle hooks entirely. The forwarder and demux
-	// are still wired up by Fx (matching Core Agent behavior) but stay quiet
-	// because nothing produces samples.
+	cloudService := cloudservice.GetCloudServiceType()
+	log.Debugf("Detected cloud service: %s", cloudService.GetOrigin())
+
+	// Compute tags after the early LoadDatadog so that yaml-configured
+	// `tags` and `extra_tags` (read by configUtils.GetConfiguredTags inside
+	// configureTags) are picked up. Env-based DD_TAGS / DD_EXTRA_TAGS work
+	// either way via viper BindEnv, but yaml values are only visible once
+	// the config file has been parsed.
+	tagConfig := configureTags(cloudService)
+	metricAgentTags := serverlessTag.MapToArray(serverlessInitTag.MakeMetricAgentTags(tagConfig.Tags))
+
+	// Merge user-configured dogstatsd_tags (from env/file, loaded above) with
+	// the cloud-service-derived metric-agent tags. The previous serverless
+	// metric-agent flow appended metric-agent tags to the server's existing
+	// extraTags; restore that semantics so users setting DD_DOGSTATSD_TAGS /
+	// dogstatsd_tags in yaml don't lose their tags when the metric-agent tags
+	// are merged in. newServerCompat dedups via sort.UniqInPlace, so plain
+	// append is sufficient.
+	mergedDogstatsdTags := append(pkgconfigsetup.Datadog().GetStringSlice("dogstatsd_tags"), metricAgentTags...)
+	pkgconfigsetup.Datadog().Set("dogstatsd_tags", mergedDogstatsdTags, model.SourceAgentRuntime)
+
+	// Fast-fail: if no API key is configured (via env var or yaml at this
+	// point), the dogstatsd server has no useful work — every sample it
+	// ingests would be dropped by the forwarder. Skip its Fx lifecycle by
+	// disabling use_dogstatsd. The forwarder and demux are still wired up
+	// (matching Core Agent behavior) but stay quiet because nothing produces
+	// samples.
+	//
+	// Why this is safe today: serverless-init only runs on Cloud Run, Cloud
+	// Run Jobs, Container Apps, and App Service (see
+	// cmd/serverless-init/cloudservice/service.go). The only implemented
+	// delegated-auth provider is AWS (ProviderAWS in
+	// comp/core/delegatedauth/api/cloudauth/config/config.go), which none of
+	// those platforms reach, so api_key cannot be resolved later via
+	// delegated-auth on the surfaces we ship.
+	//
+	// What this gate does NOT handle — revisit if any becomes important
+	// (e.g. when bringing serverless-init to AWS):
+	//   - late api_key resolution via the delegated-auth periodic refresh
+	//     (comp/core/delegatedauth/impl/delegatedauth.go),
+	//   - secret-resolver refresh on a 403 from the intake
+	//     (comp/forwarder/defaultforwarder/transaction/transaction.go),
+	//   - runtime config sets that change api_key after Fx start.
+	// A correct fix for any of those would require a reconciler that watches
+	// api_key and bounces dogstatsd — out of scope for this surface today.
 	//
 	// We only check the top-level api_key here. apm_config.api_key is
 	// checked separately inside setup() and is unaffected.
