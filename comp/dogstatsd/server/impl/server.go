@@ -610,8 +610,23 @@ func (s *dsdServer) forwarder(fcon net.Conn) {
 func (s *dsdServer) ServerlessFlush(sketchesBucketDelay time.Duration) {
 	s.log.Debug("Received a Flush trigger")
 
-	// make all workers flush their aggregated data (in the batchers) into the time samplers
-	s.serverlessFlushChan <- true
+	// If the server isn't running, no workers are consuming serverlessFlushChan;
+	// sending on the unbuffered channel would deadlock. Skip the worker fan-out
+	// but still force a final aggregator flush in case samples were enqueued by
+	// other paths.
+	s.startedMtx.RLock()
+	running := s.IsRunning()
+	workerCount := len(s.workers)
+	s.startedMtx.RUnlock()
+
+	if running {
+		// Make all workers flush their aggregated data (in the batchers) into
+		// the time samplers. Each worker receives once on serverlessFlushChan,
+		// so we send N times to fan out to every worker.
+		for i := 0; i < workerCount; i++ {
+			s.serverlessFlushChan <- true
+		}
+	}
 
 	start := time.Now()
 	// flush the aggregator to have the serializer/forwarder send data to the backend.
