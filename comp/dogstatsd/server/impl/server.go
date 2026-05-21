@@ -630,8 +630,12 @@ func (s *dsdServer) ServerlessFlush(sketchesBucketDelay time.Duration) {
 	}
 
 	start := time.Now()
-	// flush the aggregator to have the serializer/forwarder send data to the backend.
-	// We add 10 seconds to the interval to ensure that we're getting the whole sketches bucket
+	// Flush the aggregator so the serializer/forwarder push data to the backend.
+	// sketchesBucketDelay is a caller-controlled offset added to `start` for
+	// sketches bucket alignment (historically used by AWS Lambda callers that
+	// passed a non-zero delay to capture the whole in-flight sketches bucket).
+	// The only current production caller (cmd/serverless-init) passes 0, i.e.
+	// no offset — the flush is anchored at `start`.
 	s.demultiplexer.ForceFlushToSerializer(start.Add(sketchesBucketDelay), true)
 }
 
