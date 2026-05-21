@@ -618,9 +618,15 @@ func (s *dsdServer) ServerlessFlush(sketchesBucketDelay time.Duration) {
 
 	// Fan out to each worker's dedicated flushChan. Each worker receives once
 	// on its own channel and runs batcher.flush() exactly once, draining every
-	// worker's batched samples into the time sampler.
+	// worker's batched samples into the time sampler. The select on stopChan
+	// guards against a racing Stop closing the worker loop between our snapshot
+	// and the unbuffered send: if the server is stopping, workers exit on
+	// <-stopChan and would never receive on flushChan, so we abandon the send.
 	for _, w := range workers {
-		w.flushChan <- struct{}{}
+		select {
+		case w.flushChan <- struct{}{}:
+		case <-s.stopChan:
+		}
 	}
 
 	start := time.Now()

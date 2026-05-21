@@ -27,11 +27,12 @@ func TestServerlessFlushReturnsWhenNotStarted(t *testing.T) {
 	cfg := make(map[string]interface{})
 	cfg["dogstatsd_port"] = listeners.RandomPortName
 
-	// fulfillDepsWithInactiveServer constructs a *dsdServer that has not been
-	// started, so s.workers is empty and IsRunning() is false. This mirrors
-	// the production path where serverless-init runs without an api_key and
-	// the DogStatsD server is never started.
-	_, s := fulfillDepsWithInactiveServer(t, cfg)
+	// fulfillDepsWithInactiveServerlessServer constructs a *dsdServer with
+	// ServerlessMode=true that has not been started, so s.workers is empty
+	// and IsRunning() is false. This mirrors the production path where
+	// serverless-init runs without an api_key and the DogStatsD server is
+	// never started — exercises the exact code path used in production.
+	_, s := fulfillDepsWithInactiveServerlessServer(t, cfg)
 	requireStopped(t, s)
 
 	done := make(chan struct{})
@@ -60,7 +61,11 @@ func TestServerlessFlushFansOutToAllWorkers(t *testing.T) {
 	cfg["dogstatsd_port"] = listeners.RandomPortName
 	cfg["dogstatsd_workers_count"] = workerCount
 
-	deps := fulfillDepsWithConfigOverride(t, cfg)
+	// Use the serverless-mode helper so workers run newServerlessBatcher —
+	// the exact production code path exercised by serverless-init. A
+	// regression in newServerlessBatcher.flush would otherwise pass the
+	// default (non-serverless) batcher test.
+	deps := fulfillDepsWithServerlessConfigOverride(t, cfg)
 	s := deps.Server.(*dsdServer)
 	requireStart(t, s)
 	require.Len(t, s.workers, workerCount, "expected the configured number of workers")

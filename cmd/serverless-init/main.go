@@ -129,13 +129,16 @@ const (
 	metricsFlushInterval = 3 * time.Second
 
 	// shutdownBudgetWatchdog fires a debug log if total shutdown elapsed time
-	// exceeds this. Six shutdown phases run under explicit or inherited
-	// bounds: trace (3 s) + logs (2 s) + dogstatsd ServerlessFlush (no
-	// explicit timeout — shares the demux budget below since it calls
-	// aggregator.ForceFlushToSerializer which is itself bounded by
-	// aggregator_stop_timeout) + metric drain (0.1 s) + demux Stop
-	// (2 s) + forwarder purge (2 s) ≈ 9.1 s total. This leaves ~400 ms of
-	// slack before Cloud Run's 10 s SIGTERM-to-SIGKILL grace window expires.
+	// exceeds this. Six shutdown phases run during shutdown: trace (3 s) +
+	// logs (2 s) + dogstatsd ServerlessFlush (no timeout — calls
+	// aggregator.ForceFlushToSerializer, which blocks unboundedly on the
+	// flush channel; it is gated only by serializer/forwarder back-pressure,
+	// not by aggregator_stop_timeout, which only governs demux Stop) +
+	// metric drain (0.1 s) + demux Stop (2 s) + forwarder purge (2 s). The
+	// timed phases sum to ≈9.1 s, leaving ~400 ms of slack before Cloud
+	// Run's 10 s SIGTERM-to-SIGKILL grace window expires; the unbounded
+	// ServerlessFlush phase will burn into that slack if the serializer is
+	// slow.
 	shutdownBudgetWatchdog = 9*time.Second + 500*time.Millisecond
 )
 
