@@ -348,7 +348,7 @@ func WithFakeintake(fi *fakeintake.Fakeintake) func(*Params) error {
 		rcConfig := fi.URL.ApplyT(func(fiURL string) (string, error) {
 			return fmt.Sprintf(`remote_configuration.enabled: true
 remote_configuration.rc_dd_url: %s
-remote_configuration.no_tls_validation: true
+remote_configuration.no_tls: true
 remote_configuration.refresh_interval: 5s
 remote_configuration.config_root: '%s'
 remote_configuration.director_root: '%s'
