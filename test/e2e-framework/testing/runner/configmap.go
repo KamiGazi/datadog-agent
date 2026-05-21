@@ -8,7 +8,6 @@ package runner
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"maps"
 
 	commonconfig "github.com/DataDog/datadog-agent/test/e2e-framework/common/config"
