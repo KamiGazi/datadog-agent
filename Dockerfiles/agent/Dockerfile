@@ -243,7 +243,7 @@ RUN if [ ! -f /opt/datadog-agent/embedded/bin/agent-data-plane ]; then \
   rm -rf /etc/services.d/data-plane ; \
 fi
 
-RUN find /etc -type d,f -perm -o+w -print0 | xargs -r -0 chmod g-w,o-w
+RUN find /etc $(test -d /var/lib/pebble && echo /var/lib/pebble || true) -type d,f -perm -o+w -print0 | xargs -r -0 chmod g-w,o-w
 
 # Add Debian snapshot date for debugging
 RUN date +%Y%m%dT000000Z > .debian_repo_snapshot_date
