@@ -1,4 +1,3 @@
-# gazelle:ignore
 # This BUILD.bazel is maintained manually because forwarder_orchestrator.go
 # requires //go:build orchestrator and depends on pkg/orchestrator/config which
 # has no Bazel support. Only the !orchestrator variant is Bazel-buildable.

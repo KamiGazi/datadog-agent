@@ -6,7 +6,8 @@ go_library(
     importpath = "github.com/DataDog/datadog-agent/comp/forwarder/orchestrator/fx",
     visibility = ["//visibility:public"],
     deps = [
-        "//comp/forwarder/orchestrator/impl",
+        "//comp/forwarder/orchestrator/def",
         "//pkg/util/fxutil",
+        "@//comp/forwarder/orchestrator/impl",
     ],
 )

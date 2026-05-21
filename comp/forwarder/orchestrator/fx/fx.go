@@ -7,11 +7,12 @@
 package fx
 
 import (
+	orchestrator "github.com/DataDog/datadog-agent/comp/forwarder/orchestrator/def"
 	orchestratorimpl "github.com/DataDog/datadog-agent/comp/forwarder/orchestrator/impl"
 	"github.com/DataDog/datadog-agent/pkg/util/fxutil"
 )
 
 // Module defines the fx options for this component.
-func Module(params orchestratorimpl.Params) fxutil.Module {
+func Module(params orchestrator.Params) fxutil.Module {
 	return orchestratorimpl.Module(params)
 }

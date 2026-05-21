@@ -24,11 +24,11 @@ type noOrchRequires struct {
 
 	Log    log.Component
 	Config config.Component
-	Params Params
+	Params orchestrator.Params
 }
 
 // Module defines the fx options for this component.
-func Module(params Params) fxutil.Module {
+func Module(params orchestrator.Params) fxutil.Module {
 	return fxutil.Component(
 		fxutil.ProvideComponentConstructor(newOrchestratorForwarder),
 		fxutil.ProvideComponentConstructor(func() paramsProvides { return paramsProvides{Params: params} }),
@@ -39,7 +39,7 @@ func Module(params Params) fxutil.Module {
 // This func has been extracted in this file to not include all the orchestrator
 // dependencies (k8s, several MBs) while building binaries not needing these.
 func newOrchestratorForwarder(deps noOrchRequires) orchestrator.Component {
-	if deps.Params.useNoopOrchestratorForwarder {
+	if deps.Params.UseNoopOrchestratorForwarder() {
 		forwarder := option.New[defaultforwarder.Forwarder](defaultforwarder.NoopForwarder{})
 		return &forwarder
 	}

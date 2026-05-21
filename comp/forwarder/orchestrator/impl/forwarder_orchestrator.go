@@ -36,11 +36,11 @@ type Requires struct {
 	Config  config.Component
 	Secrets secrets.Component
 	Tagger  tagger.Component
-	Params  Params
+	Params  orchestrator.Params
 }
 
 // Module defines the fx options for this component.
-func Module(params Params) fxutil.Module {
+func Module(params orchestrator.Params) fxutil.Module {
 	return fxutil.Component(
 		fxutil.ProvideComponentConstructor(newOrchestratorForwarder),
 		fxutil.ProvideComponentConstructor(func() paramsProvides { return paramsProvides{Params: params} }),
@@ -50,10 +50,10 @@ func Module(params Params) fxutil.Module {
 // newOrchestratorForwarder returns an orchestratorForwarder
 // if the feature is activated on the cluster-agent/cluster-check runner, nil otherwise
 func newOrchestratorForwarder(deps Requires) orchestrator.Component {
-	if deps.Params.useNoopOrchestratorForwarder {
+	if deps.Params.UseNoopOrchestratorForwarder() {
 		return createComponent(defaultforwarder.NoopForwarder{})
 	}
-	if deps.Params.useOrchestratorForwarder {
+	if deps.Params.UseOrchestratorForwarder() {
 		isOrchestratorEnv := env.IsKubernetes() || env.IsECS() || env.IsECSFargate() || env.IsECSManagedInstances()
 		orchestratorExplorerEnabled := deps.Config.GetBool(orchestratorconfig.OrchestratorNSKey("enabled"))
 		if !orchestratorExplorerEnabled || !isOrchestratorEnv {

@@ -5,32 +5,14 @@
 
 package orchestratorimpl
 
-import compdef "github.com/DataDog/datadog-agent/comp/def"
+import (
+	compdef "github.com/DataDog/datadog-agent/comp/def"
+	orchestrator "github.com/DataDog/datadog-agent/comp/forwarder/orchestrator/def"
+)
 
 // paramsProvides wraps Params in a compdef.Out struct so ProvideComponentConstructor
 // can provide it — Params itself has unexported fields which ProvideComponentConstructor rejects.
 type paramsProvides struct {
 	compdef.Out
-	Params Params
-}
-
-// Params defines the parameters for the orchestrator forwarder.
-type Params struct {
-	useNoopOrchestratorForwarder bool
-	useOrchestratorForwarder     bool
-}
-
-// NewDefaultParams returns the default parameters for the orchestrator forwarder.
-func NewDefaultParams() Params {
-	return Params{useOrchestratorForwarder: true, useNoopOrchestratorForwarder: false}
-}
-
-// NewDisabledParams returns the parameters for the orchestrator forwarder when it is disabled.
-func NewDisabledParams() Params {
-	return Params{useOrchestratorForwarder: false, useNoopOrchestratorForwarder: false}
-}
-
-// NewNoopParams returns the parameters for the orchestrator forwarder when it is a noop.
-func NewNoopParams() Params {
-	return Params{useOrchestratorForwarder: false, useNoopOrchestratorForwarder: true}
+	Params orchestrator.Params
 }
