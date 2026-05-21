@@ -22,7 +22,8 @@ func Check() ([]storedef.IssueReport, error) {
 		if errors.Is(err, syscall.EPERM) || errors.Is(err, syscall.EACCES) {
 			return []storedef.IssueReport{
 				{
-					IssueID: IssueID,
+					IssueID:   IssueID,
+					IssueType: IssueType,
 					Context: map[string]string{
 						"error": err.Error(),
 					},
