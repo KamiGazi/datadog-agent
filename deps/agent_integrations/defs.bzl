@@ -11,16 +11,12 @@ def _install_wheels_impl(ctx):
     # TODO(alopez): consider installing the individual wheels in separate actions for better caching.
     # The potential upside is per-wheel caching.
 
-    python_info = ctx.attr.python[DefaultInfo]
-    python_bin = python_info.files_to_run.executable
-    python_files = python_info.files.to_list()
-
     installation_dir = ctx.actions.declare_directory(ctx.attr.output or ctx.attr.name)
     ctx.actions.run(
         mnemonic = "InstallPythonWheels",
-        inputs = ctx.files.srcs + python_files + [requirements_file],
+        inputs = ctx.files.srcs + [requirements_file],
         outputs = [installation_dir],
-        executable = python_bin,
+        executable = ctx.attr.python[DefaultInfo].files_to_run,
         arguments = [
             "-m",
             "pip",
