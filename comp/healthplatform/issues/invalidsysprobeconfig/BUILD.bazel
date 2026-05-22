@@ -30,7 +30,7 @@ go_test(
     gotags = ["test"],
     deps = [
         "//comp/core/sysprobeconfig/def",
-        "//comp/core/sysprobeconfig/mock",
+        "@//comp/core/sysprobeconfig/mock",
         "@com_github_stretchr_testify//assert",
         "@com_github_stretchr_testify//require",
     ],
