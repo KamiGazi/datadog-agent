@@ -289,15 +289,51 @@ func procmgrUsable(ctx HookContext, stable bool) bool {
 	return service.GetServiceManagerType() == service.ProcmgrType && procmgrBinaryExists(ctx, stable)
 }
 
-func ddotExtensionInstallDir(ctx HookContext) string {
-	if ddotExtensionInstalled(ctx.PackagePath) {
-		return ctx.PackagePath
+const debAgentInstallRoot = "/opt/datadog-agent"
+
+// ddotExtensionInstallDir returns the agent package root that contains ext/ddot, or "" if absent.
+// Candidates include hook PackagePath, deb/rpm root, fleet channel symlinks (stable -> deb), and the
+// versioned OCI install path used by extensions.Install (see getExtensionsPath in extensions).
+func ddotExtensionInstallDir(ctx HookContext, stable bool) string {
+	for _, root := range ddotExtensionInstallCandidateRoots(ctx, stable) {
+		if ddotExtensionInstalled(root) {
+			return root
+		}
 	}
-	const debAgentRoot = "/opt/datadog-agent"
-	if ddotExtensionInstalled(debAgentRoot) {
-		return debAgentRoot
+	return ""
+}
+
+func ddotExtensionInstallCandidateRoots(ctx HookContext, stable bool) []string {
+	seen := make(map[string]struct{})
+	var roots []string
+	add := func(root string) {
+		if root == "" {
+			return
+		}
+		if _, ok := seen[root]; ok {
+			return
+		}
+		seen[root] = struct{}{}
+		roots = append(roots, root)
 	}
-	return ctx.PackagePath
+
+	add(ctx.PackagePath)
+	add(debAgentInstallRoot)
+
+	channel := filepath.Join(paths.PackagesPath, "datadog-agent", "stable")
+	if !stable {
+		channel = filepath.Join(paths.PackagesPath, "datadog-agent", "experiment")
+	}
+	add(channel)
+	if resolved, err := filepath.EvalSymlinks(channel); err == nil {
+		add(resolved)
+	}
+
+	ver := agentVersionForExtensions()
+	add(filepath.Join(paths.PackagesPath, "datadog-agent", ver))
+	add(filepath.Join(paths.RunPath, "datadog-agent", ver))
+
+	return roots
 }
 
 func ddotEmbeddedUnitType(ctx HookContext) embedded.SystemdUnitType {
@@ -327,7 +363,10 @@ func ddotExtensionProcmgrHookContext(ctx HookContext, stable bool) HookContext {
 }
 
 func procmgrOwnsDDOT(ctx HookContext, stable bool) bool {
-	return procmgrUsable(ctx, stable) && ddotExtensionInstalled(ddotExtensionInstallDir(ctx))
+	if !procmgrUsable(ctx, stable) {
+		return false
+	}
+	return ddotExtensionInstallDir(ctx, stable) != ""
 }
 
 func ddotProcmgrExtensionYAML(ctx HookContext, stable bool) ([]byte, error) {
@@ -340,7 +379,10 @@ func ddotProcmgrExtensionYAML(ctx HookContext, stable bool) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	installDir := ddotExtensionInstallDir(ctx)
+	installDir := ddotExtensionInstallDir(ctx, stable)
+	if installDir == "" {
+		return nil, fmt.Errorf("ddot extension not installed")
+	}
 	channel := filepath.Join(paths.PackagesPath, "datadog-agent", "stable")
 	if !stable {
 		channel = filepath.Join(paths.PackagesPath, "datadog-agent", "experiment")
@@ -505,8 +547,12 @@ func postInstallDDOTExtension(ctx HookContext) (err error) {
 		span.Finish(err)
 	}()
 
-	// extensionPath is the path to the DDOT extension. It is already scoped to stable / experiment per the Agent package.
-	extensionPath := filepath.Join(ctx.PackagePath, "ext", "ddot")
+	stable := ddotExtensionProcmgrRemoveStable(ctx)
+	installDir := ddotExtensionInstallDir(ctx, stable)
+	if installDir == "" {
+		return fmt.Errorf("ddot extension not found under agent install roots")
+	}
+	extensionPath := filepath.Join(installDir, "ext", "ddot")
 
 	// Copy the example file to the configuration directory
 	// XXX: Maybe we should always embed the example file in the Agent package?

@@ -83,3 +83,28 @@ func TestOciAgentStableAndExperimentProcessesDirsEquivalentAt(t *testing.T) {
 		}
 	})
 }
+
+func TestDdotExtensionInstallDirResolvesStableSymlink(t *testing.T) {
+	t.Parallel()
+	base := t.TempDir()
+	debRoot := filepath.Join(base, "deb-agent")
+	extBin := filepath.Join(debRoot, "ext", "ddot", "embedded", "bin")
+	if err := os.MkdirAll(extBin, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(extBin, "otel-agent"), []byte{0}, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	stableLink := filepath.Join(base, "datadog-agent", "stable")
+	if err := os.MkdirAll(filepath.Dir(stableLink), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(debRoot, stableLink); err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := HookContext{PackageType: PackageTypeOCI, PackagePath: stableLink}
+	if got := ddotExtensionInstallDir(ctx, true); got != debRoot {
+		t.Fatalf("ddotExtensionInstallDir() = %q, want %q", got, debRoot)
+	}
+}

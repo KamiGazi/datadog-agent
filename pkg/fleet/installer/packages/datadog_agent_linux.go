@@ -340,14 +340,14 @@ func postInstallDatadogAgent(ctx HookContext) (err error) {
 	if err := restoreODBCConfig(ctx.PackagePath); err != nil {
 		log.Warnf("failed to restore ODBC config: %s", err)
 	}
-	agentVersion := getCurrentAgentVersion()
+	agentVersion := agentVersionForExtensions()
 	if err := extensionsPkg.SetPackage(ctx, agentPackage, agentVersion, false); err != nil {
 		return fmt.Errorf("failed to set package version in extensions db: %w", err)
 	}
 	if err := restoreAgentExtensions(ctx, agentVersion, false); err != nil {
 		log.Warnf("failed to restore extensions: %s", err)
 	}
-	if err := installAgentExtensions(ctx, agentVersion, false); err != nil {
+	if err := installAgentExtensions(ctx, false); err != nil {
 		log.Warnf("failed to install extensions: %s", err)
 	}
 	if err := agentService.WriteStable(ctx); err != nil {
@@ -454,7 +454,7 @@ func postStartExperimentDatadogAgent(ctx HookContext) error {
 	if err := integrations.RestoreCustomIntegrations(ctx, ctx.PackagePath); err != nil {
 		log.Warnf("failed to restore custom integrations: %s", err)
 	}
-	experimentVersion := getCurrentAgentVersion()
+	experimentVersion := agentVersionForExtensions()
 	if err := extensionsPkg.SetPackage(ctx, agentPackage, experimentVersion, true); err != nil {
 		return fmt.Errorf("failed to set package version in extensions db: %w", err)
 	}

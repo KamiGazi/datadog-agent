@@ -36,6 +36,19 @@ func getCurrentAgentVersion() string {
 	return v + "-1"
 }
 
+// agentVersionForExtensions returns the agent version for extensions.db and OCI extension installs.
+// In testing environments the binary's compiled-in version (e.g. 7.79.0-devel-1) differs from the
+// pipeline OCI tag (e.g. pipeline-107898846). Callers may override via
+// DD_INSTALLER_DEFAULT_PKG_VERSION_DATADOG_AGENT so the correct image is fetched without modifying
+// the installed binary. SetPackage and Install must use the same value (see postInstallDatadogAgent).
+func agentVersionForExtensions() string {
+	ver := getCurrentAgentVersion()
+	if override := env.FromEnv().DefaultPackagesVersionOverride[agentPackage]; override != "" {
+		return override
+	}
+	return ver
+}
+
 // Config structs for reading installer registry configuration from datadog.yaml
 
 //nolint:unused // Used in platform-specific files
@@ -165,7 +178,7 @@ func restoreAgentExtensions(ctx HookContext, version string, experiment bool) er
 // by the idempotency check in extensionsPkg.Install.
 //
 //nolint:unused // Used in platform-specific files
-func installAgentExtensions(ctx HookContext, version string, isExperiment bool) error {
+func installAgentExtensions(ctx HookContext, isExperiment bool) error {
 	env := env.FromEnv()
 	// populate extensions list based on environment variables
 	var extensions []string
@@ -177,13 +190,7 @@ func installAgentExtensions(ctx HookContext, version string, isExperiment bool) 
 		return nil
 	}
 
-	// In testing environments the binary's compiled-in version (e.g. 7.79.0-devel-1)
-	// differs from the pipeline OCI tag (e.g. pipeline-107898846). Allow the caller to
-	// override via DD_INSTALLER_DEFAULT_PKG_VERSION_DATADOG_AGENT so the correct image
-	// is fetched without modifying the installed binary.
-	if override := env.DefaultPackagesVersionOverride[agentPackage]; override != "" {
-		version = override
-	}
+	version := agentVersionForExtensions()
 
 	// install extensions
 	overrides := setRegistryConfig(env)
