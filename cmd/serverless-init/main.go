@@ -91,11 +91,11 @@ const datadogConfigPath = "datadog.yaml"
 const (
 	// traceStopTimeout bounds Stop()'s wait for the trace agent's Run loop
 	// to exit. Best-effort; logs a warning on overrun and continues shutdown.
-	traceStopTimeout = 3 * time.Second
+	traceStopTimeout = 2500 * time.Millisecond
 
 	// logsFlushTimeout bounds the flush of buffered customer log records via
 	// flushLogsAgent. Strict ctx; cancels in-progress sends on overrun.
-	logsFlushTimeout = 2 * time.Second
+	logsFlushTimeout = 1500 * time.Millisecond
 
 	// serverlessFlushTimeout bounds dogstatsd ServerlessFlush during shutdown.
 	// ServerlessFlush calls aggregator.ForceFlushToSerializer which blocks on
@@ -105,7 +105,7 @@ const (
 	// cancellable) but the rest of the shutdown sequence proceeds — the
 	// process is exiting imminently anyway. See
 	// pkg/serverless/metrics.Shutdown for the mechanics.
-	serverlessFlushTimeout = 1500 * time.Millisecond
+	serverlessFlushTimeout = 1 * time.Second
 
 	// metricsDrainTimeout bounds the wait for in-flight enhanced metric
 	// samples (cloudService.Shutdown enqueues *.task.ended / *.task.duration
@@ -140,17 +140,17 @@ const (
 
 	// shutdownBudgetWatchdog fires a debug log if total shutdown elapsed time
 	// exceeds this. Six shutdown phases run during shutdown, each
-	// independently timeout-bounded: trace (3 s) + logs (2 s) + dogstatsd
-	// ServerlessFlush (1.5 s, bounded by pkg/serverless/metrics.Shutdown's
+	// independently timeout-bounded: trace (2.5 s) + logs (1.5 s) + dogstatsd
+	// ServerlessFlush (1 s, bounded by pkg/serverless/metrics.Shutdown's
 	// external timer since aggregator.ForceFlushToSerializer has no internal
 	// deadline) + metric drain (0.1 s) + demux Stop (2 s) + forwarder purge
-	// (2 s). Worst-case sum is ≈10.6 s, but this is the upper bound assuming
-	// every phase saturates its budget — in practice each phase finishes in
-	// milliseconds (the worker batchers are small, the sample channels short,
-	// and HTTP requests either land or were already in flight). The watchdog
-	// fires below the worst-case sum on purpose: if every phase saturated we
-	// would already be past Cloud Run's 10 s grace window. The debug log is
-	// observability, not a guarantee.
+	// (2 s). Worst-case sum is ≈9.1 s — strictly under both the watchdog
+	// and Cloud Run's 10 s grace window. In practice each phase finishes
+	// in milliseconds (the worker batchers are small, the sample channels
+	// short, and HTTP requests either land or were already in flight), so
+	// the watchdog only fires on a genuine overrun rather than a
+	// guaranteed-late tripwire. The debug log is observability, not a
+	// guarantee.
 	shutdownBudgetWatchdog = 9*time.Second + 500*time.Millisecond
 )
 
@@ -366,14 +366,14 @@ func run(
 	//   2. cloudService.Shutdown submits the task.ended metric; the enhanced
 	//      metrics collector stops emitting.
 	//   3. trace agent stops (drains traces, flushes stats, sends) — bounded
-	//      by traceStopTimeout (3 s).
+	//      by traceStopTimeout (2.5 s).
 	//   4. logs agent flushes any buffered records — bounded by
-	//      logsFlushTimeout (2 s).
+	//      logsFlushTimeout (1.5 s).
 	//   5. metrics.Shutdown runs two phases back-to-back:
 	//        5a. dogstatsd ServerlessFlush drains worker batchers into the
 	//            aggregator so samples in flight aren't lost when the
 	//            server stops accepting traffic. Bounded by
-	//            serverlessFlushTimeout (1.5 s) — the underlying
+	//            serverlessFlushTimeout (1 s) — the underlying
 	//            ForceFlushToSerializer has no internal deadline, so the
 	//            helper wraps it in a goroutine + time.After. This drains
 	//            the worker batchers only, NOT the listener→worker
