@@ -15,7 +15,6 @@ import (
 	"github.com/DataDog/datadog-agent/test/e2e-framework/common/config"
 	perms "github.com/DataDog/datadog-agent/test/e2e-framework/components/datadog/agentparams/filepermissions"
 	"github.com/DataDog/datadog-agent/test/e2e-framework/components/datadog/fakeintake"
-	"github.com/DataDog/datadog-agent/test/fakeintake/server/rcstore"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -341,7 +340,7 @@ func WithFakeintake(fi *fakeintake.Fakeintake) func(*Params) error {
 		if err := withIntakeHostname(fi.Scheme, fi.Host, fi.Port)(p); err != nil {
 			return err
 		}
-		rootJSON, err := fakeintakeRCRootJSON()
+		rootJSON, err := fakeintake.RCRootJSON()
 		if err != nil {
 			return fmt.Errorf("build fakeintake rc root json: %w", err)
 		}
@@ -357,25 +356,6 @@ remote_configuration.director_root: '%s'
 		p.ExtraAgentConfig = append(p.ExtraAgentConfig, rcConfig)
 		return nil
 	}
-}
-
-// fakeintakeRCRootJSON computes the TUF root JSON from fakeintake's global
-// signing key. The result is deterministic and inexpensive to compute.
-func fakeintakeRCRootJSON() (string, error) {
-	priv, err := rcstore.KeyFromHexSeed(fakeintake.DefaultRCSigningKeySeed)
-	if err != nil {
-		return "", fmt.Errorf("rc signing key: %w", err)
-	}
-	pubHex := rcstore.PublicKeyHex(priv)
-	keyID, err := rcstore.ComputeKeyID(pubHex)
-	if err != nil {
-		return "", fmt.Errorf("rc key id: %w", err)
-	}
-	rootJSON, err := rcstore.BuildRootJSON(priv, keyID, pubHex)
-	if err != nil {
-		return "", fmt.Errorf("rc root json: %w", err)
-	}
-	return string(rootJSON), nil
 }
 
 // WithLogs enables the log agent

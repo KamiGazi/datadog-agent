@@ -56,7 +56,7 @@ func GetRunParams(opts ...RunOption) *RunParams {
 	p := &RunParams{
 		Name:                defaultKindName,
 		vmOptions:           []ec2.VMOption{},
-		agentOptions:        nil, // nil by default - Agent is only deployed when options are explicitly provided
+		agentOptions:        []kubernetesagentparams.Option{},
 		fakeintakeOptions:   []fakeintake.Option{},
 		workloadAppFuncs:    []kubecomp.WorkloadAppFunc{},
 		depWorkloadAppFuncs: []kubecomp.AgentDependentWorkloadAppFunc{},
@@ -129,6 +129,10 @@ func WithFakeintakeOptions(opts ...fakeintake.Option) RunOption {
 // WithoutFakeIntake disables fakeintake creation
 func WithoutFakeIntake() RunOption {
 	return func(p *RunParams) error { p.fakeintakeOptions = nil; return nil }
+}
+
+func WithoutAgent() RunOption {
+	return func(p *RunParams) error { p.agentOptions = nil; return nil }
 }
 
 // WithCiliumOptions sets cilium options

@@ -6,8 +6,10 @@
 package fakeintake
 
 import (
-	"github.com/DataDog/datadog-agent/test/e2e-framework/components"
+	"fmt"
 
+	"github.com/DataDog/datadog-agent/test/e2e-framework/components"
+	"github.com/DataDog/datadog-agent/test/fakeintake/server/rcstore"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -39,4 +41,24 @@ type Fakeintake struct {
 
 func (fi *Fakeintake) Export(ctx *pulumi.Context, out *FakeintakeOutput) error {
 	return components.Export(ctx, fi, out)
+}
+
+// RCRootJSON computes the TUF root JSON for the default fakeintake RC signing key.
+// The result is deterministic — it can be computed at provision time so the agent
+// config can reference it before fakeintake has started.
+func RCRootJSON() (string, error) {
+	priv, err := rcstore.KeyFromHexSeed(DefaultRCSigningKeySeed)
+	if err != nil {
+		return "", fmt.Errorf("rc signing key: %w", err)
+	}
+	pubHex := rcstore.PublicKeyHex(priv)
+	keyID, err := rcstore.ComputeKeyID(pubHex)
+	if err != nil {
+		return "", fmt.Errorf("rc key id: %w", err)
+	}
+	rootJSON, err := rcstore.BuildRootJSON(priv, keyID, pubHex)
+	if err != nil {
+		return "", fmt.Errorf("rc root json: %w", err)
+	}
+	return string(rootJSON), nil
 }

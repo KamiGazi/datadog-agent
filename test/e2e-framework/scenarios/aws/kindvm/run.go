@@ -83,7 +83,7 @@ func RunWithEnv(ctx *pulumi.Context, awsEnv resAws.Environment, env outputs.Kube
 			return err
 		}
 
-		if len(params.agentOptions) > 0 {
+		if params.agentOptions != nil {
 			newOpts := []kubernetesagentparams.Option{kubernetesagentparams.WithFakeintake(fakeIntake)}
 			params.agentOptions = append(newOpts, params.agentOptions...)
 		}
@@ -177,7 +177,7 @@ func RunWithEnv(ctx *pulumi.Context, awsEnv resAws.Environment, env outputs.Kube
 	}
 
 	var dependsOnDDAgent pulumi.ResourceOption
-	if len(params.agentOptions) > 0 && !params.deployOperator {
+	if params.agentOptions != nil && !params.deployOperator {
 		newOpts := []kubernetesagentparams.Option{
 			kubernetesagentparams.WithHelmValues(agentHelmValues),
 			kubernetesagentparams.WithClusterName(kindCluster.ClusterName),
@@ -260,7 +260,7 @@ func RunWithEnv(ctx *pulumi.Context, awsEnv resAws.Environment, env outputs.Kube
 		}
 
 		// These workloads can be deployed only if the agent is installed, they rely on CRDs installed by Agent helm chart
-		if len(params.agentOptions) > 0 {
+		if params.agentOptions != nil {
 			if _, err := nginx.K8sAppDefinition(&awsEnv, kubeProvider, "workload-nginx", 80, "", true, dependsOnDDAgent /* for DDM */, dependsOnVPA); err != nil {
 				return err
 			}
@@ -313,7 +313,7 @@ func RunWithEnv(ctx *pulumi.Context, awsEnv resAws.Environment, env outputs.Kube
 
 	}
 
-	if len(params.agentOptions) == 0 && len(params.operatorDDAOptions) == 0 && params.standaloneAgentFunc == nil {
+	if params.agentOptions == nil && params.operatorDDAOptions == nil && params.standaloneAgentFunc == nil {
 		env.DisableAgent()
 	}
 
