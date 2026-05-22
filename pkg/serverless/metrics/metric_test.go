@@ -223,3 +223,133 @@ func TestStopDrainsThroughWrappedDemux(t *testing.T) {
 	require.Equal(t, int64(1), cf.sketchCount.Load(),
 		"Stop must drain pending samples even when Demux is a wrapper embedding *AgentDemultiplexer")
 }
+
+// fakeFlusher implements ServerlessFlusher and records each call, optionally
+// blocking for a configurable duration so tests can exercise the flushTimeout
+// bound in Shutdown.
+type fakeFlusher struct {
+	calls   atomic.Int64
+	block   time.Duration
+	lastArg atomic.Int64 // time.Duration arg, stored as int64 ns
+}
+
+func (f *fakeFlusher) ServerlessFlush(d time.Duration) {
+	f.calls.Add(1)
+	f.lastArg.Store(int64(d))
+	if f.block > 0 {
+		time.Sleep(f.block)
+	}
+}
+
+// recordingDemux satisfies aggregator.Demultiplexer (via the embedded nil
+// *aggregator.AgentDemultiplexer, which provides method promotion to fill out
+// the interface) but overrides WaitForPendingSamples so Shutdown's drain
+// phase reaches our hook. Calls to any other Demultiplexer method would
+// dereference the nil embedded pointer — Shutdown never invokes them, but
+// adding new call sites in Shutdown would surface here as a panic, which is
+// the desired loud failure.
+type recordingDemux struct {
+	*aggregator.AgentDemultiplexer
+	mu                sync.Mutex
+	called            bool
+	deadlineWasSet    bool
+	timeUntilDeadline time.Duration
+}
+
+func (r *recordingDemux) WaitForPendingSamples(ctx context.Context) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.called = true
+	if dl, ok := ctx.Deadline(); ok {
+		r.deadlineWasSet = true
+		r.timeUntilDeadline = time.Until(dl)
+	}
+	return nil
+}
+
+// TestShutdownNilSafe verifies the documented nil-safety contract: Shutdown
+// with both nil agent and nil flusher is a no-op (returns immediately, panics
+// nowhere). This lets callers wire Shutdown in unconditionally regardless of
+// API-key gating or partial initialization.
+func TestShutdownNilSafe(t *testing.T) {
+	// Should not panic, should return promptly.
+	done := make(chan struct{})
+	go func() {
+		Shutdown(nil, nil, 100*time.Millisecond, 100*time.Millisecond)
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("Shutdown(nil, nil, ...) did not return promptly")
+	}
+}
+
+// TestShutdownNilFlusherStillDrainsAgent verifies that a nil flusher skips
+// the flush phase but the drain phase still runs against the agent.
+func TestShutdownNilFlusherStillDrainsAgent(t *testing.T) {
+	rd := &recordingDemux{}
+	agent := &ServerlessMetricAgent{Demux: rd}
+
+	Shutdown(agent, nil, 100*time.Millisecond, 50*time.Millisecond)
+
+	rd.mu.Lock()
+	defer rd.mu.Unlock()
+	require.True(t, rd.called, "drain phase must run when flusher is nil")
+	require.True(t, rd.deadlineWasSet, "drain phase must pass a context with a deadline")
+}
+
+// TestShutdownNilAgentStillFlushes verifies that a nil agent skips the
+// drain phase but the flush phase still runs.
+func TestShutdownNilAgentStillFlushes(t *testing.T) {
+	f := &fakeFlusher{}
+	Shutdown(nil, f, 100*time.Millisecond, 50*time.Millisecond)
+	require.Equal(t, int64(1), f.calls.Load(), "flush phase must run when agent is nil")
+	require.Equal(t, int64(0), f.lastArg.Load(), "Shutdown must invoke ServerlessFlush with zero timeout (external timer bounds the call)")
+}
+
+// TestShutdownFlushTimeoutBounded verifies the core guarantee of the flush
+// phase: a ServerlessFlush that blocks past flushTimeout must not delay
+// Shutdown's return. Without the external timer, a stuck DogStatsD flush
+// would consume the entire shutdown grace window — the bug this helper
+// exists to prevent.
+func TestShutdownFlushTimeoutBounded(t *testing.T) {
+	const flushTimeout = 50 * time.Millisecond
+	// Block long enough that any failure to bound the flush phase is
+	// obvious (orders of magnitude past flushTimeout).
+	f := &fakeFlusher{block: 5 * time.Second}
+
+	start := time.Now()
+	Shutdown(nil, f, flushTimeout, 10*time.Millisecond)
+	elapsed := time.Since(start)
+
+	require.Equal(t, int64(1), f.calls.Load(), "flusher must be invoked exactly once")
+	// Allow generous headroom for slow CI; the assertion is that we
+	// returned in roughly flushTimeout rather than the 5s block.
+	require.Less(t, elapsed, time.Second,
+		"Shutdown must return within ~flushTimeout when ServerlessFlush blocks, got %v", elapsed)
+}
+
+// TestShutdownDrainTimeoutPropagates verifies the drain phase passes a
+// context with a deadline derived from drainTimeout to
+// ServerlessMetricAgent.Stop, so a stuck demultiplexer cannot exceed the
+// configured drain budget.
+func TestShutdownDrainTimeoutPropagates(t *testing.T) {
+	const drainTimeout = 75 * time.Millisecond
+	rd := &recordingDemux{}
+	agent := &ServerlessMetricAgent{Demux: rd}
+
+	Shutdown(agent, nil, 10*time.Millisecond, drainTimeout)
+
+	rd.mu.Lock()
+	defer rd.mu.Unlock()
+	require.True(t, rd.called, "drain phase must run")
+	require.True(t, rd.deadlineWasSet, "drain phase must pass a context with a deadline")
+	// The deadline reported by recordingDemux is the remaining time at the
+	// instant Stop was entered; it must be > 0 and <= drainTimeout. Allow
+	// a small negative slack for clock jitter on slow CI.
+	require.LessOrEqual(t, rd.timeUntilDeadline, drainTimeout,
+		"deadline must not exceed drainTimeout, got %v vs %v", rd.timeUntilDeadline, drainTimeout)
+	require.Greater(t, rd.timeUntilDeadline, -10*time.Millisecond,
+		"deadline must not already be in the past, got %v", rd.timeUntilDeadline)
+}

@@ -43,7 +43,7 @@ import (
 	"github.com/DataDog/datadog-agent/comp/forwarder"
 	"github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder"
 	"github.com/DataDog/datadog-agent/comp/forwarder/eventplatform/eventplatformimpl"
-	eventplatformreceiverimpl "github.com/DataDog/datadog-agent/comp/forwarder/eventplatformreceiver/eventplatformreceiverimpl"
+	eventplatformreceiverimpl "github.com/DataDog/datadog-agent/comp/forwarder/eventplatformreceiver/impl"
 	orchestratorimpl "github.com/DataDog/datadog-agent/comp/forwarder/orchestrator/orchestratorimpl"
 	haagentfx "github.com/DataDog/datadog-agent/comp/haagent/fx"
 	healthplatform "github.com/DataDog/datadog-agent/comp/healthplatform"
@@ -97,6 +97,16 @@ const (
 	// flushLogsAgent. Strict ctx; cancels in-progress sends on overrun.
 	logsFlushTimeout = 2 * time.Second
 
+	// serverlessFlushTimeout bounds dogstatsd ServerlessFlush during shutdown.
+	// ServerlessFlush calls aggregator.ForceFlushToSerializer which blocks on
+	// the flush channel and has no internal deadline; this external bound
+	// keeps a stuck flush from eating the whole shutdown grace window. On
+	// overrun the call's goroutine leaks (the underlying flush is not
+	// cancellable) but the rest of the shutdown sequence proceeds — the
+	// process is exiting imminently anyway. See
+	// pkg/serverless/metrics.Shutdown for the mechanics.
+	serverlessFlushTimeout = 1500 * time.Millisecond
+
 	// metricsDrainTimeout bounds the wait for in-flight enhanced metric
 	// samples (cloudService.Shutdown enqueues *.task.ended / *.task.duration
 	// via AddEnhancedMetric → Demux.AggregateSample, which is asynchronous)
@@ -129,18 +139,18 @@ const (
 	metricsFlushInterval = 3 * time.Second
 
 	// shutdownBudgetWatchdog fires a debug log if total shutdown elapsed time
-	// exceeds this. Six shutdown phases run during shutdown: trace (3 s) +
-	// logs (2 s) + dogstatsd ServerlessFlush (no timeout — calls
-	// aggregator.ForceFlushToSerializer, which blocks unboundedly on the
-	// flush channel; it is gated only by serializer/forwarder back-pressure,
-	// not by aggregator_stop_timeout, which only governs demux Stop) +
-	// metric drain (0.1 s) + demux Stop (2 s) + forwarder purge (2 s). The
-	// timed phases sum to ≈9.1 s, leaving ~400 ms of slack before Cloud
-	// Run's 10 s SIGTERM-to-SIGKILL grace window expires — assuming
-	// ServerlessFlush completes quickly, which it does in practice because
-	// the worker batchers are small and the aggregator flush it triggers
-	// goes through the same serializer/forwarder path that is later bounded
-	// by aggregator_stop_timeout during demux Stop.
+	// exceeds this. Six shutdown phases run during shutdown, each
+	// independently timeout-bounded: trace (3 s) + logs (2 s) + dogstatsd
+	// ServerlessFlush (1.5 s, bounded by pkg/serverless/metrics.Shutdown's
+	// external timer since aggregator.ForceFlushToSerializer has no internal
+	// deadline) + metric drain (0.1 s) + demux Stop (2 s) + forwarder purge
+	// (2 s). Worst-case sum is ≈10.6 s, but this is the upper bound assuming
+	// every phase saturates its budget — in practice each phase finishes in
+	// milliseconds (the worker batchers are small, the sample channels short,
+	// and HTTP requests either land or were already in flight). The watchdog
+	// fires below the worst-case sum on purpose: if every phase saturated we
+	// would already be past Cloud Run's 10 s grace window. The debug log is
+	// observability, not a guarantee.
 	shutdownBudgetWatchdog = 9*time.Second + 500*time.Millisecond
 )
 
@@ -352,43 +362,37 @@ func run(
 	err := modeConf.Runner(logConfig)
 
 	// Defers are LIFO. Order of execution:
-	//   1. Watchdog timer starts (debug log if shutdown exceeds 9.5 s).
+	//   1. Watchdog timer starts (debug log if shutdown exceeds the budget).
 	//   2. cloudService.Shutdown submits the task.ended metric; the enhanced
 	//      metrics collector stops emitting.
 	//   3. trace agent stops (drains traces, flushes stats, sends) — bounded
 	//      by traceStopTimeout (3 s).
 	//   4. logs agent flushes any buffered records — bounded by
 	//      logsFlushTimeout (2 s).
-	//   5. dogstatsd ServerlessFlush drains custom DogStatsD samples sitting
-	//      in the worker batchers into the aggregator so they're not lost
-	//      when the server stops accepting traffic. Note: this drains the
-	//      worker batchers only — it does NOT drain the listener→worker
-	//      packetsIn queue, so UDP packets that arrive after the last
-	//      worker run (or during/after ServerlessFlush itself) may still
-	//      be dropped when Fx OnStop tears the server down in step 7.
-	//   6. metricAgent.Stop waits for the time-sampler workers to drain
-	//      every sample enqueued during steps 2-5 — bounded by
-	//      metricsDrainTimeout (100 ms). Placed last so any background
-	//      emitter (OTLP, autodiscovery, trace stats) that ships a sample
-	//      during the earlier phases still lands in the aggregator before
-	//      step 7's flush.
-	//   7. run() returns; Fx OnStop fires demux.Stop(true) which performs the
+	//   5. metrics.Shutdown runs two phases back-to-back:
+	//        5a. dogstatsd ServerlessFlush drains worker batchers into the
+	//            aggregator so samples in flight aren't lost when the
+	//            server stops accepting traffic. Bounded by
+	//            serverlessFlushTimeout (1.5 s) — the underlying
+	//            ForceFlushToSerializer has no internal deadline, so the
+	//            helper wraps it in a goroutine + time.After. This drains
+	//            the worker batchers only, NOT the listener→worker
+	//            packetsIn queue, so UDP packets that arrive after the
+	//            last worker run (or during/after ServerlessFlush itself)
+	//            may still be dropped when Fx OnStop tears the server
+	//            down in step 6.
+	//        5b. metricAgent.Stop waits for the time-sampler workers to
+	//            drain every sample enqueued during steps 2-5a — bounded
+	//            by metricsDrainTimeout (100 ms). Placed after the flush
+	//            so any background emitter (OTLP, autodiscovery, trace
+	//            stats) that ships a sample during the earlier phases
+	//            still lands in the aggregator before step 6's flush.
+	//   6. run() returns; Fx OnStop fires demux.Stop(true) which performs the
 	//      final metric flush (incomplete buckets included via
 	//      dogstatsd_flush_incomplete_buckets) — bounded by
 	//      metricsAggregatorStopTimeoutSeconds (2 s) — then drains the
 	//      forwarder — bounded by metricsForwarderStopTimeoutSeconds (2 s).
-	defer func() {
-		// Best-effort: a timeout here means we're shedding the final
-		// task-ended / duration metrics, so log it for observability —
-		// matches the trace agent's analogous warning at Stop overrun.
-		// Shutdown continues regardless.
-		drainCtx, cancel := context.WithTimeout(context.Background(), metricsDrainTimeout)
-		if err := metricAgent.Stop(drainCtx); err != nil {
-			log.Warnf("metric agent drain timed out, final samples may be dropped: %v", err)
-		}
-		cancel()
-	}()
-	defer dsdServer.ServerlessFlush(0)
+	defer metrics.Shutdown(metricAgent, dsdServer, serverlessFlushTimeout, metricsDrainTimeout)
 	defer flushLogsAgent(logConfig.FlushTimeout, logsAgent)
 	defer tracingCtx.TraceAgent.Stop()
 	defer func() {

@@ -60,6 +60,56 @@ func (c *ServerlessMetricAgent) Stop(ctx context.Context) error {
 	return waiter.WaitForPendingSamples(ctx)
 }
 
+// ServerlessFlusher is the subset of the DogStatsD server interface used by
+// Shutdown to drain in-flight worker batchers before the demux drains. The
+// concrete implementation is dogstatsdServer.Component.ServerlessFlush, which
+// calls aggregator.ForceFlushToSerializer and blocks unboundedly on the
+// flush channel — Shutdown wraps it with an external timer so a stuck flush
+// can't eat the whole shutdown grace window.
+type ServerlessFlusher interface {
+	ServerlessFlush(time.Duration)
+}
+
+// Shutdown drains the serverless metrics pipeline in two phases:
+//
+//  1. flusher.ServerlessFlush(0): drain DogStatsD worker batchers into the
+//     aggregator. Run in a goroutine and bounded by flushTimeout via an
+//     external timer — the underlying ForceFlushToSerializer call has no
+//     internal deadline. On overrun, the goroutine is leaked (it cannot
+//     be cancelled) but Shutdown returns so the rest of the shutdown
+//     sequence can proceed; the process is exiting anyway.
+//
+//  2. agent.Stop(ctx) with drainTimeout: wait for the time-sampler workers
+//     to drain every sample queued during phase 1 (and earlier shutdown
+//     phases) so the subsequent Fx OnStop demux.Stop(true) sees an empty
+//     channel.
+//
+// Both phases are best-effort: failures are logged and shutdown continues.
+// nil agent and nil flusher are treated as no-ops so callers can wire this
+// in unconditionally regardless of API-key gating.
+func Shutdown(agent *ServerlessMetricAgent, flusher ServerlessFlusher, flushTimeout, drainTimeout time.Duration) {
+	if flusher != nil {
+		done := make(chan struct{})
+		go func() {
+			defer close(done)
+			flusher.ServerlessFlush(0)
+		}()
+		select {
+		case <-done:
+		case <-time.After(flushTimeout):
+			log.Warnf("dogstatsd ServerlessFlush exceeded %v; continuing shutdown, final batcher samples may be dropped", flushTimeout)
+		}
+	}
+
+	if agent != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), drainTimeout)
+		defer cancel()
+		if err := agent.Stop(ctx); err != nil {
+			log.Warnf("metric agent drain timed out, final samples may be dropped: %v", err)
+		}
+	}
+}
+
 // AddLegacyEnhancedMetric reports a metric value to the intake with all tags.
 // This method should be removed in a future major serverless-init release.
 // optional tags supplied as `key:value` strings through extraTags.
