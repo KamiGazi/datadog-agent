@@ -753,12 +753,13 @@ func TestFromAutoscalerToContainerResourcePatches_PreservesPodOrder(t *testing.T
 		},
 	}
 
-	patches := fromAutoscalerToContainerResourcePatches(&ai, pod)
+	patches, qosBlocked := fromAutoscalerToContainerResourcePatches(&ai, pod)
 
 	require.Len(t, patches, 3)
 	assert.Equal(t, "c1", patches[0].Name, "patch order must follow pod container order")
 	assert.Equal(t, "c2", patches[1].Name)
 	assert.Equal(t, "c3", patches[2].Name)
+	assert.False(t, qosBlocked)
 }
 
 func TestFromAutoscalerToContainerResourcePatches_Burstable(t *testing.T) {
@@ -786,7 +787,7 @@ func TestFromAutoscalerToContainerResourcePatches_Burstable(t *testing.T) {
 			PreviewAnnotationKey: `{"burstable":true}`,
 		}).Build()
 
-		patches := fromAutoscalerToContainerResourcePatches(&ai, pod)
+		patches, qosBlocked := fromAutoscalerToContainerResourcePatches(&ai, pod)
 
 		require.Len(t, patches, 1)
 		p := patches[0]
@@ -794,6 +795,7 @@ func TestFromAutoscalerToContainerResourcePatches_Burstable(t *testing.T) {
 		assert.NotContains(t, p.Limits, "cpu", "cpu must not be set in limits when burstable")
 		assert.Equal(t, "512Mi", p.Limits["memory"], "memory limit must be unchanged")
 		assert.Equal(t, []string{"cpu"}, p.LimitsToDelete, "cpu must be listed for deletion")
+		assert.False(t, qosBlocked, "pod is not Guaranteed, qosBlocked must be false")
 	})
 
 	t.Run("non-burstable: cpu limit set normally, LimitsToDelete empty", func(t *testing.T) {
@@ -803,11 +805,104 @@ func TestFromAutoscalerToContainerResourcePatches_Burstable(t *testing.T) {
 			ScalingValues: model.ScalingValues{Vertical: sv},
 		}).Build()
 
-		patches := fromAutoscalerToContainerResourcePatches(&ai, pod)
+		patches, qosBlocked := fromAutoscalerToContainerResourcePatches(&ai, pod)
 
 		require.Len(t, patches, 1)
 		p := patches[0]
 		assert.Equal(t, "500m", p.Limits["cpu"], "cpu limit must be set when not burstable")
 		assert.Empty(t, p.LimitsToDelete, "LimitsToDelete must be empty when not burstable")
+		assert.False(t, qosBlocked)
+	})
+}
+
+func TestFromAutoscalerToContainerResourcePatches_BurstableGuaranteed(t *testing.T) {
+	// Recommendation carries the removeLimitSentinel on CPU limit (as applyVerticalConstraints
+	// would have stamped in burstable mode). The patch builder must NOT delete the CPU limit on
+	// a Guaranteed pod — it must substitute the recommendation's CPU request to keep req == lim.
+	sv := &model.VerticalScalingValues{
+		ResourcesHash: "r1",
+		ContainerResources: []datadoghqcommon.DatadogPodAutoscalerContainerResources{
+			{
+				Name:     "app",
+				Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("750m"), corev1.ResourceMemory: resource.MustParse("1Gi")},
+				Limits:   corev1.ResourceList{corev1.ResourceCPU: removeLimitSentinel.DeepCopy(), corev1.ResourceMemory: resource.MustParse("1Gi")},
+			},
+		},
+	}
+
+	guaranteedPod := &workloadmeta.KubernetesPod{
+		EntityID:   workloadmeta.EntityID{ID: "pod1"},
+		QOSClass:   string(corev1.PodQOSGuaranteed),
+		Containers: []workloadmeta.OrchestratorContainer{{Name: "app"}},
+	}
+
+	t.Run("guaranteed pod + burstable → cpu limit substituted with request, qosBlocked=true", func(t *testing.T) {
+		ai := (&model.FakePodAutoscalerInternal{
+			Namespace:            "default",
+			Name:                 "ai",
+			ScalingValues:        model.ScalingValues{Vertical: sv},
+			PreviewAnnotationKey: `{"burstable":true}`,
+		}).Build()
+
+		patches, qosBlocked := fromAutoscalerToContainerResourcePatches(&ai, guaranteedPod)
+
+		require.True(t, qosBlocked)
+		require.Len(t, patches, 1)
+		p := patches[0]
+		assert.Equal(t, "750m", p.Limits["cpu"], "cpu limit must be substituted with request to preserve Guaranteed")
+		assert.Equal(t, "1Gi", p.Limits["memory"])
+		assert.Equal(t, "750m", p.Requests["cpu"])
+		assert.Empty(t, p.LimitsToDelete, "Guaranteed pod must not receive a delete intent for cpu limit")
+	})
+
+	t.Run("guaranteed pod + burstable + no cpu request in reco → cpu dropped from patch", func(t *testing.T) {
+		svNoCPUReq := &model.VerticalScalingValues{
+			ResourcesHash: "r2",
+			ContainerResources: []datadoghqcommon.DatadogPodAutoscalerContainerResources{
+				{
+					Name:     "app",
+					Requests: corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("1Gi")},
+					Limits:   corev1.ResourceList{corev1.ResourceCPU: removeLimitSentinel.DeepCopy(), corev1.ResourceMemory: resource.MustParse("1Gi")},
+				},
+			},
+		}
+		ai := (&model.FakePodAutoscalerInternal{
+			Namespace:            "default",
+			Name:                 "ai",
+			ScalingValues:        model.ScalingValues{Vertical: svNoCPUReq},
+			PreviewAnnotationKey: `{"burstable":true}`,
+		}).Build()
+
+		patches, qosBlocked := fromAutoscalerToContainerResourcePatches(&ai, guaranteedPod)
+
+		require.True(t, qosBlocked)
+		require.Len(t, patches, 1)
+		p := patches[0]
+		assert.NotContains(t, p.Limits, "cpu", "cpu limit must not be set when no request available to substitute")
+		assert.NotContains(t, p.Requests, "cpu")
+		assert.Empty(t, p.LimitsToDelete)
+		assert.Equal(t, "1Gi", p.Limits["memory"])
+	})
+
+	t.Run("burstable pod + burstable → standard delete path (qosBlocked=false)", func(t *testing.T) {
+		burstablePod := &workloadmeta.KubernetesPod{
+			EntityID:   workloadmeta.EntityID{ID: "pod2"},
+			QOSClass:   string(corev1.PodQOSBurstable),
+			Containers: []workloadmeta.OrchestratorContainer{{Name: "app"}},
+		}
+		ai := (&model.FakePodAutoscalerInternal{
+			Namespace:            "default",
+			Name:                 "ai",
+			ScalingValues:        model.ScalingValues{Vertical: sv},
+			PreviewAnnotationKey: `{"burstable":true}`,
+		}).Build()
+
+		patches, qosBlocked := fromAutoscalerToContainerResourcePatches(&ai, burstablePod)
+
+		require.False(t, qosBlocked)
+		require.Len(t, patches, 1)
+		p := patches[0]
+		assert.NotContains(t, p.Limits, "cpu")
+		assert.Equal(t, []string{"cpu"}, p.LimitsToDelete)
 	})
 }

@@ -92,16 +92,27 @@ func (pa podPatcher) ApplyRecommendations(pod *corev1.Pod) (bool, error) {
 	// Patching the pod with the recommendations.
 	// In burstable mode, applyVerticalConstraints has already stamped the CPU-limit remove
 	// sentinel (-1) on each container recommendation, so ResourcesHash naturally encodes the
-	// burstable state — no extra suffix is needed here.
+	// burstable state — no extra suffix is needed here. The QoS gate below may keep the limit
+	// on Guaranteed pods, but the recommendation ID still reflects the user's burstable intent.
 	effectiveRecommendationID := autoscaler.ScalingValues().Vertical.ResourcesHash
 	if pod.Annotations[model.RecommendationIDAnnotation] != effectiveRecommendationID {
 		pod.Annotations[model.RecommendationIDAnnotation] = effectiveRecommendationID
 		patched = true
 	}
 
+	// In burstable mode, suppress CPU-limit removal for pods that would be Guaranteed
+	// (their spec has requests==limits for cpu+memory on every contributing container). Removing
+	// the CPU limit would change the pod's QoS class, which Kubernetes forbids on in-place resize
+	// and which we also avoid here to preserve the user's explicit Guaranteed configuration.
+	// Compute QoS once from the spec — at admission time pod.Status.QOSClass is not set yet.
+	qosBlocked := autoscaler.IsBurstable() && podIsGuaranteedFromSpec(pod)
+	if qosBlocked {
+		autoscaler.SetBurstableBlockedByQoS(true)
+	}
+
 	// Even if annotation matches, we still verify the resources are correct, in case the POD was modified.
 	for _, reco := range autoscaler.ScalingValues().Vertical.ContainerResources {
-		patched = patchPod(reco, pod) || patched
+		patched = patchPod(reco, pod, qosBlocked) || patched
 	}
 
 	return patched, nil
@@ -205,12 +216,14 @@ func (pa podPatcher) observedPodCallback(ctx context.Context, pod *workloadmeta.
 }
 
 // K8s guarantees that the name for an init container or normal container are unique among all containers.
-// It means that dispatching recommendations just by container names is sufficient
-func patchPod(reco datadoghqcommon.DatadogPodAutoscalerContainerResources, pod *corev1.Pod) (patched bool) {
+// It means that dispatching recommendations just by container names is sufficient.
+// qosBlocked is true when this pod would be Guaranteed and burstable's CPU-limit removal must be
+// suppressed (see patchContainerResources for the substitution rule).
+func patchPod(reco datadoghqcommon.DatadogPodAutoscalerContainerResources, pod *corev1.Pod, qosBlocked bool) (patched bool) {
 	for i := range pod.Spec.Containers {
 		cont := &pod.Spec.Containers[i]
 		if cont.Name == reco.Name {
-			return patchContainerResources(reco, cont)
+			return patchContainerResources(reco, cont, qosBlocked)
 		}
 	}
 
@@ -221,14 +234,14 @@ func patchPod(reco datadoghqcommon.DatadogPodAutoscalerContainerResources, pod *
 		// sidecar container by definition is an init container with `restartPolicy: Always`
 		isInitSidecarContainer := cont.RestartPolicy != nil && *cont.RestartPolicy == corev1.ContainerRestartPolicyAlways
 		if cont.Name == reco.Name && isInitSidecarContainer {
-			return patchContainerResources(reco, cont)
+			return patchContainerResources(reco, cont, qosBlocked)
 		}
 	}
 
 	return false
 }
 
-func patchContainerResources(reco datadoghqcommon.DatadogPodAutoscalerContainerResources, cont *corev1.Container) (patched bool) {
+func patchContainerResources(reco datadoghqcommon.DatadogPodAutoscalerContainerResources, cont *corev1.Container, qosBlocked bool) (patched bool) {
 	patched = false
 
 	if cont.Resources.Limits == nil {
@@ -240,7 +253,19 @@ func patchContainerResources(reco datadoghqcommon.DatadogPodAutoscalerContainerR
 	for resourceName, limit := range reco.Limits {
 		if limit.Sign() < 0 {
 			// Negative value (removeLimitSentinel) is set by applyVerticalConstraints in burstable
-			// mode, meaning "remove this limit from the container".
+			// mode, meaning "remove this limit from the container". When qosBlocked, removing the
+			// limit would change the pod's QoS class — substitute with the recommendation's
+			// request to preserve Guaranteed (request == limit), or skip the resource entirely
+			// when the recommendation has no request for it.
+			if qosBlocked {
+				if req, hasReq := reco.Requests[resourceName]; hasReq {
+					if cont.Resources.Limits[resourceName] != req {
+						cont.Resources.Limits[resourceName] = req
+						patched = true
+					}
+				}
+				continue
+			}
 			if _, hasCurrent := cont.Resources.Limits[resourceName]; hasCurrent {
 				delete(cont.Resources.Limits, resourceName)
 				patched = true
@@ -251,6 +276,14 @@ func patchContainerResources(reco datadoghqcommon.DatadogPodAutoscalerContainerR
 		}
 	}
 	for resourceName, request := range reco.Requests {
+		// When qosBlocked, skip updating the CPU request if the recommendation has no CPU
+		// limit override for the same resource (avoid breaking req==lim invariant on Guaranteed).
+		if qosBlocked && resourceName == corev1.ResourceCPU {
+			if _, hasLimitInReco := reco.Limits[resourceName]; !hasLimitInReco {
+				// No limit override in reco; updating just the request would unbalance req/lim.
+				continue
+			}
+		}
 		if cont.Resources.Requests[resourceName] != request {
 			cont.Resources.Requests[resourceName] = request
 			patched = true

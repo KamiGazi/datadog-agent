@@ -1139,11 +1139,72 @@ func TestPatchContainerResources(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			containerCopy := tt.container.DeepCopy()
 
-			patched := patchContainerResources(tt.recommendation, containerCopy)
+			patched := patchContainerResources(tt.recommendation, containerCopy, false)
 
 			assert.Equal(t, tt.expectedPatched, patched, "patchContainerResources should return expected patch status")
 			assert.Equal(t, tt.expectedLimits, containerCopy.Resources.Limits, "Container limits should match expected values")
 			assert.Equal(t, tt.expectedRequests, containerCopy.Resources.Requests, "Container requests should match expected values")
+		})
+	}
+}
+
+func TestPatchContainerResources_QoSBlocked(t *testing.T) {
+	// When qosBlocked is true the burstable sentinel on CPU limit must NOT delete the limit —
+	// it must be substituted with the recommendation's CPU request (so request == limit, keeping
+	// Guaranteed). If the recommendation has no CPU request, the CPU resource is left alone.
+	tests := []struct {
+		name             string
+		reco             datadoghqcommon.DatadogPodAutoscalerContainerResources
+		container        *corev1.Container
+		expectedPatched  bool
+		expectedLimits   corev1.ResourceList
+		expectedRequests corev1.ResourceList
+	}{
+		{
+			name: "qosBlocked + sentinel + cpu request in reco → cpu limit substituted with request",
+			reco: datadoghqcommon.DatadogPodAutoscalerContainerResources{
+				Name:     "app",
+				Limits:   corev1.ResourceList{"cpu": resource.MustParse("-1"), "memory": resource.MustParse("1Gi")},
+				Requests: corev1.ResourceList{"cpu": resource.MustParse("750m"), "memory": resource.MustParse("1Gi")},
+			},
+			container: &corev1.Container{
+				Name: "app",
+				Resources: corev1.ResourceRequirements{
+					Limits:   corev1.ResourceList{"cpu": resource.MustParse("500m"), "memory": resource.MustParse("512Mi")},
+					Requests: corev1.ResourceList{"cpu": resource.MustParse("500m"), "memory": resource.MustParse("512Mi")},
+				},
+			},
+			expectedPatched:  true,
+			expectedLimits:   corev1.ResourceList{"cpu": resource.MustParse("750m"), "memory": resource.MustParse("1Gi")},
+			expectedRequests: corev1.ResourceList{"cpu": resource.MustParse("750m"), "memory": resource.MustParse("1Gi")},
+		},
+		{
+			name: "qosBlocked + sentinel + no cpu request in reco → cpu untouched, requests skipped",
+			reco: datadoghqcommon.DatadogPodAutoscalerContainerResources{
+				Name:     "app",
+				Limits:   corev1.ResourceList{"cpu": resource.MustParse("-1"), "memory": resource.MustParse("1Gi")},
+				Requests: corev1.ResourceList{"memory": resource.MustParse("1Gi")},
+			},
+			container: &corev1.Container{
+				Name: "app",
+				Resources: corev1.ResourceRequirements{
+					Limits:   corev1.ResourceList{"cpu": resource.MustParse("500m"), "memory": resource.MustParse("512Mi")},
+					Requests: corev1.ResourceList{"cpu": resource.MustParse("500m"), "memory": resource.MustParse("512Mi")},
+				},
+			},
+			expectedPatched:  true,
+			expectedLimits:   corev1.ResourceList{"cpu": resource.MustParse("500m"), "memory": resource.MustParse("1Gi")},
+			expectedRequests: corev1.ResourceList{"cpu": resource.MustParse("500m"), "memory": resource.MustParse("1Gi")},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			containerCopy := tt.container.DeepCopy()
+			patched := patchContainerResources(tt.reco, containerCopy, true)
+			assert.Equal(t, tt.expectedPatched, patched)
+			assert.Equal(t, tt.expectedLimits, containerCopy.Resources.Limits)
+			assert.Equal(t, tt.expectedRequests, containerCopy.Resources.Requests)
 		})
 	}
 }
@@ -1281,7 +1342,7 @@ func TestPatchPod(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			podCopy := tt.pod.DeepCopy()
 
-			patched := patchPod(tt.recommendation, podCopy)
+			patched := patchPod(tt.recommendation, podCopy, false)
 
 			assert.Equal(t, tt.expectedPatched, patched, "patchPod should return expected patch status")
 

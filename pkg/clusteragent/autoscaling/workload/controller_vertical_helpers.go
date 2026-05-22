@@ -46,6 +46,12 @@ const inPlaceResizeSupportedCacheTTL = 15 * time.Minute
 // mode) to signal "delete this limit from the pod instead of setting it to this value".
 // Negative quantities are never valid as real Kubernetes resource values, making the intent
 // unambiguous and easy to identify with quantity.Sign() < 0.
+//
+// Both patch sites (pod_patcher.go::patchContainerResources for admission,
+// fromAutoscalerToContainerResourcePatches for in-place resize) honor the sentinel and additionally
+// gate on the pod's QoS class: a Guaranteed pod keeps its CPU limit (substituted with the
+// recommendation's CPU request) to preserve QoS, and the autoscaler surfaces the suppression via
+// the BurstableQoSBlocked status condition.
 var removeLimitSentinel = resource.MustParse("-1")
 
 // isInPlaceResizeSupported checks whether the API server exposes the pods/resize
@@ -613,7 +619,20 @@ func getPodResizeStatus(pod *workloadmeta.KubernetesPod, recommendationID string
 	return PodResizeStatusCompleted, time.Time{}
 }
 
-func fromAutoscalerToContainerResourcePatches(autoscalerInternal *model.PodAutoscalerInternal, pod *workloadmeta.KubernetesPod) []workloadpatcher.ContainerResourcePatch {
+// fromAutoscalerToContainerResourcePatches converts the constrained vertical recommendation into
+// the per-container patches consumed by the in-place resize subresource.
+//
+// In burstable mode the recommendation carries removeLimitSentinel (-1) on each container's CPU
+// limit. The transformation depends on whether removing that limit would change the pod's QoS
+// class (which Kubernetes forbids on in-place resize, KEP-1287):
+//
+//   - non-Guaranteed pod: delete the CPU limit via LimitsToDelete (the desired burstable behavior).
+//   - Guaranteed pod: substitute the CPU limit with the recommendation's CPU request so that
+//     request == limit is preserved and the pod stays Guaranteed. The second return value is true
+//     in this case so the caller can surface BurstableQoSBlockedCondition on the DPA status.
+//     If the recommendation has no CPU request for the container, the CPU resource is dropped
+//     from the patch entirely (no Requests[cpu], no Limits[cpu]) to avoid breaking Guaranteed.
+func fromAutoscalerToContainerResourcePatches(autoscalerInternal *model.PodAutoscalerInternal, pod *workloadmeta.KubernetesPod) (patches []workloadpatcher.ContainerResourcePatch, qosBlocked bool) {
 	containersResources := autoscalerInternal.ScalingValues().Vertical.ContainerResources
 
 	// Build a map from container name to container resources.
@@ -623,9 +642,10 @@ func fromAutoscalerToContainerResourcePatches(autoscalerInternal *model.PodAutos
 	}
 
 	burstable := autoscalerInternal.IsBurstable()
+	qosBlocked = burstable && podIsGuaranteedInPlace(pod)
 
 	// Build the list of patches ordered to API server pod container order.
-	patches := make([]workloadpatcher.ContainerResourcePatch, 0, len(containersResources))
+	patches = make([]workloadpatcher.ContainerResourcePatch, 0, len(containersResources))
 	for _, c := range pod.Containers {
 		cr, ok := recoByName[c.Name]
 		if !ok {
@@ -637,12 +657,25 @@ func fromAutoscalerToContainerResourcePatches(autoscalerInternal *model.PodAutos
 			Limits:   resourceListToStringMap(cr.Limits),
 		}
 		if burstable {
-			delete(patch.Limits, string(corev1.ResourceCPU)) // don't re-set CPU limit
-			patch.LimitsToDelete = []string{string(corev1.ResourceCPU)}
+			cpu := string(corev1.ResourceCPU)
+			if qosBlocked {
+				// Preserve Guaranteed QoS: replace the sentinel with the CPU request value.
+				// If the recommendation has no CPU request, drop CPU from both maps so the
+				// pod keeps its current CPU configuration untouched.
+				if req, hasReq := patch.Requests[cpu]; hasReq {
+					patch.Limits[cpu] = req
+				} else {
+					delete(patch.Requests, cpu)
+					delete(patch.Limits, cpu)
+				}
+			} else {
+				delete(patch.Limits, cpu) // don't re-set CPU limit
+				patch.LimitsToDelete = []string{cpu}
+			}
 		}
 		patches = append(patches, patch)
 	}
-	return patches
+	return patches, qosBlocked
 }
 
 // resourceListToStringMap converts a corev1.ResourceList to the string map expected by

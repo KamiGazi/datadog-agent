@@ -100,8 +100,8 @@ func (u *verticalController) sync(ctx context.Context, podAutoscaler *datadoghq.
 	autoscalerInternal.SetConstrainedVerticalScaling(constrainedVertical, limitErr)
 
 	// recommendationID is the constrained hash; in burstable mode applyVerticalConstraints
-	// already stamped a CPU-limit zero sentinel on each container, so the hash naturally
-	// differs from non-burstable — no extra suffix required.
+	// already stamped removeLimitSentinel (-1) on each container's CPU limit, so the hash
+	// naturally differs from non-burstable — no extra suffix required.
 	recommendationID := constrainedVertical.ResourcesHash
 
 	// Get the pods for the pod owner
@@ -163,6 +163,22 @@ func (u *verticalController) syncInternal(
 	podsPerDirectOwner map[string]int32,
 	podsByResizeStatus map[PodResizeStatus][]classifiedPod,
 ) (autoscaling.ProcessResult, error) {
+
+	// Authoritatively set the burstable-QoS-blocked flag from the full pod set. True iff burstable
+	// is enabled and at least one live pod is in Guaranteed QoS — the CPU-limit removal would
+	// change the pod's QoS class, which Kubernetes forbids on in-place resize (KEP-1287) and
+	// which we also suppress on admission to preserve user intent. Runs on every sync regardless
+	// of in-place vs rollout so the condition reflects the current state in both modes.
+	burstableQoSBlocked := false
+	if autoscalerInternal.IsBurstable() {
+		for _, pod := range pods {
+			if pod.DeletionTimestamp == nil && podIsGuaranteedInPlace(pod) {
+				burstableQoSBlocked = true
+				break
+			}
+		}
+	}
+	autoscalerInternal.SetBurstableBlockedByQoS(burstableQoSBlocked)
 
 	// Fall back to rollout if in-place scaling is not enabled via config, if
 	// TriggerRollout mode is explicitly set, or if the API server does not
@@ -336,7 +352,9 @@ func (u *verticalController) patchInPlace(ctx context.Context, autoscalerInterna
 	patchTarget := workloadpatcher.PodTarget(pod.Namespace, pod.Name)
 
 	// Patch spec.containers[*].resources via the pods/resize subresource.
-	containersResourcePatches := fromAutoscalerToContainerResourcePatches(autoscalerInternal, pod)
+	// fromAutoscalerToContainerResourcePatches transparently keeps the CPU limit on Guaranteed
+	// pods to preserve their QoS class; the per-sync flag is set separately in syncInternal.
+	containersResourcePatches, _ := fromAutoscalerToContainerResourcePatches(autoscalerInternal, pod)
 	intent := workloadpatcher.NewPatchIntent(patchTarget).With(workloadpatcher.SetContainerResources(containersResourcePatches))
 	_, err := u.patchClient.Apply(ctx, intent, workloadpatcher.PatchOptions{Caller: "vpa", Subresource: "resize", PatchType: types.StrategicMergePatchType})
 	if err != nil {
