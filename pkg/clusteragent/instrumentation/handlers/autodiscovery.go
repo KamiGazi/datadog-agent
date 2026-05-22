@@ -122,7 +122,7 @@ func (h *AutodiscoveryHandler) Handle(_ context.Context, event instrumentation.E
 	if isService(cr) {
 		h.templateStore.writeTemplates(key, cr, configs)
 	} else {
-		h.checkStore.writeConfigs(key, cr, configs)
+		h.checkStore.writeConfigs(key, configs)
 	}
 
 	return instrumentation.HandlerStatus{
@@ -131,12 +131,6 @@ func (h *AutodiscoveryHandler) Handle(_ context.Context, event instrumentation.E
 		Reason:  "Configured",
 		Message: fmt.Sprintf("%d check(s) configured for %s/%s", len(configs), cr.Spec.TargetRef.Kind, cr.Spec.TargetRef.Name),
 	}, nil
-}
-
-// ListConfigs returns a snapshot of all stored integration.Config entries
-// across all DatadogInstrumentation CRs handled by this instance.
-func (h *AutodiscoveryHandler) ListConfigs() []integration.Config {
-	return h.checkStore.ListConfigs()
 }
 
 func translateWorkloadCheck(cr *datadoghq.DatadogInstrumentation, check datadoghq.DatadogInstrumentationCheckConfig) (integration.Config, error) {

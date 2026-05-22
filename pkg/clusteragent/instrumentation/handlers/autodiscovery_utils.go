@@ -102,19 +102,6 @@ func (s *ServiceCheckTemplateStore) AllTemplatesByService() map[string][]integra
 	return out
 }
 
-// templatesForService returns all check templates targeting a given service.
-func (s *ServiceCheckTemplateStore) templatesForService(namespace, name string) []integration.Config {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	var out []integration.Config
-	for _, entry := range s.entries {
-		if entry.serviceNamespace == namespace && entry.serviceName == name {
-			out = append(out, entry.templates...)
-		}
-	}
-	return out
-}
-
 // CheckStore stores integration.Config entries keyed by DatadogInstrumentation CR.
 type CheckStore struct {
 	mu      sync.RWMutex
@@ -132,14 +119,14 @@ func NewCheckStore() *CheckStore {
 func (c *CheckStore) ListConfigs() []integration.Config {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	out := make([]integration.Config, 0)
+	var out []integration.Config
 	for _, cfgs := range c.configs {
 		out = append(out, cfgs...)
 	}
 	return out
 }
 
-func (c *CheckStore) writeConfigs(key string, _ *datadoghq.DatadogInstrumentation, configs []integration.Config) {
+func (c *CheckStore) writeConfigs(key string, configs []integration.Config) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if len(configs) == 0 {
