@@ -1,0 +1,11 @@
+load("@rules_python//python:py_library.bzl", "py_library")
+
+# Pure-data view of the build tags consumed by //tasks:build_tags_codegen
+# (and re-exported from tasks/build_tags.py for the dda inv path).
+# No invoke dep on purpose: see module docstring.
+py_library(
+    name = "build_tags",
+    srcs = ["build_tags.py"],
+    visibility = ["//tasks:__pkg__"],
+    deps = ["//tasks:flavor"],
+)

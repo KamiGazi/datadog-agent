@@ -13,6 +13,14 @@ py_library(
     ],
 )
 
+# Shared so //tasks/libs/common:build_tags can import tasks.flavor without
+# pulling tasks/__init__.py.
+py_library(
+    name = "flavor",
+    srcs = ["flavor.py"],
+    visibility = ["//tasks/libs/common:__pkg__"],
+)
+
 exports_files(["core_checks.py"])
 
 # No `data = [...]` for renovate.json / deps/ / .renovate-untracked.json on
