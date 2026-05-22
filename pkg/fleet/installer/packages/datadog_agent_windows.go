@@ -136,7 +136,7 @@ func postInstallDatadogAgent(ctx HookContext) error {
 	// install new extensions provided via environment variables
 	// not during experiments, we don't expect new extensions to be installed, only restored
 	if !isExperiment {
-		if err := installAgentExtensions(ctx, isExperiment); err != nil {
+		if err := installAgentExtensions(ctx, agentVersion, isExperiment); err != nil {
 			log.Warnf("failed to install extensions: %s", err)
 		}
 	}

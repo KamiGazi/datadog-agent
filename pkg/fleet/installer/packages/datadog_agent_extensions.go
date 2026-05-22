@@ -178,7 +178,7 @@ func restoreAgentExtensions(ctx HookContext, version string, experiment bool) er
 // by the idempotency check in extensionsPkg.Install.
 //
 //nolint:unused // Used in platform-specific files
-func installAgentExtensions(ctx HookContext, isExperiment bool) error {
+func installAgentExtensions(ctx HookContext, version string, isExperiment bool) error {
 	env := env.FromEnv()
 	// populate extensions list based on environment variables
 	var extensions []string
@@ -189,8 +189,6 @@ func installAgentExtensions(ctx HookContext, isExperiment bool) error {
 	if len(extensions) == 0 {
 		return nil
 	}
-
-	version := agentVersionForExtensions()
 
 	// install extensions
 	overrides := setRegistryConfig(env)
