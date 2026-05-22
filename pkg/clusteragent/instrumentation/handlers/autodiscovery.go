@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"sync"
 
 	datadoghq "github.com/DataDog/datadog-operator/api/datadoghq/v1alpha1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
@@ -26,33 +25,22 @@ import (
 
 const (
 	checksReadyConditionType = "ChecksReady"
-
-	// autodiscoveryProvider is the integration.Config Source value used for configs
-	// translated from a DatadogInstrumentation CR by the Autodiscovery handler.
-	autodiscoveryProvider = "datadoginstrumentation"
+	autodiscoveryProvider    = "datadoginstrumentation"
 )
 
-type CheckStore struct {
-	mu      sync.RWMutex
-	configs map[string][]integration.Config
-}
-
-func NewCheckStore() *CheckStore {
-	return &CheckStore{
-		configs: make(map[string][]integration.Config),
-	}
-}
-
 // AutodiscoveryHandler translates DatadogInstrumentation check sections into
-// integration.Config entries and stores them in memory for delivery to node agents.
+// integration.Config entries. It supports both workload targets (Deployment,
+// DaemonSet, etc.) and Service targets, branching internally on the target kind.
 type AutodiscoveryHandler struct {
-	checkStore *CheckStore
+	checkStore    *CheckStore
+	templateStore *ServiceCheckTemplateStore
 }
 
 // NewAutodiscoveryHandler returns the Autodiscovery DatadogInstrumentation handler.
 func NewAutodiscoveryHandler(dep *Deps) *AutodiscoveryHandler {
 	return &AutodiscoveryHandler{
-		checkStore: dep.CheckStore,
+		checkStore:    dep.CheckStore,
+		templateStore: dep.ServiceCheckTemplateStore,
 	}
 }
 
@@ -69,7 +57,7 @@ func (h *AutodiscoveryHandler) HasSection(cr *datadoghq.DatadogInstrumentation) 
 // SupportsTarget returns whether Autodiscovery check delivery supports the target kind.
 func (h *AutodiscoveryHandler) SupportsTarget(ref autoscalingv2.CrossVersionObjectReference) bool {
 	switch ref.Kind {
-	case "Deployment", "DaemonSet", "StatefulSet", "CronJob", "Job":
+	case "Deployment", "DaemonSet", "StatefulSet", "CronJob", "Job", "Service":
 		return true
 	default:
 		return false
@@ -81,8 +69,9 @@ func (h *AutodiscoveryHandler) Validate(cr *datadoghq.DatadogInstrumentation) []
 	return validateChecks(cr, h.Name())
 }
 
-// Handle translates check configs into integration.Config entries on Create/Update,
-// removes them on Delete, and reports a ChecksReady status.
+// Handle translates check configs on Create/Update, removes them on Delete,
+// and reports a ChecksReady status. For Service targets the configs are stored
+// as templates; for workload targets they are stored directly.
 func (h *AutodiscoveryHandler) Handle(_ context.Context, event instrumentation.EventType, cr *datadoghq.DatadogInstrumentation) (instrumentation.HandlerStatus, error) {
 	if cr == nil {
 		return instrumentation.HandlerStatus{
@@ -96,7 +85,12 @@ func (h *AutodiscoveryHandler) Handle(_ context.Context, event instrumentation.E
 	key := cr.Namespace + "/" + cr.Name
 
 	if event == instrumentation.EventDelete {
-		h.checkStore.deleteConfigs(key)
+		if isService(cr) {
+			h.templateStore.deleteTemplates(key)
+		} else {
+			h.checkStore.deleteConfigs(key)
+		}
+
 		return instrumentation.HandlerStatus{
 			Type:    checksReadyConditionType,
 			Status:  metav1.ConditionTrue,
@@ -107,7 +101,13 @@ func (h *AutodiscoveryHandler) Handle(_ context.Context, event instrumentation.E
 
 	configs := make([]integration.Config, 0, len(cr.Spec.Config.Checks))
 	for _, check := range cr.Spec.Config.Checks {
-		cfg, err := translateCheck(cr, check)
+		var cfg integration.Config
+		var err error
+		if isService(cr) {
+			cfg, err = translateServiceCheck(cr, check)
+		} else {
+			cfg, err = translateWorkloadCheck(cr, check)
+		}
 		if err != nil {
 			return instrumentation.HandlerStatus{
 				Type:    checksReadyConditionType,
@@ -119,7 +119,11 @@ func (h *AutodiscoveryHandler) Handle(_ context.Context, event instrumentation.E
 		configs = append(configs, cfg)
 	}
 
-	h.checkStore.setConfigs(key, configs)
+	if isService(cr) {
+		h.templateStore.writeTemplates(key, cr, configs)
+	} else {
+		h.checkStore.writeConfigs(key, cr, configs)
+	}
 
 	return instrumentation.HandlerStatus{
 		Type:    checksReadyConditionType,
@@ -135,38 +139,11 @@ func (h *AutodiscoveryHandler) ListConfigs() []integration.Config {
 	return h.checkStore.ListConfigs()
 }
 
-func (c *CheckStore) ListConfigs() []integration.Config {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	out := make([]integration.Config, 0)
-	for _, cfgs := range c.configs {
-		out = append(out, cfgs...)
-	}
-	return out
-}
-
-func (c *CheckStore) setConfigs(key string, configs []integration.Config) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if len(configs) == 0 {
-		delete(c.configs, key)
-		return
-	}
-	c.configs[key] = configs
-}
-
-func (c *CheckStore) deleteConfigs(key string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	delete(c.configs, key)
-}
-
-func translateCheck(cr *datadoghq.DatadogInstrumentation, check datadoghq.DatadogInstrumentationCheckConfig) (integration.Config, error) {
+func translateWorkloadCheck(cr *datadoghq.DatadogInstrumentation, check datadoghq.DatadogInstrumentationCheckConfig) (integration.Config, error) {
 	initConfig, instances, logsConfig, err := translateConfigChecks(check)
 	if err != nil {
 		return integration.Config{}, err
 	}
-
 	return integration.Config{
 		Name:          check.Integration,
 		ADIdentifiers: check.ContainerImage,
@@ -175,6 +152,20 @@ func translateCheck(cr *datadoghq.DatadogInstrumentation, check datadoghq.Datado
 		LogsConfig:    logsConfig,
 		CELSelector:   buildCELSelector(cr.Spec.TargetRef, cr.Namespace),
 		Source:        fmt.Sprintf("%s:%s/%s", autodiscoveryProvider, cr.Namespace, cr.Name),
+	}, nil
+}
+
+func translateServiceCheck(cr *datadoghq.DatadogInstrumentation, check datadoghq.DatadogInstrumentationCheckConfig) (integration.Config, error) {
+	initConfig, instances, logsConfig, err := translateConfigChecks(check)
+	if err != nil {
+		return integration.Config{}, err
+	}
+	return integration.Config{
+		Name:       check.Integration,
+		InitConfig: initConfig,
+		Instances:  instances,
+		LogsConfig: logsConfig,
+		Source:     fmt.Sprintf("%s:%s/%s", autodiscoveryProvider, cr.Namespace, cr.Name),
 	}, nil
 }
 
@@ -239,7 +230,6 @@ func buildCELSelector(ref autoscalingv2.CrossVersionObjectReference, namespace s
 }
 
 // validateChecks validates the check configs in a DatadogInstrumentation CR.
-// It is shared by all handlers that support the spec.config.checks section.
 func validateChecks(cr *datadoghq.DatadogInstrumentation, handlerName string) []instrumentation.ValidationError {
 	if cr == nil {
 		return nil
@@ -264,7 +254,8 @@ func validateChecks(cr *datadoghq.DatadogInstrumentation, handlerName string) []
 				HandlerName: handlerName,
 			})
 		}
-		if len(check.ContainerImage) == 0 {
+
+		if len(check.ContainerImage) == 0 && !isService(cr) {
 			errs = append(errs, instrumentation.ValidationError{
 				Type:        checksReadyConditionType,
 				Reason:      "InvalidContainerImage",
