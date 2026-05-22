@@ -6,6 +6,7 @@
 package packages
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -385,7 +386,7 @@ func ddotProcmgrExtensionYAML(ctx HookContext, stable bool) ([]byte, error) {
 	}
 	installDir := ddotExtensionInstallDir(ctx, stable)
 	if installDir == "" {
-		return nil, fmt.Errorf("ddot extension not installed")
+		return nil, errors.New("ddot extension not installed")
 	}
 	channel := filepath.Join(paths.PackagesPath, "datadog-agent", "stable")
 	if !stable {
@@ -554,7 +555,7 @@ func postInstallDDOTExtension(ctx HookContext) (err error) {
 	stable := ddotExtensionProcmgrRemoveStable(ctx)
 	installDir := ddotExtensionInstallDir(ctx, stable)
 	if installDir == "" {
-		return fmt.Errorf("ddot extension not found under agent install roots")
+		return errors.New("ddot extension not found under agent install roots")
 	}
 	extensionPath := filepath.Join(installDir, "ext", "ddot")
 
