@@ -8,14 +8,17 @@ package issueregistryimpl
 
 import (
 	healthplatformpayload "github.com/DataDog/agent-payload/v5/healthplatform"
+
 	"github.com/DataDog/datadog-agent/comp/core/config"
+	sysprobeconfig "github.com/DataDog/datadog-agent/comp/core/sysprobeconfig/def"
 	registrydef "github.com/DataDog/datadog-agent/comp/healthplatform/issueregistry/def"
 	issuesmod "github.com/DataDog/datadog-agent/comp/healthplatform/issues"
 )
 
 // Requires defines the dependencies for the registry component.
 type Requires struct {
-	Config config.Component
+	Config         config.Component
+	SysProbeConfig sysprobeconfig.Component `optional:"true"`
 }
 
 type registryImpl struct {
@@ -26,6 +29,12 @@ type registryImpl struct {
 func New(reqs Requires) registrydef.Component {
 	r := issuesmod.NewRegistry()
 	for _, module := range issuesmod.GetAllModules(reqs.Config) {
+		r.RegisterModule(module)
+	}
+	for _, module := range issuesmod.GetAllModulesWithDeps(issuesmod.ModuleDeps{
+		Config:         reqs.Config,
+		SysProbeConfig: reqs.SysProbeConfig,
+	}) {
 		r.RegisterModule(module)
 	}
 	return &registryImpl{inner: r}

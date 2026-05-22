@@ -19,7 +19,9 @@ import (
 	"time"
 
 	"github.com/DataDog/agent-payload/v5/healthplatform"
+
 	"github.com/DataDog/datadog-agent/comp/core/config"
+	sysprobeconfig "github.com/DataDog/datadog-agent/comp/core/sysprobeconfig/def"
 
 	runnerdef "github.com/DataDog/datadog-agent/comp/healthplatform/runner/def"
 )
@@ -27,9 +29,19 @@ import (
 // ModuleFactory is a function that creates a new Module instance
 type ModuleFactory func(config config.Component) Module
 
+// ModuleDeps groups the dependencies an issue module may pull from
+type ModuleDeps struct {
+	Config         config.Component
+	SysProbeConfig sysprobeconfig.Component
+}
+
+// ModuleFactoryWithDeps is a module factory that receives the full ModuleDeps
+type ModuleFactoryWithDeps func(deps ModuleDeps) Module
+
 var (
-	moduleFactories   []ModuleFactory
-	moduleFactoriesMu sync.Mutex
+	moduleFactories         []ModuleFactory
+	moduleFactoriesWithDeps []ModuleFactoryWithDeps
+	moduleFactoriesMu       sync.Mutex
 )
 
 // RegisterModuleFactory registers a module factory function.
@@ -38,6 +50,14 @@ func RegisterModuleFactory(factory ModuleFactory) {
 	moduleFactoriesMu.Lock()
 	defer moduleFactoriesMu.Unlock()
 	moduleFactories = append(moduleFactories, factory)
+}
+
+// RegisterModuleFactoryWithDeps registers a module factory that receives the
+// full ModuleDeps struct. Used for modules that need more than the main config
+func RegisterModuleFactoryWithDeps(factory ModuleFactoryWithDeps) {
+	moduleFactoriesMu.Lock()
+	defer moduleFactoriesMu.Unlock()
+	moduleFactoriesWithDeps = append(moduleFactoriesWithDeps, factory)
 }
 
 // GetAllModules creates and returns all registered modules.
@@ -49,6 +69,18 @@ func GetAllModules(config config.Component) []Module {
 	modules := make([]Module, 0, len(moduleFactories))
 	for _, factory := range moduleFactories {
 		modules = append(modules, factory(config))
+	}
+	return modules
+}
+
+// GetAllModulesWithDeps returns modules registered via RegisterModuleFactoryWithDeps
+func GetAllModulesWithDeps(deps ModuleDeps) []Module {
+	moduleFactoriesMu.Lock()
+	defer moduleFactoriesMu.Unlock()
+
+	modules := make([]Module, 0, len(moduleFactoriesWithDeps))
+	for _, factory := range moduleFactoriesWithDeps {
+		modules = append(modules, factory(deps))
 	}
 	return modules
 }
