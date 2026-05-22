@@ -33,6 +33,10 @@ STAGING=$BUILD_DIR/staging
 AGENT_SRC=${AGENT_SRC:-/opt/datadog-agent}
 export AGENT_SRC
 
+# RTLOADER_SRC is the rtloader source directory inside the agent tree.
+RTLOADER_SRC="$AGENT_SRC/rtloader"
+export RTLOADER_SRC
+
 # DESTDIR approach (critical — read before modifying):
 #   EMBEDDED     = final install path baked into all binaries at configure time
 #                  (sys.prefix, _sysconfigdata, XCOFF loader sections)

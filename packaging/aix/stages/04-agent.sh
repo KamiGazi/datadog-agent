@@ -67,7 +67,7 @@ mkdir -p "$STAGING/opt/datadog-agent/bin/agent"
 # tree; the staging copies are for the final package only.
 
 log "Setting rtloader CGO flags"
-export CGO_CFLAGS="$CGO_CFLAGS -I$AGENT_SRC/rtloader/include"
+export CGO_CFLAGS="$CGO_CFLAGS -I$RTLOADER_SRC/include"
 #
 # -lpython3 (via libpython3.a symlink) causes libpython3.a(shr_64.o) to appear in the agent binary's
 # XCOFF startup-load chain. This is necessary but not sufficient: the binary
@@ -88,8 +88,8 @@ if [ ! -f "$PYTHON_EXP" ]; then
 fi
 log "Using Python export file: $PYTHON_EXP"
 export CGO_LDFLAGS="$CGO_LDFLAGS \
-  -L$AGENT_SRC/rtloader/build/rtloader \
-  -L$AGENT_SRC/rtloader/build/three \
+  -L$RTLOADER_SRC/build/rtloader \
+  -L$RTLOADER_SRC/build/three \
   -L$EMBEDDED_DESTDIR/lib \
   -lpython3 \
   -Wl,-bE:$PYTHON_EXP \
@@ -115,7 +115,7 @@ rm -f "$STAGING/opt/datadog-agent/bin/agent/agent-bin"
 unset OBJECT_MODE
 python3.12 -m invoke agent.build \
     --exclude-rtloader \
-    --rtloader-root="$AGENT_SRC/rtloader" \
+    --rtloader-root="$RTLOADER_SRC" \
     --embedded-path="$EMBEDDED_DESTDIR" \
     --agent-bin="$STAGING/opt/datadog-agent/bin/agent/agent-bin"
 
