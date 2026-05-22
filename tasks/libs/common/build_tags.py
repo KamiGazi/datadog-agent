@@ -1,9 +1,11 @@
-"""Build-tag data shared between tasks/build_tags.py and the Bazel codegen.
+"""Build-tags library shared between tasks/build_tags.py and the Bazel codegen.
 
-This module is import-pure: no `invoke`, no side effects. It owns the
-canonical sets of build tags, the per-flavor `build_tags` mapping, and the
-serialisers consumed by //tasks:build_tags_codegen (which writes
-//bazel/build_tags_codegen:gazelle_build_tags.bzl).
+This is import-pure: no `invoke` and no side effects on import. It owns
+the canonical sets of build tags, the per-flavor `build_tags` mapping,
+and `build_tags_codegen_payload()` — the structured view consumed both
+by the dda inv `codegen-to-json` task and by the Bazel codegen entry
+script (//bazel/build_tags_codegen:codegen.py). The .bzl/.go rendering
+itself lives next to the Bazel rule that needs it.
 
 tasks/build_tags.py re-exports every name defined here so existing call
 sites (`from tasks.build_tags import ALL_TAGS`, ...) keep working.
@@ -411,7 +413,7 @@ build_tags = {
 }
 
 
-def _build_tags_codegen_payload() -> dict[str, object]:
+def build_tags_codegen_payload() -> dict[str, object]:
     """Structured view of the tag data consumed by the Bazel codegen.
 
     All list values are sorted and deduplicated so the generated .bzl / .go

@@ -1,0 +1,33 @@
+load("@bazel_lib//lib:run_binary.bzl", "run_binary")
+load("@bazel_lib//lib:write_source_files.bzl", "write_source_file")
+load("@rules_python//python:py_binary.bzl", "py_binary")
+
+# Imports tasks.libs.common.build_tags directly — no `invoke` dep, so the
+# action never has to bootstrap dda or pull tasks/__init__.py.
+py_binary(
+    name = "build_tags_codegen",
+    srcs = ["codegen.py"],
+    main = "codegen.py",
+    deps = ["//tasks/libs/common:build_tags"],
+)
+
+# Renders gazelle_build_tags.bzl from tasks/libs/common/build_tags.py.
+# The output name is prefixed with _ so it does not collide with the
+# committed source file of the same logical name in write_source_file's
+# diff_test runfiles tree.
+run_binary(
+    name = "gen_gazelle_build_tags",
+    args = ["$(execpath _gazelle_build_tags.bzl)"],
+    outs = ["_gazelle_build_tags.bzl"],
+    tool = ":build_tags_codegen",
+)
+
+# `bazel test //bazel/build_tags_codegen:gazelle_build_tags_test` verifies
+# the committed gazelle_build_tags.bzl matches what the source would
+# produce. `bazel run //bazel/build_tags_codegen:gazelle_build_tags`
+# refreshes the committed file in-place.
+write_source_file(
+    name = "gazelle_build_tags",
+    in_file = ":gen_gazelle_build_tags",
+    out_file = "gazelle_build_tags.bzl",
+)

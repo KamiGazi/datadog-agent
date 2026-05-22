@@ -12,7 +12,7 @@ from tasks.build_tags import (
 
 
 def _payload():
-    return build_tags._build_tags_codegen_payload()
+    return build_tags.build_tags_codegen_payload()
 
 
 class TestCodegenPayloadSchema(unittest.TestCase):

@@ -54,8 +54,8 @@ from tasks.libs.common.build_tags import (
     UNIT_TEST_TAGS,
     WINDOWS_EXCLUDED_TAGS,
     WINDOWS_INCLUDED_TAGS,
-    _build_tags_codegen_payload,
     build_tags,
+    build_tags_codegen_payload,
 )
 
 _GOOS_TO_SYS_PLATFORM = {
@@ -265,7 +265,7 @@ def codegen_to_json(_, output=""):
     Writes to --output= path if provided (so callers can sidestep stdout noise
     from dda/rich's console init on Windows), otherwise prints to stdout.
     """
-    text = json.dumps(_build_tags_codegen_payload(), indent=2, sort_keys=True)
+    text = json.dumps(build_tags_codegen_payload(), indent=2, sort_keys=True)
     if output:
         with open(output, "w") as f:
             f.write(text)
@@ -314,6 +314,7 @@ __all__ = [
     "WINDOWS_INCLUDED_TAGS",
     "audit_tag_impact",
     "build_tags",
+    "build_tags_codegen_payload",
     "codegen_to_json",
     "compute_build_tags_for_flavor",
     "compute_config_build_tags",
