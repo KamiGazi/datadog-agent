@@ -296,8 +296,12 @@ const debAgentInstallRoot = "/opt/datadog-agent"
 // versioned OCI install path used by extensions.Install (see getExtensionsPath in extensions).
 func ddotExtensionInstallDir(ctx HookContext, stable bool) string {
 	for _, root := range ddotExtensionInstallCandidateRoots(ctx, stable) {
-		if ddotExtensionInstalled(root) {
-			return root
+		installRoot := root
+		if resolved, err := filepath.EvalSymlinks(root); err == nil {
+			installRoot = resolved
+		}
+		if ddotExtensionInstalled(installRoot) {
+			return installRoot
 		}
 	}
 	return ""
