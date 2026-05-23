@@ -17,38 +17,36 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-	"strconv"
 	"sync"
 	"testing"
 
 	"golang.org/x/crypto/ssh"
-
-	ncmconfig "github.com/DataDog/datadog-agent/pkg/networkconfigmanagement/config"
+	"golang.org/x/crypto/ssh/knownhosts"
 )
 
-// fakeResponse is the canned reply for one command on the fake SSH server.
+// FakeResponse is the canned reply for one command on the fake SSH server.
 // Stdout is written to the channel; Stderr to the channel's stderr stream;
 // ExitStatus is reported to the client (0 = success).
-type fakeResponse struct {
+type FakeResponse struct {
 	Stdout     string
 	Stderr     string
 	ExitStatus uint32
 }
 
-// ok returns a successful (exit 0) response with the given stdout.
-func ok(stdout string) fakeResponse { return fakeResponse{Stdout: stdout} }
+// Ok returns a successful (exit 0) response with the given stdout.
+func Ok(stdout string) FakeResponse { return FakeResponse{Stdout: stdout} }
 
-// fail returns a failure response with stderr and the given non-zero exit
+// Fail returns a failure response with stderr and the given non-zero exit
 // status.
-func fail(stderr string, exit uint32) fakeResponse {
-	return fakeResponse{Stderr: stderr, ExitStatus: exit}
+func Fail(stderr string, exit uint32) FakeResponse {
+	return FakeResponse{Stderr: stderr, ExitStatus: exit}
 }
 
-func fakeData(data map[string]fakeResponse) shellFunc {
+func FakeData(data map[string]FakeResponse) ShellFunc {
 	return func(command string, _ io.Reader, stdout, stderr io.Writer) uint32 {
 		resp, ok := data[command]
 		if !ok {
-			resp = fakeResponse{
+			resp = FakeResponse{
 				Stderr:     fmt.Sprintf("unknown command: %s\n", command),
 				ExitStatus: 127,
 			}
@@ -63,9 +61,9 @@ func fakeData(data map[string]fakeResponse) shellFunc {
 	}
 }
 
-type shellFunc func(command string, stdin io.Reader, stdout, stderr io.Writer) (returnCode uint32)
+type ShellFunc func(command string, stdin io.Reader, stdout, stderr io.Writer) (returnCode uint32)
 
-// fakeSSHServer is an in-process SSH server backed by a map of canned
+// FakeSSHServer is an in-process SSH server backed by a map of canned
 // command -> response replies. It is intended for tests that exercise the
 // real SSHClient against a server without depending on system sshd or Docker.
 //
@@ -73,10 +71,10 @@ type shellFunc func(command string, stdin io.Reader, stdout, stderr io.Writer) (
 // tracks every accepted connection so that Stop() can tear them down
 // deterministically — this matters when a test wants to assert that NewSession
 // fails after the server goes away.
-type fakeSSHServer struct {
+type FakeSSHServer struct {
 	listener  net.Listener
 	hostKey   ssh.Signer
-	getOutput shellFunc
+	getOutput ShellFunc
 
 	expectedUser     string
 	expectedPassword string
@@ -87,28 +85,28 @@ type fakeSSHServer struct {
 	stopped  bool
 }
 
-// fakeServerOption configures a fakeSSHServer at startup.
-type fakeServerOption func(*fakeSSHServer)
+// FakeServerOption configures a fakeSSHServer at startup.
+type FakeServerOption func(*FakeSSHServer)
 
-// withCredentials sets the username/password the server expects. Defaults to
+// WithCredentials sets the username/password the server expects. Defaults to
 // "test" / "hunter2".
-// func withCredentials(user, password string) fakeServerOption {
-// 	return func(s *fakeSSHServer) {
-// 		s.expectedUser = user
-// 		s.expectedPassword = password
-// 	}
-// }
-
-// startFakeSSHServer launches an in-process SSH server on 127.0.0.1 with a
-// random port. The server is shut down via t.Cleanup, which closes the
-// listener and every accepted connection.
-func startFakeSSHServer(t *testing.T, outputs map[string]fakeResponse, opts ...fakeServerOption) *fakeSSHServer {
-	return startFakeSSHServerWithFunc(t, fakeData(outputs), opts...)
+func WithCredentials(user, password string) FakeServerOption {
+	return func(s *FakeSSHServer) {
+		s.expectedUser = user
+		s.expectedPassword = password
+	}
 }
 
-// startFakeSSHServerWithFunc is startFakeSSHServer except it takes a
-// general-purpose shellFunc that it uses to generate results.
-func startFakeSSHServerWithFunc(t *testing.T, getOutput shellFunc, opts ...fakeServerOption) *fakeSSHServer {
+// StartFakeSSHServer launches an in-process SSH server on 127.0.0.1 with a
+// random port. The server is shut down via t.Cleanup, which closes the
+// listener and every accepted connection.
+func StartFakeSSHServer(t *testing.T, outputs map[string]FakeResponse, opts ...FakeServerOption) *FakeSSHServer {
+	return StartFakeSSHServerWithFunc(t, FakeData(outputs), opts...)
+}
+
+// StartFakeSSHServerWithFunc starts an in-process SSH server using the given
+// function to reply to requests.
+func StartFakeSSHServerWithFunc(t *testing.T, getOutput ShellFunc, opts ...FakeServerOption) *FakeSSHServer {
 	t.Helper()
 
 	_, priv, err := ed25519.GenerateKey(rand.Reader)
@@ -120,7 +118,7 @@ func startFakeSSHServerWithFunc(t *testing.T, getOutput shellFunc, opts ...fakeS
 		t.Fatalf("signer: %v", err)
 	}
 
-	srv := &fakeSSHServer{
+	srv := &FakeSSHServer{
 		hostKey:          hostKey,
 		getOutput:        getOutput,
 		expectedUser:     "test",
@@ -152,7 +150,7 @@ func startFakeSSHServerWithFunc(t *testing.T, getOutput shellFunc, opts ...fakeS
 	return srv
 }
 
-func (s *fakeSSHServer) acceptLoop(cfg *ssh.ServerConfig) {
+func (s *FakeSSHServer) acceptLoop(cfg *ssh.ServerConfig) {
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
@@ -172,7 +170,7 @@ func (s *fakeSSHServer) acceptLoop(cfg *ssh.ServerConfig) {
 	}
 }
 
-func (s *fakeSSHServer) serveConn(conn net.Conn, cfg *ssh.ServerConfig) {
+func (s *FakeSSHServer) serveConn(conn net.Conn, cfg *ssh.ServerConfig) {
 	defer conn.Close()
 
 	sconn, chans, reqs, err := ssh.NewServerConn(conn, cfg)
@@ -196,7 +194,7 @@ func (s *fakeSSHServer) serveConn(conn net.Conn, cfg *ssh.ServerConfig) {
 	}
 }
 
-func (s *fakeSSHServer) handleSession(ch ssh.Channel, reqs <-chan *ssh.Request) {
+func (s *FakeSSHServer) handleSession(ch ssh.Channel, reqs <-chan *ssh.Request) {
 	defer ch.Close()
 	for req := range reqs {
 		switch req.Type {
@@ -231,7 +229,7 @@ func (s *fakeSSHServer) handleSession(ch ssh.Channel, reqs <-chan *ssh.Request) 
 // Stop closes the listener and every connection accepted so far. Idempotent.
 // Tests that want to drive a "server went away" scenario call this explicitly;
 // otherwise it runs once via t.Cleanup.
-func (s *fakeSSHServer) Stop() {
+func (s *FakeSSHServer) Stop() {
 	s.mu.Lock()
 	if s.stopped {
 		s.mu.Unlock()
@@ -249,25 +247,35 @@ func (s *fakeSSHServer) Stop() {
 }
 
 // Addr returns the host:port the server is bound to.
-func (s *fakeSSHServer) Addr() string {
+func (s *FakeSSHServer) Addr() string {
 	return s.listener.Addr().String()
 }
 
 // Host returns just the host portion of the bound address ("127.0.0.1").
-func (s *fakeSSHServer) Host() string {
+func (s *FakeSSHServer) Host() string {
 	host, _, _ := net.SplitHostPort(s.Addr())
 	return host
 }
 
 // Port returns the bound port as a string (matches DeviceInstance.Auth.Port).
-func (s *fakeSSHServer) Port() string {
+func (s *FakeSSHServer) Port() string {
 	_, port, _ := net.SplitHostPort(s.Addr())
 	return port
 }
 
+// User returns the username this server expects.
+func (s *FakeSSHServer) User() string {
+	return s.expectedUser
+}
+
+// Password returns the password this server expects.
+func (s *FakeSSHServer) Password() string {
+	return s.expectedPassword
+}
+
 // Received returns a snapshot of the commands the server has been asked to
 // execute, in arrival order.
-func (s *fakeSSHServer) Received() []string {
+func (s *FakeSSHServer) Received() []string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	out := make([]string, len(s.received))
@@ -277,11 +285,7 @@ func (s *fakeSSHServer) Received() []string {
 
 // WriteKnownHostsFile writes a known_hosts file containing this server's host
 // key, formatted for the bound host:port. Returns the file path.
-func (s *fakeSSHServer) WriteKnownHostsFile(t *testing.T) string {
-	t.Helper()
-	dir := t.TempDir()
-	path := filepath.Join(dir, "known_hosts")
-
+func (s *FakeSSHServer) WriteKnownHostsFile(path string) error {
 	pub := s.hostKey.PublicKey()
 	// OpenSSH non-default-port form: "[host]:port keytype base64(key)\n"
 	entry := fmt.Sprintf("[%s]:%s %s %s\n",
@@ -290,31 +294,59 @@ func (s *fakeSSHServer) WriteKnownHostsFile(t *testing.T) string {
 		base64.StdEncoding.EncodeToString(pub.Marshal()),
 	)
 	if err := os.WriteFile(path, []byte(entry), 0600); err != nil {
-		t.Fatalf("write known_hosts: %v", err)
+		return fmt.Errorf("write known_hosts: %w", err)
+	}
+	return nil
+}
+
+func (s *FakeSSHServer) MakeConfig(knownHostsPath string) (*ssh.ClientConfig, error) {
+	hostKey := ssh.InsecureIgnoreHostKey()
+	if knownHostsPath != "" {
+		var err error
+		hostKey, err = knownhosts.New(knownHostsPath)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing known_hosts file from path: %w", err)
+		}
+	}
+	return &ssh.ClientConfig{
+		User:            s.User(),
+		Auth:            []ssh.AuthMethod{ssh.Password(s.Password())},
+		HostKeyCallback: hostKey,
+		Timeout:         0,
+	}, nil
+}
+
+func (s *FakeSSHServer) Dial(knownHostsPath string) (*ssh.Client, error) {
+	sshConfig, err := s.MakeConfig(knownHostsPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to %s: %w", s.Addr(), err)
+	}
+	client, err := ssh.Dial("tcp", s.Addr(), sshConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to %s: %w", s.Addr(), err)
+	}
+	return client, nil
+}
+
+func MakeKnownHostsFile(t testing.TB, s *FakeSSHServer) string {
+	t.Helper()
+	dir := t.TempDir()
+	path := filepath.Join(dir, "known_hosts")
+	if err := s.WriteKnownHostsFile(path); err != nil {
+		t.Fatal(err)
 	}
 	return path
 }
 
-// DeviceInstance builds a DeviceInstance pre-wired to talk to this server,
-// using the default credentials (or whichever were configured via
-// withCredentials). Callers can mutate the returned struct before use.
-func (s *fakeSSHServer) DeviceInstance(t *testing.T) *ncmconfig.DeviceInstance {
+func MustConnect(t *testing.T, srv *FakeSSHServer) *ssh.Client {
 	t.Helper()
-	knownHosts := s.WriteKnownHostsFile(t)
-	port, err := strconv.Atoi(s.Port())
+	client, err := srv.Dial(MakeKnownHostsFile(t, srv))
 	if err != nil {
-		t.Fatalf("port: %v", err)
+		t.Fatalf("Unable to connect to fake server: %v", err)
 	}
-	return &ncmconfig.DeviceInstance{
-		IPAddress: s.Host(),
-		Auth: ncmconfig.AuthCredentials{
-			Username: s.expectedUser,
-			Password: s.expectedPassword,
-			Port:     strconv.Itoa(port),
-			Protocol: "tcp",
-			SSH: &ncmconfig.SSHConfig{
-				KnownHostsPath: knownHosts,
-			},
-		},
-	}
+	t.Cleanup(func() {
+		client.Close()
+	})
+
+	return client
 }

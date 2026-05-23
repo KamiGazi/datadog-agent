@@ -18,20 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"
-
-	"github.com/DataDog/datadog-agent/pkg/networkconfigmanagement/config"
 )
-
-func mustConnect(t *testing.T, device *config.DeviceInstance) *ssh.Client {
-	t.Helper()
-	client, err := connectToDevice(device)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		client.Close()
-	})
-
-	return client
-}
 
 func mustSession(t *testing.T, client *ssh.Client) *ssh.Session {
 	session, err := client.NewSession()
@@ -43,12 +30,11 @@ func mustSession(t *testing.T, client *ssh.Client) *ssh.Session {
 }
 
 func TestCommand(t *testing.T) {
-	srv := startFakeSSHServer(t, map[string]fakeResponse{
-		"show version": ok("Fakesco fOS\n"),
-		"show venison": fail("bad command", 1),
+	srv := StartFakeSSHServer(t, map[string]FakeResponse{
+		"show version": Ok("Fakesco fOS\n"),
+		"show venison": Fail("bad command", 1),
 	})
-	device := srv.DeviceInstance(t)
-	client := mustConnect(t, device)
+	client := MustConnect(t, srv)
 
 	for _, tc := range []struct {
 		name      string
@@ -114,7 +100,7 @@ func TestCommand(t *testing.T) {
 }
 
 func TestSCPCommand(t *testing.T) {
-	srv := startFakeSSHServerWithFunc(t, func(command string, stdin io.Reader, stdout, stderr io.Writer) (returnCode uint32) {
+	srv := StartFakeSSHServerWithFunc(t, func(command string, stdin io.Reader, stdout, stderr io.Writer) (returnCode uint32) {
 		switch command {
 		case "scp -t /tmp/foo.txt":
 			stdout.Write([]byte{0, 0})
@@ -139,8 +125,7 @@ func TestSCPCommand(t *testing.T) {
 		fmt.Fprintf(stderr, "unknown command: %s\n", command)
 		return 127
 	})
-	device := srv.DeviceInstance(t)
-	client := mustConnect(t, device)
+	client := MustConnect(t, srv)
 	for _, tc := range []struct {
 		name      string
 		cmd       *SCPCommand

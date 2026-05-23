@@ -25,15 +25,15 @@ func TestRetryingSSHClient_InitialDialFails(t *testing.T) {
 }
 
 func TestRetryingSSHClient_NewSession_Success(t *testing.T) {
-	srv := startFakeSSHServer(t, map[string]fakeResponse{
-		"show version": ok("Cisco IOS\n"),
+	srv := StartFakeSSHServer(t, map[string]FakeResponse{
+		"show version": Ok("Cisco IOS\n"),
 	})
-	device := srv.DeviceInstance(t)
+	hostfile := MakeKnownHostsFile(t, srv)
 
 	var dials int
 	reconnect := func() (*ssh.Client, error) {
 		dials++
-		return connectToDevice(device)
+		return srv.Dial(hostfile)
 	}
 
 	r, err := NewRetryingSSHClient(reconnect)
@@ -52,15 +52,16 @@ func TestRetryingSSHClient_NewSession_Success(t *testing.T) {
 }
 
 func TestRetryingSSHClient_NewSession_ReconnectsOnTransientError(t *testing.T) {
-	srv := startFakeSSHServer(t, map[string]fakeResponse{
-		"show version": ok("from-srv1\n"),
+	srv := StartFakeSSHServer(t, map[string]FakeResponse{
+		"show version": Ok("from-srv1\n"),
 	})
-	device := srv.DeviceInstance(t)
-
+	hostfile := MakeKnownHostsFile(t, srv)
+	config, err := srv.MakeConfig(hostfile)
+	require.NoError(t, err)
 	var dials int
 	reconnect := func() (*ssh.Client, error) {
 		dials++
-		return connectToDevice(device)
+		return ssh.Dial("tcp", srv.Addr(), config)
 	}
 
 	r, err := NewRetryingSSHClient(reconnect)
@@ -76,12 +77,11 @@ func TestRetryingSSHClient_NewSession_ReconnectsOnTransientError(t *testing.T) {
 
 	// Stand up a fresh server and re-point the device at it so the reconnect
 	// has somewhere to land rather than racing the now-dead address.
-	srv2 := startFakeSSHServer(t, map[string]fakeResponse{
-		"show version": ok("from-srv2\n"),
+	srv = StartFakeSSHServer(t, map[string]FakeResponse{
+		"show version": Ok("from-srv2\n"),
 	})
-	device.IPAddress = srv2.Host()
-	device.Auth.Port = srv2.Port()
-	device.Auth.SSH.KnownHostsPath = srv2.WriteKnownHostsFile(t)
+	config, err = srv.MakeConfig(MakeKnownHostsFile(t, srv))
+	require.NoError(t, err)
 
 	sess, err := r.NewSession()
 	require.NoError(t, err)
@@ -94,15 +94,15 @@ func TestRetryingSSHClient_NewSession_ReconnectsOnTransientError(t *testing.T) {
 }
 
 func TestRetryingSSHClient_NewSession_ReconnectFails(t *testing.T) {
-	srv := startFakeSSHServer(t, map[string]fakeResponse{})
-	device := srv.DeviceInstance(t)
+	srv := StartFakeSSHServer(t, map[string]FakeResponse{})
+	hostfile := MakeKnownHostsFile(t, srv)
 
 	errReconnect := errors.New("dial again boom")
 	var dials int
 	reconnect := func() (*ssh.Client, error) {
 		dials++
 		if dials == 1 {
-			return connectToDevice(device)
+			return srv.Dial(hostfile)
 		}
 		return nil, errReconnect
 	}
