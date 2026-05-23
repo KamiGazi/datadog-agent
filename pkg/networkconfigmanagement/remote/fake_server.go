@@ -13,6 +13,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"path/filepath"
@@ -43,6 +44,27 @@ func fail(stderr string, exit uint32) fakeResponse {
 	return fakeResponse{Stderr: stderr, ExitStatus: exit}
 }
 
+func fakeData(data map[string]fakeResponse) shellFunc {
+	return func(command string, _ io.Reader, stdout, stderr io.Writer) uint32 {
+		resp, ok := data[command]
+		if !ok {
+			resp = fakeResponse{
+				Stderr:     fmt.Sprintf("unknown command: %s\n", command),
+				ExitStatus: 127,
+			}
+		}
+		if resp.Stdout != "" {
+			_, _ = stdout.Write([]byte(resp.Stdout))
+		}
+		if resp.Stderr != "" {
+			_, _ = stderr.Write([]byte(resp.Stderr))
+		}
+		return resp.ExitStatus
+	}
+}
+
+type shellFunc func(command string, stdin io.Reader, stdout, stderr io.Writer) (returnCode uint32)
+
 // fakeSSHServer is an in-process SSH server backed by a map of canned
 // command -> response replies. It is intended for tests that exercise the
 // real SSHClient against a server without depending on system sshd or Docker.
@@ -52,9 +74,9 @@ func fail(stderr string, exit uint32) fakeResponse {
 // deterministically — this matters when a test wants to assert that NewSession
 // fails after the server goes away.
 type fakeSSHServer struct {
-	listener net.Listener
-	hostKey  ssh.Signer
-	outputs  map[string]fakeResponse
+	listener  net.Listener
+	hostKey   ssh.Signer
+	getOutput shellFunc
 
 	expectedUser     string
 	expectedPassword string
@@ -81,6 +103,12 @@ type fakeServerOption func(*fakeSSHServer)
 // random port. The server is shut down via t.Cleanup, which closes the
 // listener and every accepted connection.
 func startFakeSSHServer(t *testing.T, outputs map[string]fakeResponse, opts ...fakeServerOption) *fakeSSHServer {
+	return startFakeSSHServerWithFunc(t, fakeData(outputs), opts...)
+}
+
+// startFakeSSHServerWithFunc is startFakeSSHServer except it takes a
+// general-purpose shellFunc that it uses to generate results.
+func startFakeSSHServerWithFunc(t *testing.T, getOutput shellFunc, opts ...fakeServerOption) *fakeSSHServer {
 	t.Helper()
 
 	_, priv, err := ed25519.GenerateKey(rand.Reader)
@@ -94,7 +122,7 @@ func startFakeSSHServer(t *testing.T, outputs map[string]fakeResponse, opts ...f
 
 	srv := &fakeSSHServer{
 		hostKey:          hostKey,
-		outputs:          outputs,
+		getOutput:        getOutput,
 		expectedUser:     "test",
 		expectedPassword: "hunter2",
 	}
@@ -187,22 +215,9 @@ func (s *fakeSSHServer) handleSession(ch ssh.Channel, reqs <-chan *ssh.Request) 
 
 			_ = req.Reply(true, nil)
 
-			resp, ok := s.outputs[payload.Command]
-			if !ok {
-				resp = fakeResponse{
-					Stderr:     fmt.Sprintf("unknown command: %s\n", payload.Command),
-					ExitStatus: 127,
-				}
-			}
-			if resp.Stdout != "" {
-				_, _ = ch.Write([]byte(resp.Stdout))
-			}
-			if resp.Stderr != "" {
-				_, _ = ch.Stderr().Write([]byte(resp.Stderr))
-			}
-			// Send exit-status and close — CombinedOutput on the client
-			// blocks until exit-status arrives.
-			_, _ = ch.SendRequest("exit-status", false, ssh.Marshal(struct{ Status uint32 }{Status: resp.ExitStatus}))
+			exitStatus := s.getOutput(payload.Command, ch, ch, ch.Stderr())
+
+			_, _ = ch.SendRequest("exit-status", false, ssh.Marshal(struct{ Status uint32 }{Status: exitStatus}))
 			return
 
 		default:
