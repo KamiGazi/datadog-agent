@@ -74,8 +74,8 @@ interface GigabitEthernet0/1
 		assert.Error(t, err)
 	})
 	conn.SetProfile(&profile.NCMProfile{
-		BaseProfile: profile.BaseProfile{Name: "test-profile"},
-		Commands:    profile.CommandSet{},
+		Name:     "test-profile",
+		Commands: profile.CommandSet{},
 	})
 	t.Run("no_command", func(t *testing.T) {
 		_, err := conn.RetrieveRunningConfig(context.Background())
@@ -85,7 +85,7 @@ interface GigabitEthernet0/1
 	})
 
 	conn.SetProfile(&profile.NCMProfile{
-		BaseProfile: profile.BaseProfile{Name: "test-profile"},
+		Name: "test-profile",
 		Commands: profile.CommandSet{
 			GetRunning: profile.MkCommand("show running-config"),
 			GetStartup: profile.MkCommand("show startup-config"),

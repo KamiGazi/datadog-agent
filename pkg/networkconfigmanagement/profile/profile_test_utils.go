@@ -108,9 +108,7 @@ redundancy
 
 func newTestProfile() *NCMProfile {
 	return &NCMProfile{
-		BaseProfile: BaseProfile{
-			Name: "test",
-		},
+		Name: "test",
 		Commands: CommandSet{
 			GetRunning: &Command{
 				Command: "show running-config",
@@ -138,7 +136,7 @@ func newTestProfile() *NCMProfile {
 	}
 }
 
-// DefaultProfile will parse the official default profile given the name of the profile file
+// DefaultProfile extracts the official default profile by name
 func DefaultProfile(profileName string) *NCMProfile {
 	return DefaultProfiles[profileName]
 }
@@ -153,10 +151,10 @@ func SetProfilesForTesting(t testing.TB, profiles Map) {
 
 var TestProfiles = Map{
 	"_base": &NCMProfile{
-		BaseProfile: BaseProfile{Name: "base"},
+		Name: "base",
 	},
 	"p1": &NCMProfile{
-		BaseProfile: BaseProfile{Name: "p1"},
+		Name: "p1",
 		Commands: CommandSet{
 			GetRunning: MkCommand("show run"),
 			GetStartup: MkCommand("show start"),
@@ -164,7 +162,7 @@ var TestProfiles = Map{
 		},
 	},
 	"p2": &NCMProfile{
-		BaseProfile: BaseProfile{Name: "p2"},
+		Name: "p2",
 		Commands: CommandSet{
 			GetRunning: MkCommand("show running-config", "Building configuration..."),
 			GetStartup: MkCommand("show startup-config"),

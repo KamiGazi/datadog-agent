@@ -13,26 +13,9 @@ import (
 // Map represents the mapping profile name to profiles from the loaded directory
 type Map map[string]*NCMProfile
 
-// Definition represents a common interface that profile types would implement for shared fields
-type Definition[T any] interface {
-	GetName() string
-	SetName(name string)
-}
-
-// BaseProfile struct with common fields
-type BaseProfile struct {
-	Name string `json:"name" yaml:"name"`
-}
-
-// GetName retrieves the name of the profile
-func (p *BaseProfile) GetName() string { return p.Name }
-
-// SetName will set the name for the profile
-func (p *BaseProfile) SetName(name string) { p.Name = name }
-
 // NCMProfile represents the profile with transformed variables such as the commands map for easy access to commands
 type NCMProfile struct {
-	BaseProfile
+	Name          string
 	Commands      CommandSet
 	Redactions    []RedactionRule
 	MetadataRules []MetadataRule

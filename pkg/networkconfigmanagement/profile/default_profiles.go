@@ -31,7 +31,7 @@ func MkRedaction(regex string, replacement string) RedactionRule {
 // DefaultProfiles is the built-in set of NCM device profiles, keyed by profile name.
 var DefaultProfiles = Map{
 	"aoscx": {
-		BaseProfile: BaseProfile{Name: "aoscx"},
+		Name: "aoscx",
 		Commands: CommandSet{
 			GetRunning: MkCommand("show running-config", `!Version (.*)?`),
 			GetStartup: MkCommand("show startup-config", `!Version (.*)?`),
@@ -54,7 +54,7 @@ var DefaultProfiles = Map{
 	},
 
 	"aosw": {
-		BaseProfile: BaseProfile{Name: "aosw"},
+		Name: "aosw",
 		Commands: CommandSet{
 			GetRunning: MkCommand("show running-config", `Building Configuration...`),
 			GetVersion: MkCommand("show version"),
@@ -92,7 +92,7 @@ var DefaultProfiles = Map{
 	},
 
 	"cisco-ios": {
-		BaseProfile: BaseProfile{Name: "cisco-ios"},
+		Name: "cisco-ios",
 		Commands: CommandSet{
 			GetRunning: MkCommand("show running-config", `Building configuration...`, `Current configuration :`),
 			GetStartup: MkCommand("show startup-config", `Using (.*?) out of (.*?) bytes`),
@@ -168,7 +168,7 @@ var DefaultProfiles = Map{
 	},
 
 	"dellos10": {
-		BaseProfile: BaseProfile{Name: "dellos10"},
+		Name: "dellos10",
 		Commands: CommandSet{
 			GetRunning: MkCommand("show running-configuration", `! Version (.*)?`),
 			GetStartup: MkCommand("show startup-configuration", `(?m)^hostname\s+\S+`),
@@ -196,7 +196,7 @@ var DefaultProfiles = Map{
 	},
 
 	"eos": {
-		BaseProfile: BaseProfile{Name: "eos"},
+		Name: "eos",
 		Commands: CommandSet{
 			GetRunning: MkCommand("show running-config | no-more | exclude ! Time:", `! Command: show running-config`),
 			GetStartup: MkCommand("show startup-config | no-more | exclude ! Time:", `! Command: show startup-config`),
@@ -245,7 +245,7 @@ var DefaultProfiles = Map{
 	},
 
 	"fortios": {
-		BaseProfile: BaseProfile{Name: "fortios"},
+		Name: "fortios",
 		Commands: CommandSet{
 			GetRunning: MkCommand("show full-configuration", `config (system|global|vdom)`),
 		},
@@ -262,7 +262,7 @@ var DefaultProfiles = Map{
 	},
 
 	"junos": {
-		BaseProfile: BaseProfile{Name: "junos"},
+		Name: "junos",
 		Commands: CommandSet{
 			GetRunning: MkCommand("show configuration | display omit", `version \d+\.\d+[^;]*;`),
 			GetVersion: MkCommand("show version"),
@@ -285,7 +285,7 @@ var DefaultProfiles = Map{
 	},
 
 	"nxos": {
-		BaseProfile: BaseProfile{Name: "nxos"},
+		Name: "nxos",
 		Commands: CommandSet{
 			GetRunning: MkCommand("show running-config", `!Command: show running-config`),
 			GetStartup: MkCommand("show startup-config", `!Command: show startup-config`),
@@ -340,7 +340,7 @@ var DefaultProfiles = Map{
 	},
 
 	"pan-os": {
-		BaseProfile: BaseProfile{Name: "pan-os"},
+		Name: "pan-os",
 		Commands: CommandSet{
 			GetRunning: MkCommand("show config running", `(?s)<config.*</config>`),
 			GetVersion: MkCommand("show system info"),
@@ -351,7 +351,7 @@ var DefaultProfiles = Map{
 	},
 
 	"tmos": {
-		BaseProfile: BaseProfile{Name: "tmos"},
+		Name: "tmos",
 		Commands: CommandSet{
 			GetRunning: MkCommand("cat /config/partitions/*/bigip*.conf", `^sys global-settings\s*{`),
 		},
