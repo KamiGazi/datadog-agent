@@ -58,7 +58,7 @@ type MockRemoteClient struct {
 	ConnectionError error
 }
 
-var _ ncmremote.Client = (*MockRemoteClient)(nil)
+var _ ncmremote.Connector = (*MockRemoteClient)(nil)
 
 const (
 	runningOutput = `Building configuration...

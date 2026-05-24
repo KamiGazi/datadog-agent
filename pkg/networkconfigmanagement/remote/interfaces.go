@@ -12,8 +12,8 @@ import (
 	"github.com/DataDog/datadog-agent/pkg/networkconfigmanagement/profile"
 )
 
-// Client defines the interface for a remote client that can create sessions to execute commands on a device
-type Client interface {
+// Connector is an interface that can connect to a device execute commands on a device
+type Connector interface {
 	Connect() (Connection, error)
 }
 

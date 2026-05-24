@@ -112,7 +112,7 @@ func (h *RollbackConfigHandler) Run(
 		return nil, fmt.Errorf("no NCM configuration for device: %q", inputs.DeviceID)
 	}
 
-	client, err := ncmremote.NewSSHClient(&device)
+	client, err := ncmremote.NewSSHConnector(&device)
 	if err != nil {
 		return nil, fmt.Errorf("%v: %w", inputs.DeviceID, err)
 	}

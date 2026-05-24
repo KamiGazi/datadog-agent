@@ -36,12 +36,12 @@ func init() {
 	knownHostKeys = slices.Concat(supported.HostKeys, insecure.HostKeys)
 }
 
-// SSHClient implements Client using SSH
-type SSHClient struct {
+// SSHConnector implements Client using SSH
+type SSHConnector struct {
 	device *ncmconfig.DeviceInstance // Device configuration for authentication
 }
 
-var _ Client = (*SSHClient)(nil)
+var _ Connector = (*SSHConnector)(nil)
 
 // SSHConnection implements Connection over SSH
 type SSHConnection struct {
@@ -52,8 +52,8 @@ type SSHConnection struct {
 
 var _ Connection = (*SSHConnection)(nil)
 
-// NewSSHClient creates a new SSH client for the given device configuration
-func NewSSHClient(device *ncmconfig.DeviceInstance) (*SSHClient, error) {
+// NewSSHConnector creates a new SSH connector for the given device configuration
+func NewSSHConnector(device *ncmconfig.DeviceInstance) (*SSHConnector, error) {
 	if device.Auth.SSH != nil {
 		if err := ValidateSSHConfig(device.Auth.SSH); err != nil {
 			return nil, fmt.Errorf("error validating ssh client config: %w", err)
@@ -61,7 +61,7 @@ func NewSSHClient(device *ncmconfig.DeviceInstance) (*SSHClient, error) {
 	} else {
 		return nil, errors.New("missing ssh client config")
 	}
-	return &SSHClient{
+	return &SSHConnector{
 		device: device,
 	}, nil
 }
@@ -150,7 +150,7 @@ func (c *SSHConnection) SetProfile(profile *profile.NCMProfile) {
 }
 
 // Connect establishes a new SSH connection to the specified IP address using the provided authentication credentials
-func (c *SSHClient) Connect() (Connection, error) {
+func (c *SSHConnector) Connect() (Connection, error) {
 	client, err := NewRetryingSSHClient(func() (*ssh.Client, error) {
 		return connectToDevice(c.device)
 	})

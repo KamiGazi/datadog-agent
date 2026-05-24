@@ -51,7 +51,7 @@ func makeDevice(t testing.TB, srv *FakeSSHServer) *ncmconfig.DeviceInstance {
 	}
 }
 
-func TestSSHClient(t *testing.T) {
+func TestSSHConnector(t *testing.T) {
 	expectedConfig := `
 version 15.1
 hostname Router1
@@ -63,7 +63,7 @@ interface GigabitEthernet0/1
 		"show startup-config": Ok(expectedConfig),
 	})
 	device := makeDevice(t, srv)
-	client, err := NewSSHClient(device)
+	client, err := NewSSHConnector(device)
 	require.NoError(t, err)
 	conn, err := client.Connect()
 	require.NoError(t, err)
@@ -105,13 +105,13 @@ interface GigabitEthernet0/1
 	})
 }
 
-func TestSSHClient_MissingSSHConfig(t *testing.T) {
+func TestSSHConnector_MissingSSHConfig(t *testing.T) {
 	device := &ncmconfig.DeviceInstance{}
-	_, err := NewSSHClient(device)
+	_, err := NewSSHConnector(device)
 	assert.ErrorContains(t, err, "missing ssh client config")
 }
 
-func TestSSHClient_InvalidSSHConfig(t *testing.T) {
+func TestSSHConnector_InvalidSSHConfig(t *testing.T) {
 	device := &ncmconfig.DeviceInstance{
 		IPAddress: "127.0.0.1",
 		Auth: ncmconfig.AuthCredentials{
@@ -124,7 +124,7 @@ func TestSSHClient_InvalidSSHConfig(t *testing.T) {
 			},
 		},
 	}
-	_, err := NewSSHClient(device)
+	_, err := NewSSHConnector(device)
 	assert.ErrorContains(t, err, "unsupported cipher")
 }
 

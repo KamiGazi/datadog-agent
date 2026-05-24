@@ -46,7 +46,7 @@ type Check struct {
 	sender        *ncmsender.NCMSender
 	agentConfig   config.Component
 	ncmComp       networkconfigmanagement.Component
-	remoteClient  ncmremote.Client
+	remoteClient  ncmremote.Connector
 	clock         clock.Clock
 	lastCheckTime time.Time
 	agentHostname string
@@ -195,7 +195,7 @@ func (c *Check) Configure(senderManager sender.SenderManager, integrationConfigD
 	c.sender = ncmSender
 
 	// TODO: add check to see the device's credentials type (SSH/Telnet) and create appropriate client factory
-	c.remoteClient, err = ncmremote.NewSSHClient(c.checkContext.Device)
+	c.remoteClient, err = ncmremote.NewSSHConnector(c.checkContext.Device)
 	if err != nil {
 		return fmt.Errorf("create remote SSH client failed: %w", err)
 	}
