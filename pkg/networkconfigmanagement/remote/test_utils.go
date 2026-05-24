@@ -40,7 +40,7 @@ type MockSSHClient struct {
 }
 
 // NewSession creates a new mock SSH session for testing.
-func (t *MockSSHClient) NewSession() (Session, error) {
+func (t *MockSSHClient) NewSession() (*mockSSHSession, error) {
 	if t.sessionError != nil {
 		return nil, t.sessionError
 	}

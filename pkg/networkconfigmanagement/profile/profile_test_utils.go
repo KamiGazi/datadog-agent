@@ -12,8 +12,7 @@ import (
 	"fmt"
 	"path"
 	"regexp"
-
-	"github.com/DataDog/datadog-agent/pkg/util/scrubber"
+	"testing"
 )
 
 //go:embed fixtures/*
@@ -25,13 +24,13 @@ type Fixture struct {
 	Expected []byte
 }
 
-func loadFixture(profileName string, command CommandType) Fixture {
-	initialPath := path.Join("fixtures", profileName, string(command), "initial.txt")
+func loadFixture(profileName string, command string) Fixture {
+	initialPath := path.Join("fixtures", profileName, command, "initial.txt")
 	initial, err := fixturesFS.ReadFile(initialPath)
 	if err != nil {
 		panic(fmt.Sprintf("could not load initial data fixture for profile: %s, command: %s, error: %s", profileName, command, err))
 	}
-	expectedPath := path.Join("fixtures", profileName, string(command), "expected.txt")
+	expectedPath := path.Join("fixtures", profileName, command, "expected.txt")
 	expected, err := fixturesFS.ReadFile(expectedPath)
 	if err != nil {
 		panic(fmt.Sprintf("could not load expected data fixture for profile: %s, command:%s, error: %s", profileName, command, err))
@@ -61,16 +60,16 @@ boot-start-marker
 boot-end-marker
 !
 ip domain name lab.local
-ip cef    
+ip cef
 no ipv6 cef
-!         
+!
 multilink bundle-name authenticated
-!         
-!         
-!         
-!         
+!
+!
+!
+!
 username cisco privilege 15 secret 9 ooooooimasecretsdfsdjfdsnvZM5zmpPuLrKr9CZC3A1/jTwjHzA
-!         
+!
 redundancy
 !
 `
@@ -94,16 +93,16 @@ boot-start-marker
 boot-end-marker
 !
 ip domain name lab.local
-ip cef    
+ip cef
 no ipv6 cef
-!         
+!
 multilink bundle-name authenticated
-!         
-!         
-!         
-!         
-username cisco privilege 15 secret 9 <BIG OL SECRET>
-!         
+!
+!
+!
+!
+username cisco privilege 15 secret 9 <redacted secret>
+!
 redundancy
 !`
 
@@ -112,74 +111,16 @@ func newTestProfile() *NCMProfile {
 		BaseProfile: BaseProfile{
 			Name: "test",
 		},
-		Commands: map[CommandType]*Commands{
-			Running: {
-				CommandType: Running,
-				Values:      []string{"show running-config"},
-				ProcessingRules: ProcessingRules{
-					MetadataRules: []MetadataRule{
-						{
-							Type:   Timestamp,
-							Regex:  regexp.MustCompile(`! Last configuration change at (.*)`),
-							Format: "15:04:05 MST Mon Jan 2 2006",
-						},
-						{
-							Type:  ConfigSize,
-							Regex: regexp.MustCompile(`Current configuration : (?P<Size>\d+)`),
-						},
-					},
-					ValidationRules: []ValidationRule{
-						{
-							Pattern: regexp.MustCompile("Building configuration..."),
-						},
-					},
-					RedactionRules: []RedactionRule{
-						{Regex: regexp.MustCompile(`(username .+ (password|secret) \d) .+`), Replacement: "$1 <BIG OL SECRET>"},
+		Commands: CommandSet{
+			GetRunning: &Command{
+				Command: "show running-config",
+				Validator: Validator{
+					Require: []*regexp.Regexp{
+						regexp.MustCompile("Building configuration..."),
 					},
 				},
 			},
 		},
-	}
-}
-
-var testProfile = &NCMProfile{
-	BaseProfile: BaseProfile{
-		Name: "test",
-	},
-	Commands: map[CommandType]*Commands{
-		Running: {
-			CommandType: Running,
-			Values:      []string{"show running-config"},
-			ProcessingRules: ProcessingRules{
-				MetadataRules: []MetadataRule{
-					{
-						Type:   Timestamp,
-						Regex:  regexp.MustCompile(`! Last configuration change at (.*)`),
-						Format: "15:04:05 MST Mon Jan 2 2006",
-					},
-					{
-						Type:  ConfigSize,
-						Regex: regexp.MustCompile(`Current configuration : (?P<Size>\d+)`),
-					},
-				},
-				ValidationRules: []ValidationRule{
-					{
-						Type:    "valid_output",
-						Pattern: regexp.MustCompile("Building configuration..."),
-					},
-				},
-				RedactionRules: []RedactionRule{
-					{Regex: regexp.MustCompile(`(username .+ (password|secret) \d) .+`), Replacement: "$1 <redacted secret>"},
-				},
-			},
-		},
-	},
-}
-
-var runningCommandsWithCompiledRegex = &Commands{
-	CommandType: Running,
-	Values:      []string{"show running-config"},
-	ProcessingRules: ProcessingRules{
 		MetadataRules: []MetadataRule{
 			{
 				Type:   Timestamp,
@@ -191,59 +132,57 @@ var runningCommandsWithCompiledRegex = &Commands{
 				Regex: regexp.MustCompile(`Current configuration : (?P<Size>\d+)`),
 			},
 		},
-		ValidationRules: []ValidationRule{
-			{
-				Type:    "valid_output",
-				Pattern: regexp.MustCompile(`Building configuration...`),
-			},
+		Redactions: []RedactionRule{
+			{Regex: regexp.MustCompile(`(username .+ (password|secret) \d) .+`), Replacement: "$1 <redacted secret>"},
 		},
-		RedactionRules: []RedactionRule{
-			{
-				Regex:       regexp.MustCompile(`(username .+ (password|secret) \d) .+`),
-				Replacement: `$1 <redacted secret>`,
-			},
-		},
-	},
-	Scrubber: getRunningScrubber(),
-}
-
-func getRunningScrubber() *scrubber.Scrubber {
-	sc := scrubber.New()
-	sc.AddReplacer(scrubber.SingleLine, scrubber.Replacer{
-		Regex: regexp.MustCompile(`(username .+ (password|secret) \d) .+`),
-		Repl:  []byte("$1 " + "<redacted secret>"),
-	})
-	return sc
+	}
 }
 
 // DefaultProfile will parse the official default profile given the name of the profile file
 func DefaultProfile(profileName string) *NCMProfile {
-	file := profileName + ".json"
-	b, _ := defaultProfilesFS.ReadFile(path.Join(defaultProfilesFolder, file))
-	prof, _ := parseNCMProfileFromBytes(b, profileName)
-	return prof
+	return DefaultProfiles[profileName]
 }
 
-// IOSProfile parses the test profile for IOS devices to test with
-func IOSProfile() *NCMProfile {
-	b, _ := defaultProfilesFS.ReadFile(path.Join(defaultProfilesFolder, "cisco-ios.json"))
-	prof, _ := parseNCMProfileFromBytes(b, "cisco-ios")
-	return prof
+// SetProfilesForTesting allows tests to override the profiles map.
+func SetProfilesForTesting(t testing.TB, profiles Map) {
+	profilesOverride = profiles
+	t.Cleanup(func() {
+		profilesOverride = nil
+	})
 }
 
-// ASAProfile parses the test profile for Cisco ASA devices to test with
-func ASAProfile() *NCMProfile {
-	b, _ := defaultProfilesFS.ReadFile(path.Join(defaultProfilesFolder, "cisco-asa.json"))
-	prof, err := parseNCMProfileFromBytes(b, "cisco-asa")
-	if err != nil {
-		panic(fmt.Sprintf("could not parse profile for cisco-asa: %s", err))
-	}
-	return prof
-}
-
-// JunOSProfile parses the test profile for junOS devices to test with
-func JunOSProfile() *NCMProfile {
-	b, _ := defaultProfilesFS.ReadFile(path.Join(defaultProfilesFolder, "junos.json"))
-	prof, _ := parseNCMProfileFromBytes(b, "junos")
-	return prof
+var TestProfiles = Map{
+	"_base": &NCMProfile{
+		BaseProfile: BaseProfile{Name: "base"},
+	},
+	"p1": &NCMProfile{
+		BaseProfile: BaseProfile{Name: "p1"},
+		Commands: CommandSet{
+			GetRunning: MkCommand("show run"),
+			GetStartup: MkCommand("show start"),
+			GetVersion: MkCommand("show ver"),
+		},
+	},
+	"p2": &NCMProfile{
+		BaseProfile: BaseProfile{Name: "p2"},
+		Commands: CommandSet{
+			GetRunning: MkCommand("show running-config", "Building configuration..."),
+			GetStartup: MkCommand("show startup-config"),
+			GetVersion: MkCommand("show version"),
+		},
+		Redactions: []RedactionRule{
+			MkRedaction("(username .+ (password|secret) \\d) .+", "$1 <redacted secret>"),
+		},
+		MetadataRules: []MetadataRule{
+			{
+				Type:   Timestamp,
+				Regex:  regexp.MustCompile(`! Last configuration change at (.*)`),
+				Format: "15:04:05 MST Mon Jan 2 2006",
+			},
+			{
+				Type:  ConfigSize,
+				Regex: regexp.MustCompile(`Current configuration : (?P<Size>\\d+)`),
+			},
+		},
+	},
 }

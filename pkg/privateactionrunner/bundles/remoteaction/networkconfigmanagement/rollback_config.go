@@ -116,8 +116,12 @@ func (h *RollbackConfigHandler) Run(
 	if err != nil {
 		return nil, fmt.Errorf("%v: %w", inputs.DeviceID, err)
 	}
-
-	err = client.PushConfig(ctx, storedConfig.RawConfig)
+	// TODO set profile properly
+	conn, err := client.Connect()
+	if err != nil {
+		return nil, fmt.Errorf("%v: %w", inputs.DeviceID, err)
+	}
+	err = conn.PushConfig(ctx, storedConfig.RawConfig)
 	if err != nil {
 		return nil, fmt.Errorf("cannot push config to device %q: %w", inputs.DeviceID, err)
 	}
