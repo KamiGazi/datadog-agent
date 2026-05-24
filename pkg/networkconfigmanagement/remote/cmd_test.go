@@ -18,6 +18,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"
+
+	"github.com/DataDog/datadog-agent/pkg/networkconfigmanagement/profile"
 )
 
 func mustSession(t *testing.T, client *ssh.Client) *ssh.Session {
@@ -38,20 +40,20 @@ func TestCommand(t *testing.T) {
 
 	for _, tc := range []struct {
 		name      string
-		cmd       *Command
+		cmd       *profile.Command
 		expected  string
 		expectErr bool
 	}{{
 		name: "unchecked_command",
-		cmd: &Command{
+		cmd: &profile.Command{
 			Command: "show version",
 		},
 		expected: "Fakesco fOS\n",
 	}, {
 		name: "valid_command",
-		cmd: &Command{
+		cmd: &profile.Command{
 			Command: "show version",
-			Validator: Validator{
+			Validator: profile.Validator{
 				Require: []*regexp.Regexp{regexp.MustCompile("Fakesco")},
 				Reject:  []*regexp.Regexp{regexp.MustCompile("Realco")},
 			},
@@ -59,27 +61,27 @@ func TestCommand(t *testing.T) {
 		expected: "Fakesco fOS\n",
 	}, {
 		name: "missing_req",
-		cmd: &Command{
+		cmd: &profile.Command{
 			Command: "show version",
-			Validator: Validator{
+			Validator: profile.Validator{
 				Require: []*regexp.Regexp{regexp.MustCompile("Realco")},
 			},
 		},
 		expectErr: true,
 	}, {
 		name: "has_rejection",
-		cmd: &Command{
+		cmd: &profile.Command{
 			Command: "show version",
-			Validator: Validator{
+			Validator: profile.Validator{
 				Reject: []*regexp.Regexp{regexp.MustCompile("Fakesco")},
 			},
 		},
 		expectErr: true,
 	}, {
 		name: "command_fails",
-		cmd: &Command{
+		cmd: &profile.Command{
 			Command: "show venison",
-			Validator: Validator{
+			Validator: profile.Validator{
 				Require: []*regexp.Regexp{regexp.MustCompile("Fakesco")},
 				Reject:  []*regexp.Regexp{regexp.MustCompile("Realco")},
 			},
@@ -128,36 +130,36 @@ func TestSCPCommand(t *testing.T) {
 	client := MustConnect(t, srv)
 	for _, tc := range []struct {
 		name      string
-		cmd       *SCPCommand
+		cmd       *profile.SCPCommand
 		expected  string
 		expectErr string
 	}{{
 		name: "unchecked_command",
-		cmd: &SCPCommand{
+		cmd: &profile.SCPCommand{
 			RemoteCommand: "scp",
 			Filepath:      "/tmp/foo.txt",
 		},
 		expected: "",
 	}, {
 		name: "command_that_hangs",
-		cmd: &SCPCommand{
+		cmd: &profile.SCPCommand{
 			RemoteCommand: "scp",
 			Filepath:      "/tmp/hang.txt",
 		},
 		expectErr: "sending feedback but never closing the stream",
 	}, {
 		name: "failing_command",
-		cmd: &SCPCommand{
+		cmd: &profile.SCPCommand{
 			RemoteCommand: "scp",
 			Filepath:      "/tmp/permission.txt",
 		},
 		expectErr: "permission denied",
 	}, {
 		name: "validate_response",
-		cmd: &SCPCommand{
+		cmd: &profile.SCPCommand{
 			RemoteCommand: "scp",
 			Filepath:      "/tmp/feedback.txt",
-			Validator: Validator{
+			Validator: profile.Validator{
 				Require: []*regexp.Regexp{
 					regexp.MustCompile("feedback"),
 				},
@@ -166,10 +168,10 @@ func TestSCPCommand(t *testing.T) {
 		expected: "returning feedback",
 	}, {
 		name: "invalid_response",
-		cmd: &SCPCommand{
+		cmd: &profile.SCPCommand{
 			RemoteCommand: "scp",
 			Filepath:      "/tmp/feedback.txt",
-			Validator: Validator{
+			Validator: profile.Validator{
 				Reject: []*regexp.Regexp{
 					regexp.MustCompile("feedback"),
 				},
