@@ -45,10 +45,9 @@ var _ Client = (*SSHClient)(nil)
 
 // SSHConnection implements Connection over SSH
 type SSHConnection struct {
-	client  *RetryingSSHClient
-	device  *ncmconfig.DeviceInstance
-	prof    *profile.NCMProfile
-	session *ssh.Session
+	client *RetryingSSHClient
+	device *ncmconfig.DeviceInstance
+	prof   *profile.NCMProfile
 }
 
 var _ Connection = (*SSHConnection)(nil)
@@ -60,7 +59,7 @@ func NewSSHClient(device *ncmconfig.DeviceInstance) (*SSHClient, error) {
 			return nil, fmt.Errorf("error validating ssh client config: %w", err)
 		}
 	} else {
-		return nil, fmt.Errorf("missing ssh client config")
+		return nil, errors.New("missing ssh client config")
 	}
 	return &SSHClient{
 		device: device,
