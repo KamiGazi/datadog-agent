@@ -898,11 +898,10 @@ func (values HelmValues) configureFakeintake(e config.Env, fi *fakeintake.Fakein
 		return fmt.Errorf("fakeintake rc root json: %w", err)
 	}
 
+	// DD_REMOTE_CONFIGURATION_ENABLED is intentionally omitted here: the Helm chart already sets it
+	// based on its own configuration defaults, and adding it again creates a duplicate env var that
+	// breaks Kubernetes strategic merge patch ordering.
 	rcEnvVars := pulumi.StringMapArray{
-		pulumi.StringMap{
-			"name":  pulumi.String("DD_REMOTE_CONFIGURATION_ENABLED"),
-			"value": pulumi.String("true"),
-		},
 		pulumi.StringMap{
 			"name":  pulumi.String("DD_REMOTE_CONFIGURATION_RC_DD_URL"),
 			"value": fi.URL,
