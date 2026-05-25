@@ -149,6 +149,29 @@ var (
 		"datadog-agent-procmgr-exp.service",
 	}
 
+	agentProcmgrUnitsStable = []string{
+		"datadog-agent.service",
+		"datadog-agent-installer.service",
+		"datadog-agent-trace.service",
+		"datadog-agent-process.service",
+		"datadog-agent-sysprobe.service",
+		"datadog-agent-security.service",
+		"datadog-agent-data-plane.service",
+		"datadog-agent-action.service",
+		"datadog-agent-procmgr.service",
+	}
+	agentProcmgrUnitsExp = []string{
+		"datadog-agent-exp.service",
+		"datadog-agent-installer-exp.service",
+		"datadog-agent-trace-exp.service",
+		"datadog-agent-process-exp.service",
+		"datadog-agent-sysprobe-exp.service",
+		"datadog-agent-security-exp.service",
+		"datadog-agent-data-plane-exp.service",
+		"datadog-agent-action-exp.service",
+		"datadog-agent-procmgr-exp.service",
+	}
+
 	// agentService are the services that are part of the agent package
 	agentService = datadogAgentService{
 		SystemdMainUnitStable: "datadog-agent.service",
@@ -156,10 +179,10 @@ var (
 		SystemdUnitsStable:    agentSystemdUnitsStable,
 		SystemdUnitsExp:       agentSystemdUnitsExp,
 
-		ProcmgrMainUnitStable: "datadog-agent-procmgr.service",
-		ProcmgrMainUnitExp:    "datadog-agent-procmgr-exp.service",
-		ProcmgrUnitsStable:    agentSystemdUnitsStable,
-		ProcmgrUnitsExp:       agentSystemdUnitsExp,
+		ProcmgrMainUnitStable: "datadog-agent.service",
+		ProcmgrMainUnitExp:    "datadog-agent-exp.service",
+		ProcmgrUnitsStable:    agentProcmgrUnitsStable,
+		ProcmgrUnitsExp:       agentProcmgrUnitsExp,
 
 		UpstartMainService: "datadog-agent",
 		UpstartServices:    []string{"datadog-agent", "datadog-agent-trace", "datadog-agent-process", "datadog-agent-sysprobe", "datadog-agent-security", "datadog-agent-data-plane", "datadog-agent-action"},
@@ -183,6 +206,9 @@ var (
 		"datadog-agent-procmgrd.service",
 		"datadog-agent-procmgrd-exp.service",
 	}
+
+	procmgrDaemonUnitStable = "datadog-agent-procmgr.service"
+	procmgrDaemonUnitExp    = "datadog-agent-procmgr-exp.service"
 )
 
 // installFilesystem sets up the filesystem for the agent installation
@@ -629,35 +655,6 @@ type datadogAgentService struct {
 	SysvinitServices    []string
 }
 
-func (s *datadogAgentService) agentMainUnit(stable bool) string {
-	if stable {
-		return s.SystemdMainUnitStable
-	}
-	return s.SystemdMainUnitExp
-}
-
-func (s *datadogAgentService) procmgrMainUnit(stable bool) string {
-	if stable {
-		return s.ProcmgrMainUnitStable
-	}
-	return s.ProcmgrMainUnitExp
-}
-
-func (s *datadogAgentService) unitsForManager(stable bool) []string {
-	if service.GetServiceManagerType() == service.ProcmgrType {
-		if stable && len(s.ProcmgrUnitsStable) > 0 {
-			return s.ProcmgrUnitsStable
-		}
-		if !stable && len(s.ProcmgrUnitsExp) > 0 {
-			return s.ProcmgrUnitsExp
-		}
-	}
-	if stable {
-		return s.SystemdUnitsStable
-	}
-	return s.SystemdUnitsExp
-}
-
 func (s *datadogAgentService) checkPlatformSupport(ctx HookContext) error {
 	switch service.GetServiceManagerType() {
 	case service.SystemdType:
@@ -685,16 +682,9 @@ func (s *datadogAgentService) EnableStable(ctx HookContext) error {
 	}
 	switch service.GetServiceManagerType() {
 	case service.SystemdType:
-		return systemd.EnableUnit(ctx, s.agentMainUnit(true))
+		return systemd.EnableUnit(ctx, s.SystemdMainUnitStable)
 	case service.ProcmgrType:
-		if err := procmgr.EnableUnit(ctx, s.agentMainUnit(true)); err != nil {
-			return err
-		}
-		// agentDDOTService leaves ProcmgrMainUnit* unset (standalone package has no procmgr unit).
-		if unit := s.procmgrMainUnit(true); unit != "" {
-			return procmgr.EnableUnit(ctx, unit)
-		}
-		return nil
+		return procmgr.EnableUnit(ctx, s.ProcmgrMainUnitStable)
 	case service.UpstartType:
 		return nil // Nothing to do, this is defined directly in the upstart job file
 	case service.SysvinitType:
@@ -711,9 +701,9 @@ func (s *datadogAgentService) DisableStable(ctx HookContext) error {
 	}
 	switch service.GetServiceManagerType() {
 	case service.SystemdType:
-		return systemd.DisableUnits(ctx, s.unitsForManager(true)...)
+		return systemd.DisableUnits(ctx, s.SystemdUnitsStable...)
 	case service.ProcmgrType:
-		return procmgr.DisableUnits(ctx, s.unitsForManager(true)...)
+		return procmgr.DisableUnits(ctx, s.ProcmgrUnitsStable...)
 	case service.UpstartType:
 		return nil // Nothing to do, this is defined directly in the upstart job file
 	case service.SysvinitType:
@@ -738,15 +728,9 @@ func (s *datadogAgentService) RestartStable(ctx HookContext) error {
 	}
 	switch service.GetServiceManagerType() {
 	case service.SystemdType:
-		return systemd.RestartUnit(ctx, s.agentMainUnit(true))
+		return systemd.RestartUnit(ctx, s.SystemdMainUnitStable)
 	case service.ProcmgrType:
-		if err := procmgr.RestartUnit(ctx, s.agentMainUnit(true)); err != nil {
-			return err
-		}
-		if unit := s.procmgrMainUnit(true); unit != "" {
-			return procmgr.RestartUnit(ctx, unit)
-		}
-		return nil
+		return procmgr.RestartUnit(ctx, s.ProcmgrMainUnitStable)
 	case service.UpstartType:
 		return upstart.Restart(ctx, s.UpstartMainService)
 	case service.SysvinitType:
@@ -791,8 +775,10 @@ func (s *datadogAgentService) RestartStableDeferred(ctx HookContext) error {
 		return nil
 	}
 	switch service.GetServiceManagerType() {
-	case service.SystemdType, service.ProcmgrType:
-		return scheduleSystemctlRestartNoBlock(ctx, s.agentMainUnit(true))
+	case service.SystemdType:
+		return scheduleSystemctlRestartNoBlock(ctx, s.SystemdMainUnitStable)
+	case service.ProcmgrType:
+		return scheduleSystemctlRestartNoBlock(ctx, s.ProcmgrMainUnitStable)
 	case service.UpstartType:
 		return upstart.Restart(ctx, s.UpstartMainService)
 	case service.SysvinitType:
@@ -809,9 +795,9 @@ func (s *datadogAgentService) StopStable(ctx HookContext) error {
 	}
 	switch service.GetServiceManagerType() {
 	case service.SystemdType:
-		return systemd.StopUnits(ctx, reverseStringSlice(s.unitsForManager(true))...)
+		return systemd.StopUnits(ctx, s.SystemdMainUnitStable)
 	case service.ProcmgrType:
-		return procmgr.StopUnits(ctx, reverseStringSlice(s.unitsForManager(true))...)
+		return procmgr.StopUnits(ctx, s.SystemdMainUnitStable)
 	case service.UpstartType:
 		return upstart.StopAll(ctx, reverseStringSlice(s.UpstartServices)...)
 	case service.SysvinitType:
@@ -828,9 +814,9 @@ func (s *datadogAgentService) WriteStable(ctx HookContext) error {
 	}
 	switch service.GetServiceManagerType() {
 	case service.SystemdType:
-		return writeEmbeddedUnitsAndReload(ctx, s.unitsForManager(true)...)
+		return writeEmbeddedUnitsAndReload(ctx, s.SystemdUnitsStable...)
 	case service.ProcmgrType:
-		return writeEmbeddedUnitsAndReload(ctx, s.unitsForManager(true)...)
+		return writeEmbeddedUnitsAndReload(ctx, s.ProcmgrUnitsStable...)
 	case service.UpstartType:
 		return nil // Nothing to do, files are embedded in the package
 	case service.SysvinitType:
@@ -846,9 +832,9 @@ func (s *datadogAgentService) RemoveStable(ctx HookContext) error {
 	}
 	switch service.GetServiceManagerType() {
 	case service.SystemdType:
-		return removeUnits(ctx, s.unitsForManager(true)...)
+		return removeUnits(ctx, s.SystemdUnitsStable...)
 	case service.ProcmgrType:
-		return removeUnits(ctx, s.unitsForManager(true)...)
+		return removeUnits(ctx, s.ProcmgrUnitsStable...)
 	case service.UpstartType:
 		return nil // Nothing to do, files are embedded in the package
 	case service.SysvinitType:
@@ -864,9 +850,9 @@ func (s *datadogAgentService) StartExperiment(ctx HookContext) error {
 	}
 	switch service.GetServiceManagerType() {
 	case service.SystemdType:
-		return systemd.StartUnit(ctx, s.agentMainUnit(false))
+		return systemd.StartUnit(ctx, s.SystemdMainUnitExp)
 	case service.ProcmgrType:
-		return procmgr.StartUnit(ctx, s.agentMainUnit(false))
+		return procmgr.StartUnit(ctx, s.ProcmgrMainUnitExp)
 	case service.UpstartType:
 		return errors.New("experiments are not supported on upstart")
 	case service.SysvinitType:
@@ -882,9 +868,9 @@ func (s *datadogAgentService) StopExperiment(ctx HookContext) error {
 	}
 	switch service.GetServiceManagerType() {
 	case service.SystemdType:
-		return systemd.StopUnits(ctx, s.agentMainUnit(false))
+		return systemd.StopUnits(ctx, s.SystemdMainUnitExp)
 	case service.ProcmgrType:
-		return procmgr.StopUnits(ctx, s.agentMainUnit(false))
+		return procmgr.StopUnits(ctx, s.ProcmgrMainUnitExp)
 	case service.UpstartType:
 		return nil // Experiments are not supported on upstart
 	case service.SysvinitType:
@@ -900,9 +886,9 @@ func (s *datadogAgentService) WriteExperiment(ctx HookContext) error {
 	}
 	switch service.GetServiceManagerType() {
 	case service.SystemdType:
-		return writeEmbeddedUnitsAndReload(ctx, s.unitsForManager(false)...)
+		return writeEmbeddedUnitsAndReload(ctx, s.SystemdUnitsExp...)
 	case service.ProcmgrType:
-		return writeEmbeddedUnitsAndReload(ctx, s.unitsForManager(false)...)
+		return writeEmbeddedUnitsAndReload(ctx, s.ProcmgrUnitsExp...)
 	case service.UpstartType:
 		return errors.New("experiments are not supported on upstart")
 	case service.SysvinitType:
@@ -918,9 +904,9 @@ func (s *datadogAgentService) RemoveExperiment(ctx HookContext) error {
 	}
 	switch service.GetServiceManagerType() {
 	case service.SystemdType:
-		return removeUnits(ctx, s.unitsForManager(false)...)
+		return removeUnits(ctx, s.SystemdUnitsExp...)
 	case service.ProcmgrType:
-		return removeUnits(ctx, s.unitsForManager(false)...)
+		return removeUnits(ctx, s.ProcmgrUnitsExp...)
 	case service.UpstartType:
 		return nil // Experiments are not supported on upstart
 	case service.SysvinitType:
@@ -929,7 +915,6 @@ func (s *datadogAgentService) RemoveExperiment(ctx HookContext) error {
 	return errors.New("unsupported service manager")
 }
 
-// RestartProcmgrDaemon restarts datadog-agent-procmgr(.|-exp).service when procmgr routing is active.
 func (s *datadogAgentService) RestartProcmgrDaemon(ctx HookContext, stable bool) error {
 	if err := s.checkPlatformSupport(ctx); err != nil {
 		return err
@@ -937,7 +922,11 @@ func (s *datadogAgentService) RestartProcmgrDaemon(ctx HookContext, stable bool)
 	if service.GetServiceManagerType() != service.ProcmgrType {
 		return nil
 	}
-	return procmgr.RestartUnit(ctx, s.procmgrMainUnit(stable))
+	unit := procmgrDaemonUnitExp
+	if stable {
+		unit = procmgrDaemonUnitStable
+	}
+	return procmgr.RestartUnit(ctx, unit)
 }
 
 // isAgentConfigFilePresent checks if the agent config file exists
