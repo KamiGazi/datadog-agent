@@ -232,6 +232,48 @@ impl<R: Read> Iterator for XmlParser<R> {
     }
 }
 
+/// Removes a `<!DOCTYPE …>` declaration from an XML byte slice.
+///
+/// xml 1.x rejects multiline system identifiers inside DOCTYPE (e.g. JEE
+/// `application.xml` with a PUBLIC/SYSTEM identifier that wraps across lines).
+/// Since JEE configuration parsers only care about element structure, not DTD
+/// definitions, stripping the declaration before parsing is safe.
+///
+/// The function scans for the ASCII sequence `<!DOCTYPE` and removes everything
+/// from that point up to and including the matching `>`, handling nested `[…]`
+/// internal subsets.  If no DOCTYPE is found the input is returned unchanged.
+pub fn strip_doctype(input: &[u8]) -> std::borrow::Cow<'_, [u8]> {
+    const DOCTYPE: &[u8] = b"<!DOCTYPE";
+    if let Some(start) = input
+        .windows(DOCTYPE.len())
+        .position(|w| w == DOCTYPE)
+    {
+        let mut depth = 0usize;
+        let mut i = start + DOCTYPE.len();
+        let end = loop {
+            if i >= input.len() {
+                break input.len();
+            }
+            match input[i] {
+                b'[' => depth += 1,
+                b']' if depth > 0 => depth -= 1,
+                b'>' if depth == 0 => {
+                    i += 1;
+                    break i;
+                }
+                _ => {}
+            }
+            i += 1;
+        };
+        let mut out = Vec::with_capacity(input.len() - (end - start));
+        out.extend_from_slice(&input[..start]);
+        out.extend_from_slice(&input[end..]);
+        std::borrow::Cow::Owned(out)
+    } else {
+        std::borrow::Cow::Borrowed(input)
+    }
+}
+
 /// Gets an attribute value by local name (ignoring namespace prefix).
 pub fn get_attr(attributes: &[OwnedAttribute], name: &str) -> Option<String> {
     attributes

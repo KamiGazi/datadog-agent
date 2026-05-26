@@ -265,7 +265,8 @@ impl XmlHandler for AppXmlHandler {
 }
 
 fn parse_application_xml(buf: &[u8]) -> Result<Vec<String>, Error> {
-    let mut parser = xml_parser::XmlParser::new(buf);
+    let stripped = xml_parser::strip_doctype(buf);
+    let mut parser = xml_parser::XmlParser::new(stripped.as_ref());
     let mut handler = AppXmlHandler {
         context_roots: Vec::new(),
         current_text: String::new(),
@@ -327,7 +328,8 @@ fn parse_context_root(buf: &[u8], container_element: &str) -> Option<String> {
         }
     }
 
-    let mut parser = xml_parser::XmlParser::new(buf);
+    let stripped = xml_parser::strip_doctype(buf);
+    let mut parser = xml_parser::XmlParser::new(stripped.as_ref());
     let mut handler = Handler {
         container: container_element,
         result: None,
