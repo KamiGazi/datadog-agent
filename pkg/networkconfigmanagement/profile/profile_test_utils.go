@@ -137,8 +137,12 @@ func newTestProfile() *NCMProfile {
 }
 
 // DefaultProfile extracts the official default profile by name
-func DefaultProfile(profileName string) *NCMProfile {
-	return DefaultProfiles[profileName]
+func DefaultProfile(t testing.TB, profileName string) *NCMProfile {
+	p, ok := DefaultProfiles[profileName]
+	if !ok {
+		t.Fatalf("Attempted to load nonexistent profile %q", profileName)
+	}
+	return p
 }
 
 // SetProfilesForTesting allows tests to override the profiles map.

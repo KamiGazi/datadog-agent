@@ -91,6 +91,33 @@ var DefaultProfiles = Map{
 		},
 	},
 
+	"cisco-asa": {
+		Name: "cisco-asa",
+		Commands: CommandSet{
+			GetRunning: MkCommand("more system:running-config", `ASA Version \d+\.\d+\(\d+\)`),
+			GetVersion: MkCommand("show version"),
+		},
+		Redactions: []RedactionRule{
+			MkRedaction(`(?m)^(snmp-server community).*`, ""),
+			MkRedaction(`(?m)^(enable password) \S+( .*)?$`, "$1 <secret hidden>$2"),
+			MkRedaction(`(?m)^(passwd) \S+( .*)?$`, "$1 <secret hidden>$2"),
+			MkRedaction(`(?m)^(username \S+ password) \S+( .*)?$`, "$1 <secret hidden>$2"),
+			MkRedaction(`(ikev[12] ((remote|local)-authentication )?pre-shared-key( hex)?) (\S+)`, ""),
+			MkRedaction(`(?m)^(crypto isakmp key) \S+( .*)?$`, "$1 <secret hidden>$2"),
+			{
+				Regex:       regexp.MustCompile(`(?m)^(aaa-server \S+(?: \(\S+\))? host \S+\n(?: [^\n]+\n)* +key) \S+$`),
+				Replacement: "$1 <secret hidden>",
+				Multiline:   true,
+			},
+			MkRedaction(`ldap-login-password (\S+)`, "ldap-login-password <secret hidden>"),
+			MkRedaction(`(?m)^snmp-server host (.*) community (\S+)`, "snmp-server host $1 community <secret hidden>"),
+			MkRedaction(`(?m)^(failover key) .+`, ""),
+			MkRedaction(`(?m)^(\s+ospf message-digest-key \d+ md5) .+`, ""),
+			MkRedaction(`(?m)^(\s+ospf authentication-key) .+`, ""),
+			MkRedaction(`(?m)^(\s+neighbor \S+ password) .+`, ""),
+		},
+	},
+
 	"cisco-ios": {
 		Name: "cisco-ios",
 		Commands: CommandSet{
