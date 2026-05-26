@@ -33,6 +33,11 @@ const (
 	CLIBinDefault     = "/opt/datadog-agent/embedded/bin/dd-procmgr"
 	CLIBinFleetStable = "/opt/datadog-packages/datadog-agent/stable/embedded/bin/dd-procmgr"
 
+	procmgrDaemonRelPath     = "embedded/bin/dd-procmgrd"
+	classicAgentInstallRoot  = "/opt/datadog-agent"
+	fleetAgentStableRoot     = "/opt/datadog-packages/datadog-agent/stable"
+	fleetAgentExperimentRoot = "/opt/datadog-packages/datadog-agent/experiment"
+
 	ProcessStateRunning               = "Running"
 	ProcessStateStopped               = "Stopped"
 	waitForProcessTimeout             = 90 * time.Second
@@ -53,6 +58,115 @@ func CLIBinForLinuxHost(t *testing.T, executor CommandExecutor) string {
 	path := strings.TrimSpace(out)
 	require.NotEmpty(t, path, "dd-procmgr CLI not found (checked %s and %s)", CLIBinFleetStable, CLIBinDefault)
 	return path
+}
+
+// LogProcmgrDaemonCandidates logs where dd-procmgrd exists on the host, mirroring
+// service.ProcmgrDaemonAt / procmgrDaemonPresentOnHost and installer procmgrUsable checks.
+func LogProcmgrDaemonCandidates(t *testing.T, executor CommandExecutor) {
+	t.Helper()
+	daemonRoots := []struct {
+		label string
+		root  string
+	}{
+		{"classic_deb_rpm", classicAgentInstallRoot},
+		{"fleet_stable", fleetAgentStableRoot},
+		{"fleet_experiment", fleetAgentExperimentRoot},
+	}
+	anyDaemon := false
+	for _, c := range daemonRoots {
+		daemonPath := c.root + "/" + procmgrDaemonRelPath
+		out, err := executor.ExecuteCommand(fmt.Sprintf(
+			`if sudo test -f %q; then echo present; else echo absent; fi`, daemonPath))
+		if err != nil {
+			t.Logf("dd-procmgrd %s (%s): check failed: %v", c.label, daemonPath, err)
+			continue
+		}
+		state := strings.TrimSpace(out)
+		t.Logf("dd-procmgrd %s (%s): %s", c.label, daemonPath, state)
+		if state == "present" {
+			anyDaemon = true
+		}
+	}
+	findOut, err := executor.ExecuteCommand(
+		`sudo find /opt/datadog-agent /opt/datadog-packages/datadog-agent -name 'dd-procmgrd' 2>/dev/null || true`)
+	if err != nil {
+		t.Logf("dd-procmgrd find: failed: %v", err)
+	} else if found := strings.TrimSpace(findOut); found != "" {
+		t.Logf("dd-procmgrd find:\n%s", found)
+	} else {
+		t.Logf("dd-procmgrd find: no dd-procmgrd under /opt/datadog-agent or /opt/datadog-packages/datadog-agent")
+	}
+	systemctlOut, err := executor.ExecuteCommand(`command -v systemctl >/dev/null 2>&1 && echo yes || echo no`)
+	if err != nil {
+		t.Logf("systemctl on PATH: check failed: %v", err)
+	} else {
+		t.Logf("systemctl on PATH: %s", strings.TrimSpace(systemctlOut))
+	}
+	for _, unit := range []string{"datadog-agent-procmgr.service", "datadog-agent.service"} {
+		unitOut, err := executor.ExecuteCommand(fmt.Sprintf(
+			`sudo systemctl show -p ActiveState,SubState,ConditionResult %q 2>/dev/null || echo "unit %s: not loaded"`, unit, unit))
+		if err != nil {
+			t.Logf("%s: %v", unit, err)
+			continue
+		}
+		t.Logf("%s: %s", unit, strings.TrimSpace(unitOut))
+	}
+	// Mirrors procmgrBinaryExists(ctx, true) for deb hook vs deb hook after fleet remap gate.
+	debRootDaemon, _ := executor.ExecuteCommand(fmt.Sprintf(
+		`sudo test -f %q && echo yes || echo no`, classicAgentInstallRoot+"/"+procmgrDaemonRelPath))
+	fleetGateDaemon, _ := executor.ExecuteCommand(fmt.Sprintf(
+		`sudo test -f %q && echo yes || echo no`, fleetAgentStableRoot+"/"+procmgrDaemonRelPath))
+	t.Logf("installer procmgrBinaryExists(deb ctx, stable): %s (root %s)", strings.TrimSpace(debRootDaemon), classicAgentInstallRoot)
+	t.Logf("installer ddotExtensionProcmgrHookContext fleet gate (stable dd-procmgrd): %s", strings.TrimSpace(fleetGateDaemon))
+	if strings.TrimSpace(fleetGateDaemon) == "yes" {
+		ociRootDaemon, _ := executor.ExecuteCommand(fmt.Sprintf(
+			`sudo test -f %q && echo yes || echo no`, fleetAgentStableRoot+"/"+procmgrDaemonRelPath))
+		t.Logf("installer procmgrBinaryExists(oci stable ctx after remap, stable): %s (root %s)", strings.TrimSpace(ociRootDaemon), fleetAgentStableRoot)
+	}
+	if strings.TrimSpace(systemctlOut) == "yes" && anyDaemon {
+		t.Logf("installer GetServiceManagerType would be ProcmgrType; procmgrUsable depends on procmgrBinaryExists after hook context remap")
+	} else {
+		t.Logf("installer GetServiceManagerType would not be ProcmgrType (systemctl=%s, anyDaemon=%v)", strings.TrimSpace(systemctlOut), anyDaemon)
+	}
+}
+
+// LogStableDDOTProcmgrYAML logs known processes.d paths and any datadog-agent-ddot.yaml
+// found under agent install roots (does not fail when the file is missing).
+func LogStableDDOTProcmgrYAML(t *testing.T, executor CommandExecutor) {
+	t.Helper()
+	for _, path := range []string{StableDDOTProcmgrYAMLOCI, StableDDOTProcmgrYAMLDeb} {
+		out, err := executor.ExecuteCommand(fmt.Sprintf(
+			`if sudo test -f %q; then echo present; sudo cat %q; else echo absent; fi`, path, path))
+		if err != nil {
+			t.Logf("DDOT procmgr YAML %s: check failed: %v", path, err)
+			continue
+		}
+		t.Logf("DDOT procmgr YAML %s: %s", path, strings.TrimSpace(out))
+	}
+	findOut, err := executor.ExecuteCommand(
+		`sudo find /opt/datadog-agent /opt/datadog-packages/datadog-agent -name 'datadog-agent-ddot.yaml' 2>/dev/null || true`)
+	if err != nil {
+		t.Logf("DDOT procmgr YAML find: failed: %v", err)
+	} else if found := strings.TrimSpace(findOut); found != "" {
+		t.Logf("DDOT procmgr YAML find:\n%s", found)
+	} else {
+		t.Logf("DDOT procmgr YAML find: no datadog-agent-ddot.yaml under /opt/datadog-agent or /opt/datadog-packages/datadog-agent")
+	}
+	extFindOut, err := executor.ExecuteCommand(
+		`sudo find /opt/datadog-agent /opt/datadog-packages/datadog-agent -path '*/ext/ddot/embedded/bin/otel-agent' 2>/dev/null || true`)
+	if err != nil {
+		t.Logf("DDOT extension binary find: failed: %v", err)
+	} else if found := strings.TrimSpace(extFindOut); found != "" {
+		t.Logf("DDOT extension binary find:\n%s", found)
+	} else {
+		t.Logf("DDOT extension binary find: no ext/ddot otel-agent under /opt/datadog-agent or /opt/datadog-packages/datadog-agent")
+	}
+	otelEnv, err := executor.ExecuteCommand(`echo "${DD_OTELCOLLECTOR_ENABLED:-unset}"`)
+	if err != nil {
+		t.Logf("DD_OTELCOLLECTOR_ENABLED: check failed: %v", err)
+	} else {
+		t.Logf("DD_OTELCOLLECTOR_ENABLED=%s", strings.TrimSpace(otelEnv))
+	}
 }
 
 // StableDDOTProcmgrYAMLPath returns the on-disk path to stable DDOT procmgr YAML, preferring

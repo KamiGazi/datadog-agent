@@ -36,17 +36,43 @@ func getCurrentAgentVersion() string {
 	return v + "-1"
 }
 
-// agentVersionForExtensions returns the agent version for extensions.db and OCI extension installs.
-// In testing environments the binary's compiled-in version (e.g. 7.79.0-devel-1) differs from the
-// pipeline OCI tag (e.g. pipeline-107898846). Callers may override via
+// agentVersionForExtensions returns the OCI URL tag used to download the agent package and its
+// extensions. In testing environments the binary's compiled-in version (e.g. 7.79.0-devel-1)
+// differs from the pipeline OCI tag (e.g. pipeline-107898846). Callers may override via
 // DD_INSTALLER_DEFAULT_PKG_VERSION_DATADOG_AGENT so the correct image is fetched without modifying
-// the installed binary. SetPackage and Install must use the same value (see postInstallDatadogAgent).
+// the installed binary.
 func agentVersionForExtensions() string {
 	ver := getCurrentAgentVersion()
 	if override := env.FromEnv().DefaultPackagesVersionOverride[agentPackage]; override != "" {
 		return override
 	}
 	return ver
+}
+
+// agentInstalledVersionForExtensions returns the version string for extensions.db. It matches the
+// OCI manifest / repository stable (or experiment) target, which can differ from
+// agentVersionForExtensions() when a DD_INSTALLER_DEFAULT_PKG_VERSION_* override is set.
+func agentInstalledVersionForExtensions(isExperiment bool) string {
+	return agentInstalledVersionForExtensionsAt(paths.PackagesPath, isExperiment)
+}
+
+func agentInstalledVersionForExtensionsAt(packagesRoot string, isExperiment bool) string {
+	repos := repository.NewRepositories(packagesRoot, AsyncPreRemoveHooks)
+	state, err := repos.Get(agentPackage).GetState()
+	if err != nil {
+		return agentVersionForExtensions()
+	}
+	if isExperiment {
+		if state.Experiment != "" {
+			return state.Experiment
+		}
+		if state.Stable != "" {
+			return state.Stable
+		}
+	} else if state.Stable != "" {
+		return state.Stable
+	}
+	return agentVersionForExtensions()
 }
 
 // Config structs for reading installer registry configuration from datadog.yaml

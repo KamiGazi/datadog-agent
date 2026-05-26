@@ -76,6 +76,8 @@ func (s *packageDDOTSuite) TestInstallDDOTInstallScript() {
 	s.host.AssertPackageInstalledByInstaller("datadog-agent")
 
 	s.host.WaitForUnitActive(s.T(), agentUnit, traceUnit, procmgrUnit)
+	procmgrtest.LogProcmgrDaemonCandidates(s.T(), s)
+	procmgrtest.LogStableDDOTProcmgrYAML(s.T(), s)
 	procmgrtest.WaitForDDOTRunning(s.T(), s, procmgrtest.DDOTOtelAgentFleetStableExtensionBinary)
 
 	state := s.host.State()

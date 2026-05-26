@@ -7,6 +7,8 @@ package packages
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -90,6 +92,21 @@ func TestAgentVersionForExtensionsUsesPipelineOverride(t *testing.T) {
 	t.Setenv("DD_INSTALLER_DEFAULT_PKG_VERSION_DATADOG_AGENT", "pipeline-12345")
 	got := agentVersionForExtensions()
 	assert.Equal(t, "pipeline-12345", got)
+}
+
+func TestAgentInstalledVersionForExtensionsUsesRepositoryStable(t *testing.T) {
+	t.Setenv("DD_INSTALLER_DEFAULT_PKG_VERSION_DATADOG_AGENT", "pipeline-12345")
+
+	root := t.TempDir()
+	agentRoot := filepath.Join(root, "datadog-agent")
+	manifestVersion := "7.81.0-devel.git.213.6aff390.pipeline.114990009-1"
+	versionDir := filepath.Join(agentRoot, manifestVersion)
+	require.NoError(t, os.MkdirAll(versionDir, 0755))
+	require.NoError(t, os.Symlink(versionDir, filepath.Join(agentRoot, "stable")))
+	require.NoError(t, os.Symlink(filepath.Join(agentRoot, "stable"), filepath.Join(agentRoot, "experiment")))
+
+	assert.Equal(t, manifestVersion, agentInstalledVersionForExtensionsAt(root, false))
+	assert.Equal(t, manifestVersion, agentInstalledVersionForExtensionsAt(root, true))
 }
 
 func TestInstallDDOTExtensionIfEnabled_Disabled(t *testing.T) {

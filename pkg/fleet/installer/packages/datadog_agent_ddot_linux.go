@@ -287,7 +287,11 @@ func procmgrBinaryExists(ctx HookContext, stable bool) bool {
 }
 
 func procmgrUsable(ctx HookContext, stable bool) bool {
-	return service.GetServiceManagerType() == service.ProcmgrType && procmgrBinaryExists(ctx, stable)
+	if service.GetServiceManagerType() != service.ProcmgrType {
+		return false
+	}
+	// Deb/rpm extension hooks use /opt/datadog-agent paths; procmgrd may only exist under fleet stable.
+	return procmgrBinaryExists(ddotExtensionProcmgrHookContext(ctx, stable), stable)
 }
 
 const debAgentInstallRoot = "/opt/datadog-agent"
@@ -491,6 +495,15 @@ func syncDDOTProcmgrAfterExtension(ctx HookContext) error {
 	default:
 		return nil
 	}
+}
+
+// syncDDOTProcmgrIfExtensionPresent writes processes.d YAML when ext/ddot is on disk.
+// Covers extension install skipped by digest idempotency or a failed first sync during postInstallExtension.
+func syncDDOTProcmgrIfExtensionPresent(ctx HookContext) error {
+	if ddotExtensionInstallDir(ctx, true) == "" {
+		return nil
+	}
+	return syncDDOTProcmgrAfterExtension(ctx)
 }
 
 func ddotExtensionInstalled(agentPackagePath string) bool {

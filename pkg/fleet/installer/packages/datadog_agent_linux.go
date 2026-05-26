@@ -366,15 +366,19 @@ func postInstallDatadogAgent(ctx HookContext) (err error) {
 	if err := restoreODBCConfig(ctx.PackagePath); err != nil {
 		log.Warnf("failed to restore ODBC config: %s", err)
 	}
-	agentVersion := agentVersionForExtensions()
-	if err := extensionsPkg.SetPackage(ctx, agentPackage, agentVersion, false); err != nil {
+	extensionURLVersion := agentVersionForExtensions()
+	extensionDBVersion := agentInstalledVersionForExtensions(false)
+	if err := extensionsPkg.SetPackage(ctx, agentPackage, extensionDBVersion, false); err != nil {
 		return fmt.Errorf("failed to set package version in extensions db: %w", err)
 	}
-	if err := restoreAgentExtensions(ctx, agentVersion, false); err != nil {
+	if err := restoreAgentExtensions(ctx, extensionURLVersion, false); err != nil {
 		log.Warnf("failed to restore extensions: %s", err)
 	}
-	if err := installAgentExtensions(ctx, agentVersion, false); err != nil {
+	if err := installAgentExtensions(ctx, extensionURLVersion, false); err != nil {
 		log.Warnf("failed to install extensions: %s", err)
+	}
+	if err := syncDDOTProcmgrIfExtensionPresent(ctx); err != nil {
+		log.Warnf("failed to sync DDOT process manager config: %v", err)
 	}
 	if err := agentService.WriteStable(ctx); err != nil {
 		return fmt.Errorf("failed to write stable units: %s", err)
@@ -480,11 +484,12 @@ func postStartExperimentDatadogAgent(ctx HookContext) error {
 	if err := integrations.RestoreCustomIntegrations(ctx, ctx.PackagePath); err != nil {
 		log.Warnf("failed to restore custom integrations: %s", err)
 	}
-	experimentVersion := agentVersionForExtensions()
-	if err := extensionsPkg.SetPackage(ctx, agentPackage, experimentVersion, true); err != nil {
+	extensionURLVersion := agentVersionForExtensions()
+	extensionDBVersion := agentInstalledVersionForExtensions(true)
+	if err := extensionsPkg.SetPackage(ctx, agentPackage, extensionDBVersion, true); err != nil {
 		return fmt.Errorf("failed to set package version in extensions db: %w", err)
 	}
-	if err := restoreAgentExtensions(ctx, experimentVersion, true); err != nil {
+	if err := restoreAgentExtensions(ctx, extensionURLVersion, true); err != nil {
 		log.Warnf("failed to restore agent extensions: %s", err)
 	}
 	if err := restoreODBCConfig(ctx.PackagePath); err != nil {
@@ -922,11 +927,7 @@ func (s *datadogAgentService) RestartProcmgrDaemon(ctx HookContext, stable bool)
 	if service.GetServiceManagerType() != service.ProcmgrType {
 		return nil
 	}
-	unit := procmgrDaemonUnitExp
-	if stable {
-		unit = procmgrDaemonUnitStable
-	}
-	return procmgr.RestartUnit(ctx, unit)
+	return procmgr.RestartDaemon(ctx, !stable)
 }
 
 // isAgentConfigFilePresent checks if the agent config file exists
