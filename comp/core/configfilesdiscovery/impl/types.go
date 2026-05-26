@@ -7,6 +7,8 @@ package configfilesdiscoveryimpl
 
 import (
 	"context"
+	"strconv"
+	"strings"
 
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/integration"
 	workloadmeta "github.com/DataDog/datadog-agent/comp/core/workloadmeta/def"
@@ -56,15 +58,26 @@ type accessorFactory interface {
 	ForTarget(Target) (RuntimeAccessor, bool)
 }
 
+type runtimeAccessorFactory struct{}
+
+func (runtimeAccessorFactory) ForTarget(target Target) (RuntimeAccessor, bool) {
+	if target.Runtime == "" {
+		return nil, false
+	}
+	return runtimeAccessor{runtime: target.Runtime}, true
+}
+
+type runtimeAccessor struct {
+	runtime RuntimeType
+}
+
+func (a runtimeAccessor) Runtime() RuntimeType {
+	return a.runtime
+}
+
 type noIngesterRegistry struct{}
 
 func (noIngesterRegistry) Get(string) (IntegrationIngester, bool) {
-	return nil, false
-}
-
-type noAccessorFactory struct{}
-
-func (noAccessorFactory) ForTarget(Target) (RuntimeAccessor, bool) {
 	return nil, false
 }
 
@@ -77,7 +90,64 @@ type workloadmetaStore interface {
 	GetKubernetesPodForContainer(string) (*workloadmeta.KubernetesPod, error)
 }
 
-// Resolve is intentionally a placeholder for the first TDD checkpoint.
-func (r targetResolver) Resolve(_ integration.Config) (Target, bool) {
-	return Target{}, false
+func (r targetResolver) Resolve(config integration.Config) (Target, bool) {
+	if config.Name == "" || config.ServiceID == "" || !config.IsCheckConfig() {
+		return Target{}, false
+	}
+
+	runtime, id, ok := parseServiceID(config.ServiceID)
+	if !ok {
+		return Target{}, false
+	}
+
+	target := Target{
+		Integration:  config.Name,
+		ConfigDigest: config.Digest(),
+		ServiceID:    config.ServiceID,
+	}
+
+	switch runtime {
+	case "process":
+		pid, err := strconv.Atoi(id)
+		if err != nil {
+			return Target{}, false
+		}
+		target.Runtime = RuntimeHost
+		target.PID = pid
+		return target, true
+	case "docker":
+		target.Runtime = RuntimeDocker
+		target.ContainerID = id
+		target.ContainerRuntime = runtime
+	default:
+		target.ContainerID = id
+		target.ContainerRuntime = runtime
+	}
+
+	if r.store == nil {
+		return target, target.Runtime == RuntimeDocker
+	}
+
+	container, err := r.store.GetContainer(id)
+	if err == nil && container != nil && container.Runtime != "" {
+		target.ContainerRuntime = string(container.Runtime)
+	}
+
+	pod, err := r.store.GetKubernetesPodForContainer(id)
+	if err != nil || pod == nil {
+		return target, target.Runtime == RuntimeDocker
+	}
+
+	target.Runtime = RuntimeKubernetes
+	target.PodName = pod.Name
+	target.PodNamespace = pod.Namespace
+	return target, true
+}
+
+func parseServiceID(serviceID string) (string, string, bool) {
+	runtime, id, found := strings.Cut(serviceID, "://")
+	if !found || runtime == "" || id == "" {
+		return "", "", false
+	}
+	return runtime, id, true
 }

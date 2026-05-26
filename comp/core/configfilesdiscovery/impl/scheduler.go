@@ -6,6 +6,9 @@
 package configfilesdiscoveryimpl
 
 import (
+	"context"
+	"sync"
+
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/integration"
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/scheduler"
 )
@@ -16,6 +19,14 @@ type adScheduler struct {
 	registry ingesterRegistry
 	resolver targetResolver
 	accessor accessorFactory
+
+	mu     sync.Mutex
+	active map[string]activeTarget
+}
+
+type activeTarget struct {
+	target   Target
+	ingester IntegrationIngester
 }
 
 var _ scheduler.Scheduler = (*adScheduler)(nil)
@@ -25,14 +36,58 @@ func newADScheduler(registry ingesterRegistry, resolver targetResolver, accessor
 		registry: registry,
 		resolver: resolver,
 		accessor: accessor,
+		active:   make(map[string]activeTarget),
 	}
 }
 
-// Schedule is intentionally a no-op for the first TDD checkpoint.
-func (s *adScheduler) Schedule(_ []integration.Config) {}
+func (s *adScheduler) Schedule(configs []integration.Config) {
+	for _, config := range configs {
+		target, ok := s.resolver.Resolve(config)
+		if !ok {
+			continue
+		}
 
-// Unschedule is intentionally a no-op for the first TDD checkpoint.
-func (s *adScheduler) Unschedule(_ []integration.Config) {}
+		ingester, ok := s.registry.Get(target.Integration)
+		if !ok {
+			continue
+		}
+
+		accessor, ok := s.accessor.ForTarget(target)
+		if !ok {
+			continue
+		}
+
+		if err := ingester.Schedule(context.Background(), target, accessor); err != nil {
+			continue
+		}
+
+		s.mu.Lock()
+		s.active[target.ConfigDigest] = activeTarget{
+			target:   target,
+			ingester: ingester,
+		}
+		s.mu.Unlock()
+	}
+}
+
+func (s *adScheduler) Unschedule(configs []integration.Config) {
+	for _, config := range configs {
+		digest := config.Digest()
+
+		s.mu.Lock()
+		active, ok := s.active[digest]
+		if ok {
+			delete(s.active, digest)
+		}
+		s.mu.Unlock()
+
+		if !ok {
+			continue
+		}
+
+		_ = active.ingester.Unschedule(context.Background(), active.target)
+	}
+}
 
 // Stop is intentionally a no-op for the first TDD checkpoint.
 func (s *adScheduler) Stop() {}

@@ -14,6 +14,7 @@ import (
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery"
 	"github.com/DataDog/datadog-agent/comp/core/autodiscovery/scheduler"
 	configfilesdiscovery "github.com/DataDog/datadog-agent/comp/core/configfilesdiscovery/def"
+	workloadmeta "github.com/DataDog/datadog-agent/comp/core/workloadmeta/def"
 	compdef "github.com/DataDog/datadog-agent/comp/def"
 )
 
@@ -21,6 +22,7 @@ import (
 type Requires struct {
 	Lifecycle     compdef.Lifecycle
 	Autodiscovery autodiscovery.Component
+	WorkloadMeta  workloadmeta.Component
 }
 
 // Provides defines the output of the config files discovery component.
@@ -52,22 +54,25 @@ func newComponent(
 	}
 }
 
-// NewComponent creates a no-op component skeleton for the first TDD checkpoint.
+// NewComponent creates the config files discovery component.
 func NewComponent(reqs Requires) Provides {
 	c := newComponent(
 		reqs.Autodiscovery,
 		noIngesterRegistry{},
-		targetResolver{},
-		noAccessorFactory{},
+		targetResolver{store: reqs.WorkloadMeta},
+		runtimeAccessorFactory{},
 	)
 	reqs.Lifecycle.Append(compdef.Hook{OnStart: c.start, OnStop: c.stop})
 	return Provides{Comp: c}
 }
 
-func (c *component) start(_ context.Context) error {
+func (c *component) start(context.Context) error {
+	c.ac.AddScheduler(schedulerName, c.scheduler, true)
 	return nil
 }
 
-func (c *component) stop(_ context.Context) error {
+func (c *component) stop(context.Context) error {
+	c.ac.RemoveScheduler(schedulerName)
+	c.scheduler.Stop()
 	return nil
 }
