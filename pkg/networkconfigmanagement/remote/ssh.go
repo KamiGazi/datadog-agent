@@ -76,6 +76,7 @@ func buildHostKeyCallback(config *ncmconfig.SSHConfig) (ssh.HostKeyCallback, err
 	}
 	if config.InsecureSkipVerify {
 		log.Warnf("SSH host key verification is disabled - connects are insecure!")
+		// no-dd-sa:go-security/ssh-ignore-keys
 		return ssh.InsecureIgnoreHostKey(), nil
 	}
 	return nil, errors.New("No SSH host key configured: set known_hosts file path or enable insecure_skip_verify")
