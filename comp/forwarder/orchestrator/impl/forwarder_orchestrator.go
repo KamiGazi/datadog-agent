@@ -11,6 +11,8 @@ package orchestratorimpl
 import (
 	"context"
 
+	"go.uber.org/fx"
+
 	"github.com/DataDog/datadog-agent/comp/core/config"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
 	secrets "github.com/DataDog/datadog-agent/comp/core/secrets/def"
@@ -43,7 +45,7 @@ type Requires struct {
 func Module(params orchestrator.Params) fxutil.Module {
 	return fxutil.Component(
 		fxutil.ProvideComponentConstructor(newOrchestratorForwarder),
-		fxutil.ProvideComponentConstructor(func() paramsProvides { return paramsProvides{Params: params} }),
+		fx.Supply(params),
 	)
 }
 

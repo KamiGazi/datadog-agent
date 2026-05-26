@@ -5,7 +5,8 @@
 
 //go:build test
 
-package orchestratorimpl
+// Package orchestratormock provides a mock for the orchestrator forwarder component.
+package orchestratormock
 
 import (
 	"github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder"
@@ -20,7 +21,7 @@ func MockModule() fxutil.Module {
 		fxutil.ProvideComponentConstructor(NewMockOrchestratorForwarder))
 }
 
-// NewMockOrchestratorForwarder returns an orchestratorForwarder
+// NewMockOrchestratorForwarder returns a mock orchestratorForwarder.
 func NewMockOrchestratorForwarder() orchestrator.Component {
 	forwarder := option.New[defaultforwarder.Forwarder](defaultforwarder.NoopForwarder{})
 	return &forwarder

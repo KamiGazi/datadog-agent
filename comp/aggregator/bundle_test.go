@@ -19,7 +19,7 @@ import (
 	filterlistfx "github.com/DataDog/datadog-agent/comp/filterlist/fx-mock"
 	"github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder"
 	"github.com/DataDog/datadog-agent/comp/forwarder/eventplatform/eventplatformimpl"
-	orchestratorForwarderImpl "github.com/DataDog/datadog-agent/comp/forwarder/orchestrator/impl"
+	orchestratormock "github.com/DataDog/datadog-agent/comp/forwarder/orchestrator/mock"
 	haagentmock "github.com/DataDog/datadog-agent/comp/haagent/mock"
 	logscompression "github.com/DataDog/datadog-agent/comp/serializer/logscompression/fx-mock"
 	metricscompression "github.com/DataDog/datadog-agent/comp/serializer/metricscompression/fx-mock"
@@ -31,7 +31,7 @@ func TestBundleDependencies(t *testing.T) {
 		core.MockBundle(),
 		hostnameimpl.MockModule(),
 		defaultforwarder.MockModule(),
-		orchestratorForwarderImpl.MockModule(),
+		orchestratormock.MockModule(),
 		eventplatformimpl.MockModule(),
 		nooptagger.Module(),
 		haagentmock.Module(),

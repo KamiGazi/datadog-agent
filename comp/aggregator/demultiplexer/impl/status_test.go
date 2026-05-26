@@ -23,7 +23,7 @@ import (
 	filterlistfx "github.com/DataDog/datadog-agent/comp/filterlist/fx-mock"
 	"github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder"
 	"github.com/DataDog/datadog-agent/comp/forwarder/eventplatform/eventplatformimpl"
-	orchestratorimpl "github.com/DataDog/datadog-agent/comp/forwarder/orchestrator/impl"
+	orchestratormock "github.com/DataDog/datadog-agent/comp/forwarder/orchestrator/mock"
 	haagentmock "github.com/DataDog/datadog-agent/comp/haagent/mock"
 	logscompression "github.com/DataDog/datadog-agent/comp/serializer/logscompression/fx-mock"
 	metricscompression "github.com/DataDog/datadog-agent/comp/serializer/metricscompression/fx-mock"
@@ -69,7 +69,7 @@ func TestStatusOutPut(t *testing.T) {
 		fx.Provide(func() secrets.Component { return secretsmock.New(t) }),
 		defaultforwarder.MockModule(),
 		haagentmock.Module(),
-		orchestratorimpl.MockModule(),
+		orchestratormock.MockModule(),
 		eventplatformimpl.MockModule(),
 		logscompression.MockModule(),
 		metricscompression.MockModule(),
