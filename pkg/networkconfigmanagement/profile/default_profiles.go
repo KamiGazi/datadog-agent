@@ -18,14 +18,32 @@ func MkCommand(command string, requires ...string) *Command {
 	}
 }
 
-func MkRedaction(regex string, replacement string) RedactionRule {
-	if replacement == "" {
-		replacement = "$1 <secret hidden>"
+// RedactionOption configures a RedactionRule built by MkRedaction.
+type RedactionOption func(*RedactionRule)
+
+// WithReplacement overrides the default replacement string ("$1 <secret hidden>").
+func WithReplacement(replacement string) RedactionOption {
+	return func(r *RedactionRule) {
+		r.Replacement = replacement
 	}
-	return RedactionRule{
+}
+
+// WithMultiline sets Multiline to true on the RedactionRule.
+func WithMultiline() RedactionOption {
+	return func(r *RedactionRule) {
+		r.Multiline = true
+	}
+}
+
+func MkRedaction(regex string, opts ...RedactionOption) RedactionRule {
+	r := RedactionRule{
 		Regex:       regexp.MustCompile(regex),
-		Replacement: replacement,
+		Replacement: "$1 <secret hidden>",
 	}
+	for _, opt := range opts {
+		opt(&r)
+	}
+	return r
 }
 
 // DefaultProfiles is the built-in set of NCM device profiles, keyed by profile name.
@@ -38,18 +56,14 @@ var DefaultProfiles = Map{
 			GetVersion: MkCommand("show version"),
 		},
 		Redactions: []RedactionRule{
-			MkRedaction(`^(snmp-server community) \S+(.*)`, ""),
-			MkRedaction(`^(snmp-server host \S+) \S+(.*)`, ""),
-			MkRedaction(`^(radius-server host \S+ key) \S+(.*)`, ""),
-			MkRedaction(`^(radius-server key).*`, ""),
-			MkRedaction(`^(tacacs-server host \S+ key) \S+(.*)`, ""),
-			MkRedaction(`^(tacacs-server key).*`, ""),
-			MkRedaction(`^(user \S+ group \S+ password) \S+(.*)`, ""),
-			{
-				Regex:       regexp.MustCompile(`.*configuration:\s*!\s*!Version.*\s*(?:!export-password:.*\s)?`),
-				Replacement: "",
-				Multiline:   true,
-			},
+			MkRedaction(`^(snmp-server community) \S+(.*)`),
+			MkRedaction(`^(snmp-server host \S+) \S+(.*)`),
+			MkRedaction(`^(radius-server host \S+ key) \S+(.*)`),
+			MkRedaction(`^(radius-server key).*`),
+			MkRedaction(`^(tacacs-server host \S+ key) \S+(.*)`),
+			MkRedaction(`^(tacacs-server key).*`),
+			MkRedaction(`^(user \S+ group \S+ password) \S+(.*)`),
+			MkRedaction(`.*configuration:\s*!\s*!Version.*\s*(?:!export-password:.*\s)?`, WithReplacement(""), WithMultiline()),
 		},
 	},
 
@@ -60,34 +74,26 @@ var DefaultProfiles = Map{
 			GetVersion: MkCommand("show version"),
 		},
 		Redactions: []RedactionRule{
-			MkRedaction(`(?m)^(secret) (\S+)\s?$`, ""),
-			MkRedaction(`(?m)^(enable secret) (\S+)\s?$`, ""),
-			MkRedaction(`(?mi)^(.*pre-share) (\S+)\s?$`, ""),
-			MkRedaction(`(?m)^(.*ipsec) (\S+)\s?$`, ""),
-			MkRedaction(`(?m)^(.*community) (\S+)\s?$`, ""),
-			MkRedaction(`( sha) (\S+)`, ""),
-			MkRedaction(`( des) (\S+)`, ""),
-			MkRedaction(`(?m)^(mobility-manager \S+ user \S+) (\S+)`, ""),
-			MkRedaction(`(?m)^(mgmt-user \S+ (?:root|guest-provisioning|network-operations|read-only|location-api-mgmt)) (\S+)\s?$`, ""),
-			MkRedaction(`(?m)^(mgmt-user \S+) (\S+)( (?:read-only|guest-mgmt))?\s?$`, "$1 <secret hidden> $3"),
-			MkRedaction(`(?m)^(.*key) (\S+)\s?$`, ""),
-			MkRedaction(`(?m)^(vrrp-passphrase) (\S+)\s?$`, ""),
-			MkRedaction(`(?m)^(wpa-passphrase) (\S+)\s?$`, ""),
-			MkRedaction(`(?m)^(bkup-passwords) (\S+)\s?$`, ""),
-			MkRedaction(`(?m)^(ap-console-password) (\S+)\s?$`, ""),
-			MkRedaction(`(?m)^(virtual-controller-key) (\S+)\s?$`, ""),
-			MkRedaction(`community (.*?)\s*$`, "community <secret hidden>"),
-			MkRedaction(`(?m)^(snmp-server host \S+ (?:trap )?version (?:v?[123]c?|v3)) (\S+)(.*)`, "$1 <secret hidden>$3"),
-			{
-				Regex:       regexp.MustCompile(`(?m)^(vrrp \d+.*\n.*\n)(authentication) (\S+)`),
-				Replacement: "$1$2 <secret hidden>",
-				Multiline:   true,
-			},
-			{
-				Regex:       regexp.MustCompile(`Building Configuration...\s*`),
-				Replacement: "",
-				Multiline:   true,
-			},
+			MkRedaction(`(?m)^(secret) (\S+)\s?$`),
+			MkRedaction(`(?m)^(enable secret) (\S+)\s?$`),
+			MkRedaction(`(?mi)^(.*pre-share) (\S+)\s?$`),
+			MkRedaction(`(?m)^(.*ipsec) (\S+)\s?$`),
+			MkRedaction(`(?m)^(.*community) (\S+)\s?$`),
+			MkRedaction(`( sha) (\S+)`),
+			MkRedaction(`( des) (\S+)`),
+			MkRedaction(`(?m)^(mobility-manager \S+ user \S+) (\S+)`),
+			MkRedaction(`(?m)^(mgmt-user \S+ (?:root|guest-provisioning|network-operations|read-only|location-api-mgmt)) (\S+)\s?$`),
+			MkRedaction(`(?m)^(mgmt-user \S+) (\S+)( (?:read-only|guest-mgmt))?\s?$`, WithReplacement("$1 <secret hidden> $3")),
+			MkRedaction(`(?m)^(.*key) (\S+)\s?$`),
+			MkRedaction(`(?m)^(vrrp-passphrase) (\S+)\s?$`),
+			MkRedaction(`(?m)^(wpa-passphrase) (\S+)\s?$`),
+			MkRedaction(`(?m)^(bkup-passwords) (\S+)\s?$`),
+			MkRedaction(`(?m)^(ap-console-password) (\S+)\s?$`),
+			MkRedaction(`(?m)^(virtual-controller-key) (\S+)\s?$`),
+			MkRedaction(`community (.*?)\s*$`, WithReplacement("community <secret hidden>")),
+			MkRedaction(`(?m)^(snmp-server host \S+ (?:trap )?version (?:v?[123]c?|v3)) (\S+)(.*)`, WithReplacement("$1 <secret hidden>$3")),
+			MkRedaction(`(?m)^(vrrp \d+.*\n.*\n)(authentication) (\S+)`, WithReplacement("$1$2 <secret hidden>"), WithMultiline()),
+			MkRedaction(`Building Configuration...\s*`, WithReplacement(""), WithMultiline()),
 		},
 	},
 
@@ -126,56 +132,36 @@ var DefaultProfiles = Map{
 			GetVersion: MkCommand("show version"),
 		},
 		Redactions: []RedactionRule{
-			MkRedaction(`(?m)^(snmp-server community).*`, ""),
-			MkRedaction(`(?m)^(snmp-server host \S+( vrf \S+)?( informs?)?( version (1|2c))?) +\S+( .*)?$`, "$1 <secret hidden>$6"),
-			MkRedaction(`(?m)^(username .+ (password|secret) \d) .+`, ""),
-			MkRedaction(`(?m)^(enable (password|secret)( level \d+)? \d) .+`, ""),
-			MkRedaction(`(?m)^( +(?:password|secret)) (?:\d )?\S+`, ""),
-			MkRedaction(`(?m)^(.*wpa-psk ascii \d) (\S+)`, ""),
-			MkRedaction(`(?m)^(.*key 7) (\d.+)`, ""),
-			MkRedaction(`(?m)^(tacacs-server (.+ )?key) .+`, ""),
-			MkRedaction(`(?m)^(crypto isakmp key) (\S+) (.*)`, "$1 <secret hidden> $3"),
-			MkRedaction(`(?m)^( +ip ospf message-digest-key \d+ md5) .+`, ""),
-			MkRedaction(`(?m)^( +ip ospf authentication-key) .+`, ""),
-			MkRedaction(`(?m)^( +neighbor \S+ password) .+`, ""),
-			MkRedaction(`(?m)^( +vrrp \d+ authentication text) .+`, ""),
-			MkRedaction(`(?m)^( +standby \d+ authentication) .{1,8}$`, ""),
-			MkRedaction(`(?m)^( +standby \d+ authentication md5 key-string) .+?( timeout \d+)?$`, "$1 <secret hidden> $2"),
-			MkRedaction(`(?m)^( +key-string) .+`, ""),
-			MkRedaction(`(?m)^((tacacs|radius) server [^\n]+\n( +[^\n]+\n)* +key) [^\n]+$`, ""),
-			MkRedaction(`(?m)^( +ppp (chap|pap) password \d) .+`, ""),
-			MkRedaction(`(?m)^( +security wpa psk set-key (?:ascii|hex) \d) (.*)$`, ""),
-			MkRedaction(`(?m)^( +dot1x username \S+ password \d) (.*)$`, ""),
-			MkRedaction(`(?m)^( +mgmtuser username \S+ password \d) (.*) (secret \d) (.*)$`, "$1 <secret hidden> $3 <secret hidden>"),
-			MkRedaction(`(?m)^( +client \S+ server-key \d) (.*)$`, ""),
-			MkRedaction(`(?m)^( +domain-password) \S+ ?(.*)`, "$1 <secret hidden> $2"),
-			MkRedaction(`(?m)^( +pre-shared-key).*`, ""),
-			MkRedaction(`(?m)^(.*server-key(?: \d)?) \S+`, ""),
-			{
-				Regex:       regexp.MustCompile(`(?s)banner (exec|incoming|login) \^C.*?\^C\s*`),
-				Replacement: "",
-				Multiline:   true,
-			},
-			{
-				Regex:       regexp.MustCompile(`(?m)^\s*Building configuration...\s*`),
-				Replacement: "",
-				Multiline:   true,
-			},
-			{
-				Regex:       regexp.MustCompile(`Current configuration : (.*)\s*`),
-				Replacement: "",
-				Multiline:   true,
-			},
-			{
-				Regex:       regexp.MustCompile(`(?m)(?:^!\s*$\s*)?^! Last configuration change at .*?$\s*(?:^!\s*$\s*)?`),
-				Replacement: "",
-				Multiline:   true,
-			},
-			{
-				Regex:       regexp.MustCompile(`(?s)^\s*Using \d+ out of \d+ bytes\s*`),
-				Replacement: "",
-				Multiline:   true,
-			},
+			MkRedaction(`(?m)^(snmp-server community).*`),
+			MkRedaction(`(?m)^(snmp-server host \S+( vrf \S+)?( informs?)?( version (1|2c))?) +\S+( .*)?$`, WithReplacement("$1 <secret hidden>$6")),
+			MkRedaction(`(?m)^(username .+ (password|secret) \d) .+`),
+			MkRedaction(`(?m)^(enable (password|secret)( level \d+)? \d) .+`),
+			MkRedaction(`(?m)^( +(?:password|secret)) (?:\d )?\S+`),
+			MkRedaction(`(?m)^(.*wpa-psk ascii \d) (\S+)`),
+			MkRedaction(`(?m)^(.*key 7) (\d.+)`),
+			MkRedaction(`(?m)^(tacacs-server (.+ )?key) .+`),
+			MkRedaction(`(?m)^(crypto isakmp key) (\S+) (.*)`, WithReplacement("$1 <secret hidden> $3")),
+			MkRedaction(`(?m)^( +ip ospf message-digest-key \d+ md5) .+`),
+			MkRedaction(`(?m)^( +ip ospf authentication-key) .+`),
+			MkRedaction(`(?m)^( +neighbor \S+ password) .+`),
+			MkRedaction(`(?m)^( +vrrp \d+ authentication text) .+`),
+			MkRedaction(`(?m)^( +standby \d+ authentication) .{1,8}$`),
+			MkRedaction(`(?m)^( +standby \d+ authentication md5 key-string) .+?( timeout \d+)?$`, WithReplacement("$1 <secret hidden> $2")),
+			MkRedaction(`(?m)^( +key-string) .+`),
+			MkRedaction(`(?m)^((tacacs|radius) server [^\n]+\n( +[^\n]+\n)* +key) [^\n]+$`),
+			MkRedaction(`(?m)^( +ppp (chap|pap) password \d) .+`),
+			MkRedaction(`(?m)^( +security wpa psk set-key (?:ascii|hex) \d) (.*)$`),
+			MkRedaction(`(?m)^( +dot1x username \S+ password \d) (.*)$`),
+			MkRedaction(`(?m)^( +mgmtuser username \S+ password \d) (.*) (secret \d) (.*)$`, WithReplacement("$1 <secret hidden> $3 <secret hidden>")),
+			MkRedaction(`(?m)^( +client \S+ server-key \d) (.*)$`),
+			MkRedaction(`(?m)^( +domain-password) \S+ ?(.*)`, WithReplacement("$1 <secret hidden> $2")),
+			MkRedaction(`(?m)^( +pre-shared-key).*`),
+			MkRedaction(`(?m)^(.*server-key(?: \d)?) \S+`),
+			MkRedaction(`(?s)banner (exec|incoming|login) \^C.*?\^C\s*`, WithReplacement(""), WithMultiline()),
+			MkRedaction(`(?m)^\s*Building configuration...\s*`, WithReplacement(""), WithMultiline()),
+			MkRedaction(`Current configuration : (.*)\s*`, WithReplacement(""), WithMultiline()),
+			MkRedaction(`(?m)(?:^!\s*$\s*)?^! Last configuration change at .*?$\s*(?:^!\s*$\s*)?`, WithReplacement(""), WithMultiline()),
+			MkRedaction(`(?s)^\s*Using \d+ out of \d+ bytes\s*`, WithReplacement(""), WithMultiline()),
 		},
 		MetadataRules: []MetadataRule{
 			{
@@ -201,17 +187,9 @@ var DefaultProfiles = Map{
 			GetStartup: MkCommand("show startup-configuration", `(?m)^hostname\s+\S+`),
 		},
 		Redactions: []RedactionRule{
-			MkRedaction(`(password )(\S+)`, "${1}<secret hidden>"),
-			{
-				Regex:       regexp.MustCompile(`(?m)^! Version .*$\s*(?:^!\s*$\s*)?`),
-				Replacement: "",
-				Multiline:   true,
-			},
-			{
-				Regex:       regexp.MustCompile(`(?m)^! Last configuration change at .*$\s*(?:^!\s*$\s*)?`),
-				Replacement: "",
-				Multiline:   true,
-			},
+			MkRedaction(`(password )(\S+)`, WithReplacement("${1}<secret hidden>")),
+			MkRedaction(`(?m)^! Version .*$\s*(?:^!\s*$\s*)?`, WithReplacement(""), WithMultiline()),
+			MkRedaction(`(?m)^! Last configuration change at .*$\s*(?:^!\s*$\s*)?`, WithReplacement(""), WithMultiline()),
 		},
 		MetadataRules: []MetadataRule{
 			{
@@ -229,34 +207,18 @@ var DefaultProfiles = Map{
 			GetStartup: MkCommand("show startup-config | no-more | exclude ! Time:", `! Command: show startup-config`),
 		},
 		Redactions: []RedactionRule{
-			MkRedaction(`^(snmp-server community).*`, ""),
-			MkRedaction(`(secret \w+) (\S+).*`, ""),
-			MkRedaction(`(password \d+) (\S+).*`, ""),
-			MkRedaction(`^(service unsupported-transceiver).*`, ""),
-			MkRedaction(`^(tacacs-server key \d+).*`, ""),
-			MkRedaction(`^(radius-server .+ key \d) \S+`, ""),
-			MkRedaction(`( {6}key) ([0-9a-fA-F]+ 7) ([0-9a-fA-F]+).*`, ""),
-			MkRedaction(`(localized|auth (md5|sha\d{0,3})|priv (des|aes\d{0,3})) \S+`, ""),
-			{
-				Regex:       regexp.MustCompile(`(?m)^! Command:.*$\n(?:^! device:.*$\n)?(?:^!$\n)*(?:^! boot system.*$\n)?(?:^!$\n)*`),
-				Replacement: "",
-				Multiline:   true,
-			},
-			{
-				Regex:       regexp.MustCompile(`(?m)^! Command: show startup-config.*$\n`),
-				Replacement: "",
-				Multiline:   true,
-			},
-			{
-				Regex:       regexp.MustCompile(`(?m)^! Startup-config last modified at.*$\n`),
-				Replacement: "",
-				Multiline:   true,
-			},
-			{
-				Regex:       regexp.MustCompile(`^!\n`),
-				Replacement: "",
-				Multiline:   true,
-			},
+			MkRedaction(`^(snmp-server community).*`),
+			MkRedaction(`(secret \w+) (\S+).*`),
+			MkRedaction(`(password \d+) (\S+).*`),
+			MkRedaction(`^(service unsupported-transceiver).*`),
+			MkRedaction(`^(tacacs-server key \d+).*`),
+			MkRedaction(`^(radius-server .+ key \d) \S+`),
+			MkRedaction(`( {6}key) ([0-9a-fA-F]+ 7) ([0-9a-fA-F]+).*`),
+			MkRedaction(`(localized|auth (md5|sha\d{0,3})|priv (des|aes\d{0,3})) \S+`),
+			MkRedaction(`(?m)^! Command:.*$\n(?:^! device:.*$\n)?(?:^!$\n)*(?:^! boot system.*$\n)?(?:^!$\n)*`, WithReplacement(""), WithMultiline()),
+			MkRedaction(`(?m)^! Command: show startup-config.*$\n`, WithReplacement(""), WithMultiline()),
+			MkRedaction(`(?m)^! Startup-config last modified at.*$\n`, WithReplacement(""), WithMultiline()),
+			MkRedaction(`^!\n`, WithReplacement(""), WithMultiline()),
 		},
 		MetadataRules: []MetadataRule{
 			{
@@ -277,14 +239,14 @@ var DefaultProfiles = Map{
 			GetRunning: MkCommand("show full-configuration", `config (system|global|vdom)`),
 		},
 		Redactions: []RedactionRule{
-			MkRedaction(`^(#private-encryption-key=).+`, ""),
-			MkRedaction(`(set .+ ENC) .+`, ""),
-			MkRedaction(`(set (?:passwd|password|key|group-password|auth-password-l1|auth-password-l2|rsso|history0|history1))\s*( ENC)? .+`, "$1$2 <secret hidden>"),
-			MkRedaction(`(set md5-key [0-9]+) .+`, ""),
-			MkRedaction(`(?s)(set private-key ).*?-+END (ENCRYPTED|RSA|OPENSSH) PRIVATE KEY-+\n?"$`, "$1<secret hidden>"),
-			MkRedaction(`(?s)(set privatekey ).*?-+END (ENCRYPTED|RSA|OPENSSH) PRIVATE KEY-+\n?"$`, "$1<secret hidden>"),
-			MkRedaction(`(?s)(set ca )"-+BEGIN.*?-+END CERTIFICATE-+"$`, "$1<secret hidden>"),
-			MkRedaction(`(?s)(set csr ).*?-+END CERTIFICATE REQUEST-+"$`, "$1<secret hidden>"),
+			MkRedaction(`^(#private-encryption-key=).+`),
+			MkRedaction(`(set .+ ENC) .+`),
+			MkRedaction(`(set (?:passwd|password|key|group-password|auth-password-l1|auth-password-l2|rsso|history0|history1))\s*( ENC)? .+`, WithReplacement("$1$2 <secret hidden>")),
+			MkRedaction(`(set md5-key [0-9]+) .+`),
+			MkRedaction(`(?s)(set private-key ).*?-+END (ENCRYPTED|RSA|OPENSSH) PRIVATE KEY-+\n?"$`, WithReplacement("$1<secret hidden>")),
+			MkRedaction(`(?s)(set privatekey ).*?-+END (ENCRYPTED|RSA|OPENSSH) PRIVATE KEY-+\n?"$`, WithReplacement("$1<secret hidden>")),
+			MkRedaction(`(?s)(set ca )"-+BEGIN.*?-+END CERTIFICATE-+"$`, WithReplacement("$1<secret hidden>")),
+			MkRedaction(`(?s)(set csr ).*?-+END CERTIFICATE REQUEST-+"$`, WithReplacement("$1<secret hidden>")),
 		},
 	},
 
@@ -295,8 +257,8 @@ var DefaultProfiles = Map{
 			GetVersion: MkCommand("show version"),
 		},
 		Redactions: []RedactionRule{
-			MkRedaction(`(?m)^(\s*community) (\S+) (\{)`, "$1 <secret hidden> {"),
-			MkRedaction(` \"\$\d\$\S+; ## SECRET-DATA`, " <secret hidden>;"),
+			MkRedaction(`(?m)^(\s*community) (\S+) (\{)`, WithReplacement("$1 <secret hidden> {")),
+			MkRedaction(` \"\$\d\$\S+; ## SECRET-DATA`, WithReplacement(" <secret hidden>;")),
 		},
 		MetadataRules: []MetadataRule{
 			{
@@ -319,38 +281,18 @@ var DefaultProfiles = Map{
 			GetVersion: MkCommand("show version"),
 		},
 		Redactions: []RedactionRule{
-			MkRedaction(`^(snmp-server community).*`, ""),
-			MkRedaction(`^(snmp-server user \S+ \S+ auth \S+) \S+( priv \S+) \S+(.*)`, "$1 <secret hidden>$2 <secret hidden>$3"),
-			MkRedaction(`^(snmp-server host.*? )\S+( udp-port \d+)?$`, "$1<secret hidden>$2"),
-			MkRedaction(`^(snmp-server mib community-map) \S+ ?(.*)`, "$1 <secret hidden> $2"),
-			MkRedaction(`(password \d+) (\S+)`, ""),
-			MkRedaction(`^(radius-server .*key(?: \d+)?) \S+`, ""),
-			MkRedaction(`^(tacacs-server .*key(?: \d+)?) \S+`, ""),
-			{
-				Regex:       regexp.MustCompile(`!Command: show running-config\s*`),
-				Replacement: "",
-				Multiline:   true,
-			},
-			{
-				Regex:       regexp.MustCompile(`(?m)^!Running configuration last done at:.*?$\s*(?:^!\s*$\s*)?`),
-				Replacement: "",
-				Multiline:   true,
-			},
-			{
-				Regex:       regexp.MustCompile(`(?m)^!Time: .*?$\s*(?:^!\s*$\s*)?`),
-				Replacement: "",
-				Multiline:   true,
-			},
-			{
-				Regex:       regexp.MustCompile(`!Command: show startup-config\s*`),
-				Replacement: "",
-				Multiline:   true,
-			},
-			{
-				Regex:       regexp.MustCompile(`(?m)^!Startup config saved at: .*?$\s*(?:^!\s*$\s*)?`),
-				Replacement: "",
-				Multiline:   true,
-			},
+			MkRedaction(`^(snmp-server community).*`),
+			MkRedaction(`^(snmp-server user \S+ \S+ auth \S+) \S+( priv \S+) \S+(.*)`, WithReplacement("$1 <secret hidden>$2 <secret hidden>$3")),
+			MkRedaction(`^(snmp-server host.*? )\S+( udp-port \d+)?$`, WithReplacement("$1<secret hidden>$2")),
+			MkRedaction(`^(snmp-server mib community-map) \S+ ?(.*)`, WithReplacement("$1 <secret hidden> $2")),
+			MkRedaction(`(password \d+) (\S+)`),
+			MkRedaction(`^(radius-server .*key(?: \d+)?) \S+`),
+			MkRedaction(`^(tacacs-server .*key(?: \d+)?) \S+`),
+			MkRedaction(`!Command: show running-config\s*`, WithReplacement(""), WithMultiline()),
+			MkRedaction(`(?m)^!Running configuration last done at:.*?$\s*(?:^!\s*$\s*)?`, WithReplacement(""), WithMultiline()),
+			MkRedaction(`(?m)^!Time: .*?$\s*(?:^!\s*$\s*)?`, WithReplacement(""), WithMultiline()),
+			MkRedaction(`!Command: show startup-config\s*`, WithReplacement(""), WithMultiline()),
+			MkRedaction(`(?m)^!Startup config saved at: .*?$\s*(?:^!\s*$\s*)?`, WithReplacement(""), WithMultiline()),
 		},
 		MetadataRules: []MetadataRule{
 			{
@@ -373,7 +315,7 @@ var DefaultProfiles = Map{
 			GetVersion: MkCommand("show system info"),
 		},
 		Redactions: []RedactionRule{
-			MkRedaction(`<phash>.*?</phash>`, "<phash><secret hidden></phash>"),
+			MkRedaction(`<phash>.*?</phash>`, WithReplacement("<phash><secret hidden></phash>")),
 		},
 	},
 
@@ -383,12 +325,12 @@ var DefaultProfiles = Map{
 			GetRunning: MkCommand("cat /config/partitions/*/bigip*.conf", `^sys global-settings\s*{`),
 		},
 		Redactions: []RedactionRule{
-			MkRedaction(`^([\s\t]*)secret \S+`, "${1}secret <secret hidden>"),
-			MkRedaction(`^([\s\t]*\S*)password \S+`, "${1}password <secret hidden>"),
-			MkRedaction(`^([\s\t]*\S*)passphrase \S+`, "${1}passphrase <secret hidden>"),
-			MkRedaction(`^(\s*)community \S+`, "${1}community <secret hidden>"),
-			MkRedaction(`^(\s*)community-name \S+`, "${1}community-name <secret hidden>"),
-			MkRedaction(`^([\s\t]*\S*)encrypted \S+$`, "${1}encrypted <secret hidden>"),
+			MkRedaction(`^([\s\t]*)secret \S+`, WithReplacement("${1}secret <secret hidden>")),
+			MkRedaction(`^([\s\t]*\S*)password \S+`, WithReplacement("${1}password <secret hidden>")),
+			MkRedaction(`^([\s\t]*\S*)passphrase \S+`, WithReplacement("${1}passphrase <secret hidden>")),
+			MkRedaction(`^(\s*)community \S+`, WithReplacement("${1}community <secret hidden>")),
+			MkRedaction(`^(\s*)community-name \S+`, WithReplacement("${1}community-name <secret hidden>")),
+			MkRedaction(`^([\s\t]*\S*)encrypted \S+$`, WithReplacement("${1}encrypted <secret hidden>")),
 		},
 	},
 }

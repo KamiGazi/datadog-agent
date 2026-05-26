@@ -173,7 +173,7 @@ var TestProfiles = Map{
 			GetVersion: MkCommand("show version"),
 		},
 		Redactions: []RedactionRule{
-			MkRedaction("(username .+ (password|secret) \\d) .+", "$1 <redacted secret>"),
+			MkRedaction("(username .+ (password|secret) \\d) .+", WithReplacement("$1 <redacted secret>")),
 		},
 		MetadataRules: []MetadataRule{
 			{
