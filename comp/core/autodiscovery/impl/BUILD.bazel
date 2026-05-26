@@ -34,6 +34,7 @@ go_library(
         "//comp/core/workloadfilter/def",
         "//comp/core/workloadmeta/def",
         "//comp/def",
+        "//comp/healthplatform/issues/admisconfig",
         "//comp/healthplatform/store/def",
         "//pkg/collector/check",
         "//pkg/collector/check/id",
@@ -49,6 +50,7 @@ go_library(
         "@//comp/core/autodiscovery/providers",
         "@//pkg/flare",
         "@com_github_cenkalti_backoff_v5//:backoff",
+        "@com_github_datadog_agent_payload_v5//healthplatform",
         "@com_github_mohae_deepcopy//:deepcopy",
     ],
 )
@@ -97,6 +99,7 @@ go_test(
         "@//comp/core/autodiscovery/listeners",
         "@//comp/core/tagger/fx-mock",
         "@//comp/core/workloadmeta/fx-mock",
+        "@com_github_datadog_agent_payload_v5//healthplatform",
         "@com_github_mohae_deepcopy//:deepcopy",
         "@com_github_stretchr_testify//assert",
         "@com_github_stretchr_testify//require",
