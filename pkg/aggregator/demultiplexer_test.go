@@ -129,7 +129,7 @@ func TestDemuxForwardersCreated(t *testing.T) {
 	// options no orchestrator forwarder
 
 	opts = demuxTestOptions()
-	params := orchestratorForwarderImpl.NewDisabledParams()
+	params := orchestratorForwarder.NewDisabledParams()
 	deps = createDemuxDepsWithOrchestratorFwd(t, opts, params, eventplatformimpl.NewDefaultParams())
 	demux = deps.Demultiplexer
 	require.NotNil(demux)
@@ -143,7 +143,7 @@ func TestDemuxForwardersCreated(t *testing.T) {
 	// options noop orchestrator forwarder
 
 	opts = demuxTestOptions()
-	params = orchestratorForwarderImpl.NewNoopParams()
+	params = orchestratorForwarder.NewNoopParams()
 	deps = createDemuxDepsWithOrchestratorFwd(t, opts, params, eventplatformimpl.NewDefaultParams())
 	demux = deps.Demultiplexer
 	require.NotNil(demux)
@@ -273,7 +273,7 @@ func TestGetDogStatsDWorkerAndPipelineCount(t *testing.T) {
 }
 
 func createDemuxDeps(t *testing.T, opts AgentDemultiplexerOptions, eventPlatformParams eventplatformimpl.Params) aggregatorDeps {
-	return createDemuxDepsWithOrchestratorFwd(t, opts, orchestratorForwarderImpl.NewDefaultParams(), eventPlatformParams)
+	return createDemuxDepsWithOrchestratorFwd(t, opts, orchestratorForwarder.NewDefaultParams(), eventPlatformParams)
 }
 
 type internalDemutiplexerDeps struct {
@@ -288,7 +288,7 @@ type internalDemutiplexerDeps struct {
 func createDemuxDepsWithOrchestratorFwd(
 	t *testing.T,
 	opts AgentDemultiplexerOptions,
-	orchestratorParams orchestratorForwarderImpl.Params,
+	orchestratorParams orchestratorForwarder.Params,
 	eventPlatformParams eventplatformimpl.Params) aggregatorDeps {
 	modules := fx.Options(
 		fx.Provide(func() secrets.Component { return secretsmock.New(t) }),
