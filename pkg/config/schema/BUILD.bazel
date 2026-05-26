@@ -1,6 +1,54 @@
 load("@bazel_lib//lib:write_source_files.bzl", "write_source_files")
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@rules_go//go:def.bzl", "go_library", "go_test")
 load("//bazel/rules:zstd.bzl", "zstd_compress")
+
+bzl_library(
+    name = "template_bzl",
+    srcs = ["template.bzl"],
+    visibility = ["//visibility:public"],
+)
+
+# Top schemas exposed as labels for downstream rules (e.g. the
+# `schema_template_config` rule in :template.bzl).
+exports_files(
+    [
+        "yaml/core_schema.yaml",
+        "yaml/system-probe_schema.yaml",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# Per-section sub-files referenced by yaml/core_schema.yaml via $ref.
+# Listed explicitly rather than globbed (per QUESTIONS-2 Q12) so adding
+# or removing a sub-file is a visible diff.
+filegroup(
+    name = "core_schema_subfiles",
+    srcs = [
+        "yaml/admission_controller.yaml",
+        "yaml/agent_telemetry.yaml",
+        "yaml/apm_config.yaml",
+        "yaml/cluster_agent.yaml",
+        "yaml/cluster_checks.yaml",
+        "yaml/compliance_config.yaml",
+        "yaml/container_image.yaml",
+        "yaml/container_lifecycle.yaml",
+        "yaml/external_metrics_provider.yaml",
+        "yaml/gpu.yaml",
+        "yaml/internal_profiling.yaml",
+        "yaml/logs_config.yaml",
+        "yaml/multi_region_failover.yaml",
+        "yaml/orchestrator_explorer.yaml",
+        "yaml/otelcollector.yaml",
+        "yaml/private_action_runner.yaml",
+        "yaml/process_config.yaml",
+        "yaml/remote_configuration.yaml",
+        "yaml/runtime_security_config.yaml",
+        "yaml/sbom.yaml",
+        "yaml/snmp_listener.yaml",
+    ],
+    visibility = ["//visibility:public"],
+)
 
 ZSTD_ARGS = [
     "--no-check",  # match DataDog/zstd Go library behavior: no XXH64 frame checksum
@@ -15,8 +63,8 @@ genrule(
     name = "merged_core_schema",
     srcs = glob(["yaml/*.yaml"]),
     outs = ["core_schema.merged.yaml"],
-    cmd = "$(execpath //tasks:merge_schema) $(execpath yaml/core_schema.yaml) $@",
-    tools = ["//tasks:merge_schema"],
+    cmd = "$(execpath //tasks/schema:merge_schema) $(execpath yaml/core_schema.yaml) $@",
+    tools = ["//tasks/schema:merge_schema"],
 )
 
 zstd_compress(

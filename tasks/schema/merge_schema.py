@@ -54,9 +54,7 @@ _INLINE_STRIPPED_KEYS = ("$schema", "$id")
 
 def _load_ref(ref, base_dir):
     if "://" in ref:
-        raise ValueError(
-            f"absolute $ref not supported: {ref!r} (only relative file refs are allowed)"
-        )
+        raise ValueError(f"absolute $ref not supported: {ref!r} (only relative file refs are allowed)")
     target = os.path.join(base_dir, ref)
     if not os.path.isfile(target):
         raise FileNotFoundError(f"$ref target not found: {target}")

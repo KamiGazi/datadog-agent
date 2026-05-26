@@ -184,4 +184,3 @@ def generate(ctx, agent_bin, output_dir=SCHEMA_DIR):
     split_and_write_schema(sysprobe_schema, output_dir, None, "system-probe_schema")
 
     print("Schema generation complete.")
-

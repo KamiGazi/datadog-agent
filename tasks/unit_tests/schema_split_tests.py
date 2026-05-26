@@ -149,9 +149,7 @@ class TestSplitAndWriteSchema(unittest.TestCase):
 
         schema = _sample_schema()
         # 'nonexistent_section' is not in the schema.
-        split_and_write_schema(
-            schema, self.dir, ["logs_config", "nonexistent_section"], "core_schema"
-        )
+        split_and_write_schema(schema, self.dir, ["logs_config", "nonexistent_section"], "core_schema")
         self.assertEqual(schema["properties"]["logs_config"], {"$ref": "logs_config.yaml"})
         self.assertFalse(os.path.isfile(os.path.join(self.dir, "nonexistent_section.yaml")))
 
