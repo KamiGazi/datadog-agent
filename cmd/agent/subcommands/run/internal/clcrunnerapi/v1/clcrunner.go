@@ -13,8 +13,6 @@ import (
 	"maps"
 	"net/http"
 
-	"github.com/gorilla/mux"
-
 	autodiscovery "github.com/DataDog/datadog-agent/comp/core/autodiscovery/def"
 	"github.com/DataDog/datadog-agent/pkg/api/version"
 	checkid "github.com/DataDog/datadog-agent/pkg/collector/check/id"
