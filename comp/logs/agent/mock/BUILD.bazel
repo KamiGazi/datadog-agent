@@ -1,2 +1,0 @@
-# gazelle:ignore
-# Stub: depends on //comp/logs/agent/impl which is not yet migrated to Bazel.
