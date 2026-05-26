@@ -49,13 +49,9 @@ func agentVersionForExtensions() string {
 	return ver
 }
 
-// agentInstalledVersionForExtensions returns the version string for extensions.db. It matches the
-// OCI manifest / repository stable (or experiment) target, which can differ from
+// agentInstalledVersionForExtensionsAt returns the version string for extensions.db. It matches
+// the OCI manifest / repository stable (or experiment) target, which can differ from
 // agentVersionForExtensions() when a DD_INSTALLER_DEFAULT_PKG_VERSION_* override is set.
-func agentInstalledVersionForExtensions(isExperiment bool) string {
-	return agentInstalledVersionForExtensionsAt(paths.PackagesPath, isExperiment)
-}
-
 func agentInstalledVersionForExtensionsAt(packagesRoot string, isExperiment bool) string {
 	repos := repository.NewRepositories(packagesRoot, AsyncPreRemoveHooks)
 	state, err := repos.Get(agentPackage).GetState()
