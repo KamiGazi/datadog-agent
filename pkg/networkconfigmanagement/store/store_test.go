@@ -56,7 +56,7 @@ func TestStoreConfig(t *testing.T) {
 		configUUID, rawHash, stored, err := cs.StoreConfig("device:10.0.0.1", "running", testRawConfig)
 		require.NoError(t, err)
 		assert.NotEmpty(t, configUUID)
-		assert.Equal(t, hashConfig(testRawConfig), rawHash)
+		assert.Equal(t, HashConfig(testRawConfig), rawHash)
 		assert.True(t, stored)
 	})
 
@@ -335,7 +335,7 @@ func TestGetAllConfigMetadata(t *testing.T) {
 		assert.Equal(t, "device:10.0.0.1", configMeta[0].DeviceID)
 		assert.Equal(t, types.RUNNING, configMeta[0].ConfigType)
 		assert.NotZero(t, configMeta[0].CapturedAt)
-		assert.Equal(t, hashConfig(testRawConfig), configMeta[0].RawHash)
+		assert.Equal(t, HashConfig(testRawConfig), configMeta[0].RawHash)
 		assert.NotEmpty(t, configMeta[0].AgentVersion)
 	})
 
