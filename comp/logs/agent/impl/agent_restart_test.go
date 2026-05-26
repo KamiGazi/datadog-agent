@@ -22,7 +22,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/atomic"
-	"go.uber.org/fx"
 
 	configComponent "github.com/DataDog/datadog-agent/comp/core/config"
 	"github.com/DataDog/datadog-agent/comp/core/hostname/hostnameimpl"
@@ -121,16 +120,16 @@ func createTestAgent(suite *RestartTestSuite, endpoints *config.Endpoints) (*log
 
 	suite.configOverrides["logs_enabled"] = true
 
-	deps := fxutil.Test[testDeps](suite.T(), fx.Options(
-		fx.Provide(func() log.Component { return logmock.New(suite.T()) }),
-		fx.Provide(func() configComponent.Component {
+	deps := fxutil.Test[testDeps](suite.T(),
+		fxutil.ProvideComponentConstructor(func() log.Component { return logmock.New(suite.T()) }),
+		fxutil.ProvideComponentConstructor(func() configComponent.Component {
 			return configComponent.NewMockWithOverrides(suite.T(), suite.configOverrides)
 		}),
 		hostnameimpl.MockModule(),
 		inventoryagentmock.MockModule(),
 		auditorfx.Module(),
-		fx.Provide(kubehealthmock.NewProvides),
-	))
+		fxutil.ProvideComponentConstructor(kubehealthmock.NewProvides),
+	)
 
 	fakeTagger := taggerfxmock.SetupFakeTagger(suite.T())
 	suite.kubeHealthRegistrar = deps.KubeHealthRegistrar

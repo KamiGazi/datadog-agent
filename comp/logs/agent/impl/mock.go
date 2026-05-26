@@ -11,8 +11,7 @@ import (
 	"context"
 	"time"
 
-	"go.uber.org/fx"
-
+	compdef "github.com/DataDog/datadog-agent/comp/def"
 	"github.com/DataDog/datadog-agent/comp/logs-library/pipeline"
 	agent "github.com/DataDog/datadog-agent/comp/logs/agent/def"
 	"github.com/DataDog/datadog-agent/pkg/logs/diagnostic"
@@ -25,8 +24,8 @@ import (
 // MockModule defines the fx options for the mock component.
 func MockModule() fxutil.Module {
 	return fxutil.Component(
-		fx.Provide(newMock),
-		fx.Provide(func(m agent.Mock) agent.Component { return m }))
+		fxutil.ProvideComponentConstructor(newMock),
+		fxutil.ProvideComponentConstructor(func(m agent.Mock) agent.Component { return m }))
 }
 
 type mockLogsAgent struct {
@@ -44,7 +43,7 @@ func newMock(deps dependencies) option.Option[agent.Mock] {
 		isRunning:       false,
 		flushDelay:      0,
 	}
-	deps.Lc.Append(fx.Hook{
+	deps.Lc.Append(compdef.Hook{
 		OnStart: logsAgent.start,
 		OnStop:  logsAgent.stop,
 	})

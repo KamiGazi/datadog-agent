@@ -19,7 +19,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/atomic"
-	"go.uber.org/fx"
 
 	configComponent "github.com/DataDog/datadog-agent/comp/core/config"
 	flaretypes "github.com/DataDog/datadog-agent/comp/core/flare/types"
@@ -32,6 +31,7 @@ import (
 	taggerfxmock "github.com/DataDog/datadog-agent/comp/core/tagger/fx-mock"
 	workloadmeta "github.com/DataDog/datadog-agent/comp/core/workloadmeta/def"
 	workloadmetafxmock "github.com/DataDog/datadog-agent/comp/core/workloadmeta/fx-mock"
+	compdef "github.com/DataDog/datadog-agent/comp/def"
 	"github.com/DataDog/datadog-agent/comp/logs/agent/config"
 	auditor "github.com/DataDog/datadog-agent/comp/logs/auditor/def"
 	auditorfx "github.com/DataDog/datadog-agent/comp/logs/auditor/fx"
@@ -71,7 +71,7 @@ type AgentTestSuite struct {
 }
 
 type testDeps struct {
-	fx.In
+	compdef.In
 
 	Config              configComponent.Component
 	Log                 log.Component
@@ -132,16 +132,16 @@ func createAgent(suite *AgentTestSuite, endpoints *config.Endpoints) (*logAgent,
 
 	suite.configOverrides["logs_enabled"] = true
 
-	deps := fxutil.Test[testDeps](suite.T(), fx.Options(
-		fx.Provide(func() log.Component { return logmock.New(suite.T()) }),
-		fx.Provide(func() configComponent.Component {
+	deps := fxutil.Test[testDeps](suite.T(),
+		fxutil.ProvideComponentConstructor(func() log.Component { return logmock.New(suite.T()) }),
+		fxutil.ProvideComponentConstructor(func() configComponent.Component {
 			return configComponent.NewMockWithOverrides(suite.T(), suite.configOverrides)
 		}),
 		hostnameimpl.MockModule(),
 		inventoryagentmock.MockModule(),
 		auditorfx.Module(),
-		fx.Provide(kubehealthmock.NewProvides),
-	))
+		fxutil.ProvideComponentConstructor(kubehealthmock.NewProvides),
+	)
 
 	fakeTagger := taggerfxmock.SetupFakeTagger(suite.T())
 	suite.kubeHealthRegistrar = deps.KubeHealthRegistrar
@@ -499,9 +499,9 @@ func (suite *AgentTestSuite) TestFlareProvider() {
 }
 
 func (suite *AgentTestSuite) createDeps() dependencies {
-	return fxutil.Test[dependencies](suite.T(), fx.Options(
-		fx.Provide(func() log.Component { return logmock.New(suite.T()) }),
-		fx.Provide(func() configComponent.Component {
+	return fxutil.Test[dependencies](suite.T(),
+		fxutil.ProvideComponentConstructor(func() log.Component { return logmock.New(suite.T()) }),
+		fxutil.ProvideComponentConstructor(func() configComponent.Component {
 			return configComponent.NewMockWithOverrides(suite.T(), suite.configOverrides)
 		}),
 		hostnameimpl.MockModule(),
@@ -509,12 +509,12 @@ func (suite *AgentTestSuite) createDeps() dependencies {
 		workloadmetafxmock.MockModule(workloadmeta.NewParams()),
 		compressionfx.MockModule(),
 		secretsnoopfx.Module(),
-		fx.Provide(func() tagger.Component {
+		fxutil.ProvideComponentConstructor(func() tagger.Component {
 			return suite.tagger
 		}),
 		auditorfx.Module(),
-		fx.Provide(kubehealthmock.NewProvides),
-	))
+		fxutil.ProvideComponentConstructor(kubehealthmock.NewProvides),
+	)
 }
 
 func TestAgentTestSuite(t *testing.T) {
