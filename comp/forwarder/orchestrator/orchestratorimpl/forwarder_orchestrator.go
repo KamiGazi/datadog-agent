@@ -18,7 +18,8 @@ import (
 	secrets "github.com/DataDog/datadog-agent/comp/core/secrets/def"
 	tagger "github.com/DataDog/datadog-agent/comp/core/tagger/def"
 	"github.com/DataDog/datadog-agent/comp/core/tagger/types"
-	"github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder"
+	defaultforwarderdef "github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/def"
+	defaultforwarderimpl "github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/impl"
 	"github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/resolver"
 	"github.com/DataDog/datadog-agent/comp/forwarder/orchestrator"
 	"github.com/DataDog/datadog-agent/pkg/config/env"
@@ -39,13 +40,13 @@ func Module(params Params) fxutil.Module {
 // if the feature is activated on the cluster-agent/cluster-check runner, nil otherwise
 func newOrchestratorForwarder(log log.Component, config config.Component, secrets secrets.Component, tagger tagger.Component, lc fx.Lifecycle, params Params) orchestrator.Component {
 	if params.useNoopOrchestratorForwarder {
-		return createComponent(defaultforwarder.NoopForwarder{})
+		return createComponent(defaultforwarderimpl.NoopForwarder{})
 	}
 	if params.useOrchestratorForwarder {
 		isOrchestratorEnv := env.IsKubernetes() || env.IsECS() || env.IsECSFargate() || env.IsECSManagedInstances()
 		orchestratorExplorerEnabled := config.GetBool(orchestratorconfig.OrchestratorNSKey("enabled"))
 		if !orchestratorExplorerEnabled || !isOrchestratorEnv {
-			forwarder := option.None[defaultforwarder.Forwarder]()
+			forwarder := option.None[defaultforwarderdef.Forwarder]()
 			return &forwarder
 		}
 		globalTags, err := tagger.GlobalTags(types.LowCardinality)
@@ -61,11 +62,11 @@ func newOrchestratorForwarder(log log.Component, config config.Component, secret
 		if err != nil {
 			log.Errorf("Error creating domain resolver: %s", err)
 		}
-		orchestratorForwarderOpts := defaultforwarder.NewOptionsWithResolvers(config, log, resolver)
+		orchestratorForwarderOpts := defaultforwarderimpl.NewOptionsWithResolvers(config, log, resolver)
 		orchestratorForwarderOpts.DisableAPIKeyChecking = true
 		orchestratorForwarderOpts.Secrets = secrets
 
-		forwarder := defaultforwarder.NewDefaultForwarder(config, log, orchestratorForwarderOpts)
+		forwarder := defaultforwarderimpl.NewDefaultForwarder(config, log, orchestratorForwarderOpts)
 		lc.Append(fx.Hook{
 			OnStart: func(context.Context) error {
 				_ = forwarder.Start()
@@ -78,11 +79,11 @@ func newOrchestratorForwarder(log log.Component, config config.Component, secret
 		return createComponent(forwarder)
 	}
 
-	forwarder := option.None[defaultforwarder.Forwarder]()
+	forwarder := option.None[defaultforwarderdef.Forwarder]()
 	return &forwarder
 }
 
-func createComponent(forwarder defaultforwarder.Forwarder) orchestrator.Component {
+func createComponent(forwarder defaultforwarderdef.Forwarder) orchestrator.Component {
 	o := option.New(forwarder)
 	return &o
 }
