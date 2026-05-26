@@ -155,7 +155,7 @@ func Commands(globalParams *command.GlobalParams) []*cobra.Command {
 				settingsfx.Module(),
 				localTaggerfx.Module(),
 				workloadfilterfx.Module(),
-			fx.Invoke(func(wmeta workloadmeta.Component, tagger tagger.Component, filterStore workloadfilter.Component) {
+				fx.Invoke(func(wmeta workloadmeta.Component, tagger tagger.Component, filterStore workloadfilter.Component) {
 					proccontainers.InitSharedContainerProvider(wmeta, tagger, filterStore)
 				}),
 				adfx.Module(),
