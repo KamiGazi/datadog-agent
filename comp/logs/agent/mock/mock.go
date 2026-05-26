@@ -9,11 +9,103 @@
 package mock
 
 import (
-	agentimpl "github.com/DataDog/datadog-agent/comp/logs/agent/impl"
+	"context"
+	"time"
+
+	compdef "github.com/DataDog/datadog-agent/comp/def"
+	"github.com/DataDog/datadog-agent/comp/logs-library/pipeline"
+	agent "github.com/DataDog/datadog-agent/comp/logs/agent/def"
+	"github.com/DataDog/datadog-agent/pkg/logs/diagnostic"
+	"github.com/DataDog/datadog-agent/pkg/logs/schedulers"
+	"github.com/DataDog/datadog-agent/pkg/logs/sources"
 	"github.com/DataDog/datadog-agent/pkg/util/fxutil"
+	"github.com/DataDog/datadog-agent/pkg/util/option"
 )
+
+// Requires defines the minimal dependencies for the mock component.
+type Requires struct {
+	compdef.In
+
+	Lc compdef.Lifecycle
+}
 
 // MockModule defines the fx options for the mock component.
 func MockModule() fxutil.Module {
-	return agentimpl.MockModule()
+	return fxutil.Component(
+		fxutil.ProvideComponentConstructor(newMock),
+		fxutil.ProvideComponentConstructor(func(m agent.Mock) agent.Component { return m }))
+}
+
+type mockLogsAgent struct {
+	isRunning       bool
+	addedSchedulers []schedulers.Scheduler
+	hasFlushed      bool
+	flushDelay      time.Duration
+	logSources      *sources.LogSources
+}
+
+func newMock(deps Requires) option.Option[agent.Mock] {
+	logsAgent := &mockLogsAgent{
+		hasFlushed:      false,
+		addedSchedulers: make([]schedulers.Scheduler, 0),
+		isRunning:       false,
+		flushDelay:      0,
+	}
+	deps.Lc.Append(compdef.Hook{
+		OnStart: logsAgent.start,
+		OnStop:  logsAgent.stop,
+	})
+	return option.New[agent.Mock](logsAgent)
+}
+
+func (a *mockLogsAgent) start(context.Context) error {
+	a.isRunning = true
+	return nil
+}
+
+func (a *mockLogsAgent) stop(context.Context) error {
+	a.isRunning = false
+	return nil
+}
+
+func (a *mockLogsAgent) AddScheduler(scheduler schedulers.Scheduler) {
+	a.addedSchedulers = append(a.addedSchedulers, scheduler)
+}
+
+func (a *mockLogsAgent) SetSources(sources *sources.LogSources) {
+	a.logSources = sources
+}
+
+func (a *mockLogsAgent) IsRunning() bool {
+	return a.isRunning
+}
+
+func (a *mockLogsAgent) GetMessageReceiver() *diagnostic.BufferedMessageReceiver {
+	return nil
+}
+
+func (a *mockLogsAgent) GetSources() *sources.LogSources {
+	return a.logSources
+}
+
+// Serverless methods
+func (a *mockLogsAgent) Start() error {
+	return a.start(context.TODO())
+}
+
+func (a *mockLogsAgent) Stop() {
+	_ = a.stop(context.TODO())
+}
+
+func (a *mockLogsAgent) Flush(ctx context.Context) {
+	select {
+	case <-ctx.Done():
+		a.hasFlushed = false
+	case <-time.NewTimer(a.flushDelay).C:
+		a.hasFlushed = true
+	}
+}
+
+func (a *mockLogsAgent) GetPipelineProvider() pipeline.Provider {
+	return nil
 }

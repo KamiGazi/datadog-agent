@@ -5,7 +5,7 @@
 
 //go:build test
 
-package agentimpl
+package mock
 
 import (
 	"time"
