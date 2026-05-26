@@ -11,7 +11,7 @@ import (
 	"go.uber.org/fx"
 
 	defaultforwarderdef "github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/def"
-	defaultforwarderimpl "github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/impl"
+	defaultforwardernoop "github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/noop-impl"
 	"github.com/DataDog/datadog-agent/comp/forwarder/orchestrator"
 	"github.com/DataDog/datadog-agent/pkg/util/fxutil"
 	"github.com/DataDog/datadog-agent/pkg/util/option"
@@ -25,6 +25,6 @@ func MockModule() fxutil.Module {
 
 // NewMockOrchestratorForwarder returns an orchestratorForwarder
 func NewMockOrchestratorForwarder() orchestrator.Component {
-	forwarder := option.New[defaultforwarderdef.Forwarder](defaultforwarderimpl.NoopForwarder{})
+	forwarder := option.New[defaultforwarderdef.Forwarder](defaultforwardernoop.NewComponent())
 	return &forwarder
 }

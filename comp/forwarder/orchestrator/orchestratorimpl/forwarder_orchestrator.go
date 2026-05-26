@@ -20,6 +20,7 @@ import (
 	"github.com/DataDog/datadog-agent/comp/core/tagger/types"
 	defaultforwarderdef "github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/def"
 	defaultforwarderimpl "github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/impl"
+	defaultforwardernoop "github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/noop-impl"
 	"github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/resolver"
 	"github.com/DataDog/datadog-agent/comp/forwarder/orchestrator"
 	"github.com/DataDog/datadog-agent/pkg/config/env"
@@ -40,7 +41,7 @@ func Module(params Params) fxutil.Module {
 // if the feature is activated on the cluster-agent/cluster-check runner, nil otherwise
 func newOrchestratorForwarder(log log.Component, config config.Component, secrets secrets.Component, tagger tagger.Component, lc fx.Lifecycle, params Params) orchestrator.Component {
 	if params.useNoopOrchestratorForwarder {
-		return createComponent(defaultforwarderimpl.NoopForwarder{})
+		return createComponent(defaultforwardernoop.NewComponent())
 	}
 	if params.useOrchestratorForwarder {
 		isOrchestratorEnv := env.IsKubernetes() || env.IsECS() || env.IsECSFargate() || env.IsECSManagedInstances()

@@ -14,7 +14,7 @@ import (
 	"github.com/DataDog/datadog-agent/comp/core/config"
 	log "github.com/DataDog/datadog-agent/comp/core/log/def"
 	defaultforwarderdef "github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/def"
-	defaultforwarderimpl "github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/impl"
+	defaultforwardernoop "github.com/DataDog/datadog-agent/comp/forwarder/defaultforwarder/noop-impl"
 	"github.com/DataDog/datadog-agent/comp/forwarder/orchestrator"
 	"github.com/DataDog/datadog-agent/pkg/util/fxutil"
 	"github.com/DataDog/datadog-agent/pkg/util/option"
@@ -32,7 +32,7 @@ func Module(params Params) fxutil.Module {
 // dependencies (k8s, several MBs) while building binaries not needing these.
 func newOrchestratorForwarder(_ log.Component, _ config.Component, params Params) orchestrator.Component {
 	if params.useNoopOrchestratorForwarder {
-		forwarder := option.New[defaultforwarderdef.Forwarder](defaultforwarderimpl.NoopForwarder{})
+		forwarder := option.New[defaultforwarderdef.Forwarder](defaultforwardernoop.NewComponent())
 		return &forwarder
 	}
 	forwarder := option.None[defaultforwarderdef.Forwarder]()
